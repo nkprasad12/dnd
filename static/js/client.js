@@ -43,6 +43,7 @@ function handleMouseClick(point, canvas) {
         return
     }
     const { width, height } = canvas.getBoundingClientRect();
+    console.log("width: " + width + ", height: " + height)
     xStart = Math.floor(width / 50) * 50
     yStart = Math.floor(height / 50) * 50
     console.log("xStart: " + xStart + ", yStart: " + yStart)
