@@ -44,7 +44,7 @@ function handleMouseClick(point, canvas) {
     }
     const { width, height } = canvas.getBoundingClientRect();
     xStart = Math.floor(width / 50) * 50
-    yStart = Math.floow(height / 50) * 50
+    yStart = Math.floor(height / 50) * 50
     drawTile(xStart, yStart, 50, "rgba(120, 0, 120, 0.3)", canvas)
 }
 
