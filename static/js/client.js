@@ -27,15 +27,15 @@ function outOfBounds(point, canvas) {
     const { width, height } = canvas.getBoundingClientRect();
     if (point.x < 0 || point.y < 0) {
         console.log("Negative indexed point")
-        return false
+        return true
     } else if (point.x >= width) {
         console.log("OOB X")
-        return false
+        return true
     } else if (point.y >= height) {
         console.log("OOB Y")
-        return false
+        return true
     }
-    return ture
+    return false
 }
 
 function handleMouseClick(point, canvas) {
@@ -61,7 +61,6 @@ canvas.addEventListener('mousedown', function(e) {
 })
 
 function drawCanvas(canvas) {
-    var ctx = canvas.getContext("2d");
     const { width, height } = canvas.getBoundingClientRect();
 
     var tileSize = 50;
@@ -79,7 +78,7 @@ function drawCanvas(canvas) {
             } else {
                 color = "rgba(0, 255, 10, 0.5)";
             }
-            drawTile(j * 50, i * 50, 50, color)
+            drawTile(j * 50, i * 50, 50, color, canvas)
         }
     }
 }
