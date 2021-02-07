@@ -30,6 +30,11 @@ def game(input):
   return f'Papapapapapapa {input}, visits: {visits}'
 
 
+@app.route('/api/getCanvasSize')
+def getCanvasSize():
+  return '567x254'
+
+
 @app.route('/canvas', methods=['GET'])
 def canvas():
   if request.method == 'GET':
