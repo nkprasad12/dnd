@@ -30,6 +30,11 @@ def game(input):
   return f'Papapapapapapa {input}, visits: {visits}'
 
 
+@app.route('/canvas', methods=['GET'])
+def canvas():
+  if request.method == 'GET':
+    return render_template('canvas.html')
+
 @app.route('/client', methods=['GET', 'POST'])
 def client():
   global comments
