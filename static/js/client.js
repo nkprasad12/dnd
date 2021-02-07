@@ -13,15 +13,51 @@ var HttpClient = function() {
     }
 }
 
-function getCursorPosition(canvas, event) {
+function drawTile(x, y, size, color, canvas) {
+    var ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.rect(x, y, size, size);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+}
+
+function outOfBounds(point, canvas) {
+    const { width, height } = canvas.getBoundingClientRect();
+    if (point.x < 0 || point.y < 0) {
+        console.log("Negative indexed point")
+        return false
+    } else if (point.x >= width) {
+        console.log("OOB X")
+        return false
+    } else if (point.y >= height) {
+        console.log("OOB Y")
+        return false
+    }
+    return ture
+}
+
+function handleMouseClick(point, canvas) {
+    if (outOfBounds(point, canvas)) {
+        return
+    }
+    const { width, height } = canvas.getBoundingClientRect();
+    xStart = Math.floor(width / 50) * 50
+    yStart = Math.floow(height / 50) * 50
+    drawTile(xStart, yStart, 50, "rgba(120, 0, 120, 0.3)", canvas)
+}
+
+function onMouseClick(canvas, event) {
     const rect = canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
-    console.log("x: " + x + " y: " + y)
+    const xVal = event.clientX - rect.left
+    const yVal = event.clientY - rect.top
+    console.log("x: " + xVal + " y: " + yVal)
+    handleMouseClick({x: xVal, y: yVal}, canvas)
 }
 
 canvas.addEventListener('mousedown', function(e) {
-    getCursorPosition(canvas, e)
+    onMouseClick(canvas, e)
 })
 
 function drawCanvas(canvas) {
@@ -37,15 +73,13 @@ function drawCanvas(canvas) {
 
     for (i = 0; i < hSquares; i++) {
         for (j = 0; j < wSquares; j++) {
-            ctx.beginPath();
-            ctx.rect(j * 50, i * 50, 50, 50);
+            color = ""
             if (((i + j) % 2) == 0) {
-                ctx.fillStyle = "rgba(10, 0, 255, 0.5)";
+                color = "rgba(10, 0, 255, 0.5)";
             } else {
-                ctx.fillStyle = "rgba(0, 255, 10, 0.5)";
+                color = "rgba(0, 255, 10, 0.5)";
             }
-            ctx.fill();
-            ctx.closePath();
+            drawTile(j * 50, i * 50, 50, color)
         }
     }
 }
