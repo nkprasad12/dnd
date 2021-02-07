@@ -2,9 +2,10 @@
 # A very simple Flask Hello World app for you to get started with...
 
 from flask import Flask
+from flask import render_template
 
 app = Flask(__name__)
-
+app.config['DEBUG'] = True
 
 visits = 0
 
@@ -25,3 +26,6 @@ def game(input):
   return f'Papapapapapapa {input}, visits: {visits}'
 
 
+@app.route('/client')
+def client():
+  return render_template('client_page.html')
