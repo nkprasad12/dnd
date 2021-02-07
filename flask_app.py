@@ -3,11 +3,15 @@
 
 from flask import Flask
 from flask import render_template
+from flask import redirect
+from flask import request
+from flask import url_for
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
 visits = 0
+comments = []
 
 
 @app.route('/')
@@ -26,6 +30,10 @@ def game(input):
   return f'Papapapapapapa {input}, visits: {visits}'
 
 
-@app.route('/client')
+@app.route('/client', methods=['GET', 'POST'])
 def client():
-  return render_template('client_page.html')
+  global comments
+  if request.method == 'GET':
+    return render_template('client_page.html', comments=comments)
+  comments.append(request.form['contents'])
+  return redirect(url_for('client'))
