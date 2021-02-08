@@ -1,7 +1,7 @@
 var canvas = document.getElementById("myCanvas");
 
 var HttpClient = function() {
-    this.get = function(aUrl, aCallback) {
+    this.get = function(aUrl: string, aCallback: (arg0: string) => void) {
         var anHttpRequest = new XMLHttpRequest();
         anHttpRequest.onreadystatechange = function() {
             if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
@@ -13,7 +13,7 @@ var HttpClient = function() {
     }
 }
 
-function drawTile(x, y, size, color, canvas) {
+function drawTile(x: number, y: number, size: number, color: string, canvas: { getContext: (arg0: string) => any; }) {
     var ctx = canvas.getContext("2d");
 
     ctx.beginPath();
@@ -23,7 +23,7 @@ function drawTile(x, y, size, color, canvas) {
     ctx.closePath();
 }
 
-function outOfBounds(point, canvas) {
+function outOfBounds(point: { x: number; y: number; }, canvas: { getBoundingClientRect: () => { width: any; height: any; }; }) {
     const { width, height } = canvas.getBoundingClientRect();
     if (point.x < 0 || point.y < 0) {
         console.log("Negative indexed point")
@@ -38,7 +38,7 @@ function outOfBounds(point, canvas) {
     return false
 }
 
-function handleMouseClick(point, canvas) {
+function handleMouseClick(point: { x: number; y: number; }, canvas: any) {
     if (outOfBounds(point, canvas)) {
         return
     }
@@ -48,7 +48,7 @@ function handleMouseClick(point, canvas) {
     drawTile(xStart, yStart, 50, "rgba(120, 0, 120, 0.3)", canvas)
 }
 
-function onMouseClick(canvas, event) {
+function onMouseClick(canvas: HTMLElement, event: MouseEvent) {
     const rect = canvas.getBoundingClientRect()
     const xVal = event.clientX - rect.left
     const yVal = event.clientY - rect.top
@@ -60,15 +60,15 @@ canvas.addEventListener('mousedown', function(e) {
     onMouseClick(canvas, e)
 })
 
-function drawCanvas(canvas) {
+function drawCanvas(canvas: HTMLElement) {
     const { width, height } = canvas.getBoundingClientRect();
 
     var tileSize = 50;
     var hSquares = Math.ceil(height / tileSize);
     var wSquares = Math.ceil(width / tileSize);
 
-    var i;
-    var j;
+    var i: number;
+    var j: number;
 
     for (i = 0; i < hSquares; i++) {
         for (j = 0; j < wSquares; j++) {
@@ -84,7 +84,7 @@ function drawCanvas(canvas) {
 }
 
 var client = new HttpClient();
-client.get('http://127.0.0.1:5000/api/getCanvasSize', function(response) {
+client.get('http://127.0.0.1:5000/api/getCanvasSize', function(response: string) {
     console.log(response);
 
     var parts = response.split("x");
