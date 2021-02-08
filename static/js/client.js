@@ -84,7 +84,7 @@ function drawCanvas(canvas) {
 }
 
 var client = new HttpClient();
-client.get('http://nkprasad.pythonanywhere.com/api/getCanvasSize', function(response) {
+client.get('http://127.0.0.1:5000/api/getCanvasSize', function(response) {
     console.log(response);
 
     var parts = response.split("x");

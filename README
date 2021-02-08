@@ -1,1 +1,4 @@
-currently hosted on nkprasad.pythonanywhere.com
+Set up server by going to parent folder and then:
+
+export FLASK_APP=dnd
+flask run
