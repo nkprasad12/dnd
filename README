@@ -1,4 +1,3 @@
 Set up server by going to parent folder and then:
 
-export FLASK_APP=dnd
-flask run
+dnd/start_server
