@@ -1,4 +1,4 @@
-var canvas = document.getElementById("myCanvas");
+var canvas = <HTMLCanvasElement> document.getElementById("myCanvas");
 
 var HttpClient = function() {
     this.get = function(aUrl: string, aCallback: (arg0: string) => void) {
@@ -42,8 +42,8 @@ function handleMouseClick(point: { x: number; y: number; }, canvas: any) {
     if (outOfBounds(point, canvas)) {
         return
     }
-    xStart = Math.floor(point.x / 50) * 50
-    yStart = Math.floor(point.y / 50) * 50
+    const xStart = Math.floor(point.x / 50) * 50
+    const yStart = Math.floor(point.y / 50) * 50
     console.log("xStart: " + xStart + ", yStart: " + yStart)
     drawTile(xStart, yStart, 50, "rgba(120, 0, 120, 0.3)", canvas)
 }
@@ -60,7 +60,7 @@ canvas.addEventListener('mousedown', function(e) {
     onMouseClick(canvas, e)
 })
 
-function drawCanvas(canvas: HTMLElement) {
+function drawCanvas(canvas: HTMLCanvasElement) {
     const { width, height } = canvas.getBoundingClientRect();
 
     var tileSize = 50;
@@ -72,7 +72,7 @@ function drawCanvas(canvas: HTMLElement) {
 
     for (i = 0; i < hSquares; i++) {
         for (j = 0; j < wSquares; j++) {
-            color = ""
+            var color;
             if (((i + j) % 2) == 0) {
                 color = "rgba(10, 0, 255, 0.5)";
             } else {
