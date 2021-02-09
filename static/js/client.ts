@@ -74,21 +74,45 @@ function drawCanvas(canvas: HTMLCanvasElement) {
         for (j = 0; j < wSquares; j++) {
             var color: string;
             if (((i + j) % 2) == 0) {
-                color = "rgba(10, 0, 255, 0.5)";
+                color = "rgba(10, 0, 255, 0.2)";
             } else {
-                color = "rgba(0, 255, 10, 0.5)";
+                color = "rgba(0, 255, 10, 0.2)";
             }
             drawTile(j * 50, i * 50, 50, color, canvas)
         }
     }
 }
 
-var client = new HttpClient();
-client.get('http://127.0.0.1:5000/api/getCanvasSize', function (response: string) {
-    console.log(response);
+// var client = new HttpClient();
+// client.get('http://127.0.0.1:5000/api/getCanvasSize', function (response: string) {
+//     console.log(response);
 
-    var parts = response.split("x");
-    canvas.width = parseInt(parts[0]);
-    canvas.height = parseInt(parts[1]);
-    drawCanvas(canvas);
-});
+//     var parts = response.split("x");
+//     canvas.width = parseInt(parts[0]);
+//     canvas.height = parseInt(parts[1]);
+//     drawCanvas(canvas);
+//     loadCanvasBackground()
+// });
+
+// fetch('http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png')
+//     .then(res => res.blob())
+//     .then(blob => {
+//         var image = URL.createObjectURL(blob)
+
+//     })
+
+function loadCanvasBackground() {
+    let image = new Image();
+    image.src = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
+    image.onload = function (event) {
+        let loadedImage = event.currentTarget
+        console.log(loadedImage.width + 'x' + loadedImage.height)
+        canvas.width = loadedImage.width
+        canvas.height = loadedImage.height
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(loadedImage, 0, 0)
+        drawCanvas(canvas)
+    }
+}
+
+loadCanvasBackground()
