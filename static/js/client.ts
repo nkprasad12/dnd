@@ -1,15 +1,15 @@
-var canvas = <HTMLCanvasElement> document.getElementById("myCanvas");
+var canvas = <HTMLCanvasElement>document.getElementById("myCanvas");
 
-var HttpClient = function() {
-    this.get = function(aUrl: string, aCallback: (arg0: string) => void) {
+var HttpClient = function () {
+    this.get = function (aUrl: string, aCallback: (arg0: string) => void) {
         var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() {
+        anHttpRequest.onreadystatechange = function () {
             if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
                 aCallback(anHttpRequest.responseText);
         }
 
-        anHttpRequest.open( "GET", aUrl, true );
-        anHttpRequest.send( null );
+        anHttpRequest.open("GET", aUrl, true);
+        anHttpRequest.send(null);
     }
 }
 
@@ -53,10 +53,10 @@ function onMouseClick(canvas: HTMLElement, event: MouseEvent) {
     const xVal = event.clientX - rect.left
     const yVal = event.clientY - rect.top
     console.log("x: " + xVal + " y: " + yVal)
-    handleMouseClick({x: xVal, y: yVal}, canvas)
+    handleMouseClick({ x: xVal, y: yVal }, canvas)
 }
 
-canvas.addEventListener('mousedown', function(e) {
+canvas.addEventListener('mousedown', function (e) {
     onMouseClick(canvas, e)
 })
 
@@ -72,7 +72,7 @@ function drawCanvas(canvas: HTMLCanvasElement) {
 
     for (i = 0; i < hSquares; i++) {
         for (j = 0; j < wSquares; j++) {
-            var color;
+            var color: string;
             if (((i + j) % 2) == 0) {
                 color = "rgba(10, 0, 255, 0.5)";
             } else {
@@ -84,7 +84,7 @@ function drawCanvas(canvas: HTMLCanvasElement) {
 }
 
 var client = new HttpClient();
-client.get('http://127.0.0.1:5000/api/getCanvasSize', function(response: string) {
+client.get('http://127.0.0.1:5000/api/getCanvasSize', function (response: string) {
     console.log(response);
 
     var parts = response.split("x");

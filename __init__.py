@@ -5,6 +5,8 @@ from dnd.backend import backend
 from flask import Flask
 from flask_cors import CORS
 
+UPLOAD_FOLDER = '/home/nitin/Documents/code/dnd/images'
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -12,6 +14,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
     app.config.from_mapping(SECRET_KEY='dev')
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
