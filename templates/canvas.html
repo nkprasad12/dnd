@@ -2,74 +2,21 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Gamedev Canvas Workshop</title>
+    <title>DnD Game Board</title>
     <style>
     	* { padding: 0; margin: 0; }
-    	canvas { background: #eee; display: block; margin: 0 auto; }
+    	canvas { background: transparent; display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
 
-<canvas id="myCanvas" width="480" height="320"></canvas>
+<div id="canvasHolder" style="position:relative;">
+    <canvas id="backgroundCanvas" style="z-index: 1; position:absolute; left:0px; top:0px;"></canvas>
+    <canvas id="fogOfWarCanvas" style="z-index: 2; position:absolute; left:0px; top:0px;" ></canvas>>
+    <canvas id="gridCanvas" style="z-index: 3; position:absolute; left:0px; top:0px;" ></canvas>
+</div>
 
-<script src="/static/js/client.js">
-    // var canvas = document.getElementById("myCanvas");
-    // var ctx = canvas.getContext("2d");
-
-    // var colorTile(i, j, color)
-
-    // const { width, height } = canvas.getBoundingClientRect();
-
-    // var tileSize = 50;
-    // var hSquares = Math.ceil(height / tileSize);
-    // var wSquares = Math.ceil(width / tileSize);
-
-    // var i;
-    // var j;
-
-    // for (i = 0; i < hSquares; i++) {
-    //     for (j = 0; j < wSquares; j++) {
-    //         ctx.beginPath();
-    //         ctx.rect(j * 50, i * 50, 50, 50);
-    //         if (((i + j) % 2) == 0) {
-    //             ctx.fillStyle = "rgba(10, 0, 255, 0.8)";
-    //         } else {
-    //             ctx.fillStyle = "rgba(0, 255, 10, 0.8)";
-    //         }
-    //         ctx.fill();
-    //         ctx.closePath();
-    //     }
-    // }
-    // for (i = 0; i < 4; i++) {
-    //     ctx.beginPath();
-    //     ctx.rect(i * 50, height - 50, 50, 50);
-    //     if ((i % 2) == 0) {
-    //         ctx.fillStyle = "#FF0000";
-    //     } else {
-    //         ctx.fillStyle = "green";
-    //     }
-    //     ctx.fill();
-    //     ctx.closePath();
-    // }
-
-    // ctx.beginPath();
-    // ctx.rect(20, 40, 50, 50);
-    // ctx.fillStyle = "#FF0000";
-    // ctx.fill();
-    // ctx.closePath();
-
-    // ctx.beginPath();
-    // ctx.arc(240, 160, 20, 0, Math.PI*2, false);
-    // ctx.fillStyle = "green";
-    // ctx.fill();
-    // ctx.closePath();
-
-    // ctx.beginPath();
-    // ctx.rect(160, 10, 100, 40);
-    // ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
-    // ctx.stroke();
-    // ctx.closePath();
-</script>
+<script src="/static/js/client.js"></script>
 
 </body>
 </html>

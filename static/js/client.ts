@@ -1,5 +1,12 @@
-var canvas = <HTMLCanvasElement>document.getElementById("myCanvas");
+var backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
+var fogOfWarCanvas = <HTMLCanvasElement>document.getElementById("fogOfWarCanvas");
+var gridCanvas = <HTMLCanvasElement>document.getElementById("gridCanvas");
 
+// Usage:
+// var client = new HttpClient();
+// client.get('http://blah/request', function (response: string) {
+//     console.log(response);
+// });
 var HttpClient = function () {
     this.get = function (aUrl: string, aCallback: (arg0: string) => void) {
         var anHttpRequest = new XMLHttpRequest();
@@ -14,6 +21,16 @@ var HttpClient = function () {
 }
 
 function drawTile(x: number, y: number, size: number, color: string, canvas: { getContext: (arg0: string) => any; }) {
+    var ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.rect(x, y, size, size);
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.closePath();
+}
+
+function fillTile(x: number, y: number, size: number, color: string, canvas: { getContext: (arg0: string) => any; }) {
     var ctx = canvas.getContext("2d");
 
     ctx.beginPath();
@@ -45,7 +62,7 @@ function handleMouseClick(point: { x: number; y: number; }, canvas: any) {
     const xStart = Math.floor(point.x / 50) * 50
     const yStart = Math.floor(point.y / 50) * 50
     console.log("xStart: " + xStart + ", yStart: " + yStart)
-    drawTile(xStart, yStart, 50, "rgba(120, 0, 120, 0.3)", canvas)
+    fillTile(xStart, yStart, 50, "rgba(0, 0, 0, 0.8)", canvas)
 }
 
 function onMouseClick(canvas: HTMLElement, event: MouseEvent) {
@@ -56,11 +73,11 @@ function onMouseClick(canvas: HTMLElement, event: MouseEvent) {
     handleMouseClick({ x: xVal, y: yVal }, canvas)
 }
 
-canvas.addEventListener('mousedown', function (e) {
-    onMouseClick(canvas, e)
+gridCanvas.addEventListener('mousedown', function (e) {
+    onMouseClick(fogOfWarCanvas, e)
 })
 
-function drawCanvas(canvas: HTMLCanvasElement) {
+function drawGrid(canvas: HTMLCanvasElement) {
     const { width, height } = canvas.getBoundingClientRect();
 
     var tileSize = 50;
@@ -72,46 +89,41 @@ function drawCanvas(canvas: HTMLCanvasElement) {
 
     for (i = 0; i < hSquares; i++) {
         for (j = 0; j < wSquares; j++) {
-            var color: string;
-            if (((i + j) % 2) == 0) {
-                color = "rgba(10, 0, 255, 0.2)";
-            } else {
-                color = "rgba(0, 255, 10, 0.2)";
-            }
+            var color = "rgba(255, 255, 255, 0.1)"
             drawTile(j * 50, i * 50, 50, color, canvas)
         }
     }
 }
 
-// var client = new HttpClient();
-// client.get('http://127.0.0.1:5000/api/getCanvasSize', function (response: string) {
-//     console.log(response);
-
-//     var parts = response.split("x");
-//     canvas.width = parseInt(parts[0]);
-//     canvas.height = parseInt(parts[1]);
-//     drawCanvas(canvas);
-//     loadCanvasBackground()
-// });
-
-// fetch('http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png')
-//     .then(res => res.blob())
-//     .then(blob => {
-//         var image = URL.createObjectURL(blob)
-
-//     })
-
 function loadCanvasBackground() {
     let image = new Image();
     image.src = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
     image.onload = function (event) {
-        let loadedImage = event.currentTarget
-        console.log(loadedImage.width + 'x' + loadedImage.height)
-        canvas.width = loadedImage.width
-        canvas.height = loadedImage.height
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(loadedImage, 0, 0)
-        drawCanvas(canvas)
+        let loadedImage = <CanvasImageSource> event.currentTarget
+        const width = <number> loadedImage.width
+        const height = <number> loadedImage.height
+        console.log(width + 'x' + height)
+
+        backgroundCanvas.width = width
+        backgroundCanvas.height = height
+        var backgroundContext = backgroundCanvas.getContext("2d");
+        backgroundContext.drawImage(loadedImage, 0, 0)
+
+        fogOfWarCanvas.width = width
+        fogOfWarCanvas.height = height
+        // var fogOfWarContext = fogOfWarCanvas.getContext("2d");
+        // fogOfWarContext.fillStyle = "rgba(0, 0, 0, 0.3)"
+        // fogOfWarContext.fillRect(0, 0, width, height)        
+        // // fogOfWarContext.clearRect(0, 0, width, height)        
+
+        gridCanvas.width = width
+        gridCanvas.height = height
+        // var gridContext = gridCanvas.getContext("2d");
+        // gridContext.fillStyle = "rgba(0, 0, 0, 0.3)"
+        // gridContext.fillRect(0, 0, width, height)        
+        // // gridContext.clearRect(0, 0, width, height)  
+
+        drawGrid(gridCanvas)
     }
 }
 
