@@ -32,6 +32,7 @@ class GameBoard {
   topCanvas: HTMLCanvasElement;
 
   allCanvases: Array<HTMLCanvasElement>;
+  tiles: Array<Array<Tile>>;
 
   constructor(tileSize: number) {
     this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
@@ -41,38 +42,37 @@ class GameBoard {
     this.topCanvas = <HTMLCanvasElement>document.getElementById("topCanvas");
 
     this.allCanvases = [
-      this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas]
+      this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas];
 
     this.tileSize = Math.round(tileSize)
     if (this.tileSize != tileSize) {
-      console.log("Rounded input tileSize to " + this.tileSize)
+      console.log("Rounded input tileSize to " + this.tileSize);
     }
   }
 
   setBackground(source: string) {
     let image = new Image();
-    image.src = source
+    image.src = source;
     image.onload = (event) => {
-      let loadedImage = <CanvasImageSource>event.currentTarget
-      this.width = <number>loadedImage.width
-      this.height = <number>loadedImage.height
-      console.log('Loaded image: ' + this.width + 'x' + this.height)
+      let loadedImage = <CanvasImageSource>event.currentTarget;
+      this.width = <number>loadedImage.width;
+      this.height = <number>loadedImage.height;
+      console.log('Loaded image: ' + this.width + 'x' + this.height);
       this.cols = Math.ceil(this.width / this.tileSize);
       this.rows = Math.ceil(this.height / this.tileSize);
 
       for (var canvas of this.allCanvases) {
-        console.log(canvas)
-        canvas.width = this.width
-        canvas.height = this.height
-        getContext(canvas).clearRect(0, 0, this.width, this.height)
+        canvas.width = this.width;
+        canvas.height = this.height;
+        getContext(canvas).clearRect(0, 0, this.width, this.height);
       }
-      getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0)
-      this.drawGrid()
+      getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
+      this.drawGrid();
       this.topCanvas.addEventListener(
         'mousedown',
         (e) => {
           this.onMouseClick(e)
-        })
+        });
     }
   }
 
@@ -88,32 +88,32 @@ class GameBoard {
   outOfBounds(point: Point) {
     const { width, height } = this.topCanvas.getBoundingClientRect();
     if (point.x < 0 || point.y < 0) {
-      return true
+      return true;
     } else if (point.x >= width) {
-      return true
+      return true;
     } else if (point.y >= height) {
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
   handleMouseClick(point: Point) {
     if (this.outOfBounds(point)) {
-      return
+      return;
     }
-    const xStart = Math.floor(point.x / this.tileSize) * this.tileSize
-    const yStart = Math.floor(point.y / this.tileSize) * this.tileSize
-    fillCanvasTile(xStart, yStart, this.tileSize, "rgba(0, 0, 0, 1.0)", this.fogOfWarCanvas)
+    const xStart = Math.floor(point.x / this.tileSize) * this.tileSize;
+    const yStart = Math.floor(point.y / this.tileSize) * this.tileSize;
+    fillCanvasTile(xStart, yStart, this.tileSize, "rgba(0, 0, 0, 1.0)", this.fogOfWarCanvas);
   }
 
   onMouseClick(event: MouseEvent) {
-    console.log('onMouseClick')
+    console.log('onMouseClick');
 
-    const rect = this.topCanvas.getBoundingClientRect()
-    const xVal = event.clientX - rect.left
-    const yVal = event.clientY - rect.top
-    console.log("Mouse click canvas coordinates: (x: " + xVal + ", y: " + yVal + ")")
-    this.handleMouseClick({ x: xVal, y: yVal })
+    const rect = this.topCanvas.getBoundingClientRect();
+    const xVal = event.clientX - rect.left;
+    const yVal = event.clientY - rect.top;
+    console.log("Mouse click canvas coordinates: (x: " + xVal + ", y: " + yVal + ")");
+    this.handleMouseClick({ x: xVal, y: yVal });
   }
 
 }
@@ -150,7 +150,7 @@ function drawCanvasTile(x: number, y: number, size: number, color: string, canva
 }
 
 function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) {
-  var ctx = getContext(canvas)
+  var ctx = getContext(canvas);
 
   ctx.beginPath();
   ctx.rect(x, y, size, size);
