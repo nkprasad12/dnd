@@ -231,22 +231,32 @@ class Tile {
 class ContextMenu {
 
   menu = <HTMLElement>document.getElementById('rightClickMenu');
-  toggleFowButton = <HTMLElement>document.getElementById('toggle-fow');
+  clearFogButton = <HTMLElement>document.getElementById('clear-fow');
+  applyFogButton = <HTMLElement>document.getElementById('apply-fow');
 
   point: Point;
   tiles: Array<Tile>;
 
   constructor() {
     this.menu.style.display = 'none';
-    this.toggleFowButton.addEventListener(
+    this.clearFogButton.addEventListener(
       'click',
       () => {
         for (let tile of this.tiles) {
-          tile.toggleFog();
+          tile.setFog(false);
           tile.defaultGrid();
         }
         this.hide();
       });
+      this.applyFogButton.addEventListener(
+        'click',
+        () => {
+          for (let tile of this.tiles) {
+            tile.setFog(true);
+            tile.defaultGrid();
+          }
+          this.hide();
+        });
   }
 
   isVisible(): boolean {
@@ -259,9 +269,16 @@ class ContextMenu {
     this.menu.style.display = 'initial';
     this.point = point;
     this.tiles = selectedTiles;
+
+    var fogCount = 0;
+    var clearCount = 0;
     for (let tile of this.tiles) {
       tile.selectedGrid();
+      fogCount += tile.hasFog ? 1 : 0;
+      clearCount += tile.hasFog ? 0 : 1;
     }
+    this.clearFogButton.style.display = fogCount > 0 ? 'initial' : 'none';
+    this.applyFogButton.style.display = clearCount > 0 ? 'initial' : 'none';
   }
 
   hide(): void {
