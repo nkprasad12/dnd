@@ -16,7 +16,8 @@ var HttpClient = function () {
   }
 }
 
-const gridColor: string = "rgba(255, 255, 255, 0.1)";
+const defaultGridColor: string = "rgba(255, 255, 255, 0.1)";
+const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
 const fogColor: string = "rgba(0, 0, 0, 1.0)";
 
 /** Represents the main game board. */
@@ -37,6 +38,7 @@ class GameBoard {
   allCanvases: Array<HTMLCanvasElement>;
   tiles: Array<Array<Tile>>;
   menu: ContextMenu;
+  mouseStateMachine: MouseStateMachine;
 
   constructor(tileSize: number) {
     this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
@@ -55,7 +57,7 @@ class GameBoard {
     }
   }
 
-  setBackground(source: string) : void {
+  setBackground(source: string): void {
     let image = new Image();
     image.src = source;
     image.onload = (event) => {
@@ -73,35 +75,56 @@ class GameBoard {
       }
       getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
       this.initializeTileGrid();
-      this.forAllTiles((tile) => tile.drawGridOutline());
-      this.topCanvas.addEventListener(
-        'mousedown',
-        (e) => {
-          this.onMouseClick(e)
-        });
+      this.forAllTiles((tile) => tile.defaultGrid());
       this.topCanvas.addEventListener(
         'contextmenu',
-         (e) => {
-           e.preventDefault();
-           const clickPoint = this.mousePoint(e);
-           var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
-           this.menu.showAt(clickPoint, activeTiles);
-         }
+        (e) => {
+          e.preventDefault();
+          if (this.menu.isVisible()) {
+            this.menu.hide();
+            return;
+          }
+          const clickPoint = mousePoint(e);
+          var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
+          this.menu.showAt(clickPoint, activeTiles);
+        }
       );
+      this.mouseStateMachine = new MouseStateMachine(
+        this.topCanvas,
+        (from, to) => { this.handleMouseDrag(from, to); });
     }
   }
 
-  /** Returns the absolute point of a mouse event. */
-  mousePoint(event: MouseEvent) : Point {
-    return {x: event.clientX, y: event.clientY}
-  }
- 
-  canvasPoint(absolutePoint: Point) : Point {
-    const rect = this.topCanvas.getBoundingClientRect();
-    return {x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top};
+  handleMouseDrag(fromPoint: Point, toPoint: Point): void {
+    if (this.menu.isVisible()) {
+      this.menu.hide();
+      return;
+    }
+    const from = this.tileCoordinates(this.canvasPoint(fromPoint));
+    const to = this.tileCoordinates(this.canvasPoint(toPoint));
+    console.log('Mouse drag: ' + JSON.stringify(from) + " -> " + JSON.stringify(to));
+
+    var selectedTiles = []
+    const xFrom = Math.min(from.x, to.x);
+    const xTo = Math.max(from.x, to.x);
+    const yFrom = Math.min(from.y, to.y);
+    const yTo = Math.max(from.y, to.y);
+
+    for (var i = xFrom; i <= xTo; i++) {
+      for (var j = yFrom; j <= yTo; j++) {
+        selectedTiles.push(this.tiles[i][j]);
+      }
+    }
+    console.log('Selected tiles: ' + selectedTiles.length);
+    this.menu.showAt(toPoint, selectedTiles);
   }
 
-  initializeTileGrid() : void {
+  canvasPoint(absolutePoint: Point): Point {
+    const rect = this.topCanvas.getBoundingClientRect();
+    return { x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top };
+  }
+
+  initializeTileGrid(): void {
     this.tiles = []
     for (var i = 0; i < this.cols; i++) {
       this.tiles.push([])
@@ -114,22 +137,28 @@ class GameBoard {
     }
   }
 
-  forAllTiles(operation: (t: Tile) => any) : void {
+  forAllTiles(operation: (t: Tile) => any): void {
     for (var i = 0; i < this.cols; i++) {
       for (var j = 0; j < this.rows; j++) {
         operation(this.tiles[i][j]);
       }
     }
-  }  
-  
-  /* Returns the tile containing a given point on the canvas. Must be in bounds. */
-  tileForPoint(point: Point) : Tile {
-    const col = Math.floor(point.x / this.tileSize);
-    const row = Math.floor(point.y / this.tileSize);
-    return this.tiles[col][row];
   }
 
-  outOfBounds(point: Point) : boolean {
+  /** The coordinates of the tile containing the given canvas-relative point. */
+  tileCoordinates(point: Point): Point {
+    const col = Math.floor(point.x / this.tileSize);
+    const row = Math.floor(point.y / this.tileSize);
+    return { x: col, y: row };
+  }
+
+  /* Returns the tile containing a given point on the canvas. Must be in bounds. */
+  tileForPoint(point: Point): Tile {
+    const coordinates = this.tileCoordinates(point);
+    return this.tiles[coordinates.x][coordinates.y];
+  }
+
+  outOfBounds(point: Point): boolean {
     const { width, height } = this.topCanvas.getBoundingClientRect();
     if (point.x < 0 || point.y < 0) {
       return true;
@@ -140,27 +169,6 @@ class GameBoard {
     }
     return false;
   }
-
-  handleMouseClick(point: Point) : void {
-    if (this.outOfBounds(point)) {
-      return;
-    }
-    console.log("Handling click at " + point);
-    this.tileForPoint(point).toggleFog();
-  }
-
-  onMouseClick(event: MouseEvent) : void {
-    if (this.menu.isVisible()) {
-      this.menu.hide();
-      return;
-    }
-    if (event.button != 0) {
-      console.log('Ignoring mouse click for non-main button.');
-      return;
-    }
-    this.handleMouseClick(this.canvasPoint(this.mousePoint(event)));
-  }
-
 }
 
 /** Represents a tile in the game board. */
@@ -176,11 +184,11 @@ class Tile {
   hasFog: boolean;
 
   constructor(
-      size: number, 
-      startX: number, 
-      startY: number, 
-      fogOfWarCanvas: HTMLCanvasElement,
-      gridCanvas: HTMLCanvasElement) {
+    size: number,
+    startX: number,
+    startY: number,
+    fogOfWarCanvas: HTMLCanvasElement,
+    gridCanvas: HTMLCanvasElement) {
     this.size = size;
     this.startX = startX;
     this.startY = startY;
@@ -188,11 +196,21 @@ class Tile {
     this.gridCanvas = gridCanvas;
   }
 
-  drawGridOutline() : void {
-    drawCanvasTile(this.startX, this.startY, this.size, gridColor, this.gridCanvas);
+  clearGrid(): void {
+    getContext(this.gridCanvas).clearRect(this.startX - 1, this.startY - 1, this.size + 2, this.size + 2);
   }
 
-  setFog(showFog: boolean) : void {
+  defaultGrid(): void {
+    this.clearGrid();
+    drawCanvasTile(this.startX, this.startY, this.size, defaultGridColor, this.gridCanvas);
+  }
+
+  selectedGrid(): void {
+    this.clearGrid();
+    drawCanvasTile(this.startX, this.startY, this.size, selectedGridColor, this.gridCanvas);
+  }
+
+  setFog(showFog: boolean): void {
     if (showFog == this.hasFog) {
       return;
     }
@@ -205,7 +223,7 @@ class Tile {
     }
   }
 
-  toggleFog() : void {
+  toggleFog(): void {
     this.setFog(!this.hasFog);
   }
 }
@@ -225,34 +243,41 @@ class ContextMenu {
       () => {
         for (let tile of this.tiles) {
           tile.toggleFog();
-        }  
+          tile.defaultGrid();
+        }
         this.hide();
       });
   }
 
-  isVisible() : boolean {
+  isVisible(): boolean {
     return this.menu.style.display != 'none';
   }
 
-  showAt(point: Point, selectedTiles: Array<Tile>) : void {
+  showAt(point: Point, selectedTiles: Array<Tile>): void {
     this.menu.style.top = point.y + "px";
     this.menu.style.left = point.x + "px";
     this.menu.style.display = 'initial';
     this.point = point;
     this.tiles = selectedTiles;
+    for (let tile of this.tiles) {
+      tile.selectedGrid();
+    }
   }
 
-  hide() : void {
+  hide(): void {
     this.menu.style.display = 'none';
+    for (let tile of this.tiles) {
+      tile.defaultGrid();
+    }
     this.tiles = [];
   }
 }
 
-function getContext(canvas: HTMLCanvasElement) : CanvasRenderingContext2D {
+function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   return canvas.getContext("2d");
 }
 
-function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) : void {
+function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement): void {
   var ctx = getContext(canvas)
 
   ctx.beginPath();
@@ -262,7 +287,7 @@ function drawCanvasTile(x: number, y: number, size: number, color: string, canva
   ctx.closePath();
 }
 
-function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) : void {
+function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement): void {
   var ctx = getContext(canvas);
 
   ctx.beginPath();
@@ -275,6 +300,54 @@ function fillCanvasTile(x: number, y: number, size: number, color: string, canva
 interface Point {
   x: number;
   y: number;
+}
+
+/** Returns the absolute point of a mouse event. */
+function mousePoint(event: MouseEvent): Point {
+  return { x: event.clientX, y: event.clientY }
+}
+
+type DragCallback = (from: Point, to: Point) => any;
+
+class MouseStateMachine {
+
+  element: HTMLElement;
+  dragCallback: DragCallback;
+
+  mouseDownPoint: Point;
+
+  constructor(element: HTMLElement, dragCallback: DragCallback) {
+    this.element = element;
+    this.dragCallback = dragCallback;
+    this.mouseDownPoint = null;
+
+    this.element.addEventListener(
+      'mousedown',
+      (e) => { this.handleMouseDown(e); });
+
+    this.element.addEventListener(
+      'mouseup',
+      (e) => { this.handleMouseUp(e); });
+  }
+
+  handleMouseDown(event: MouseEvent): void {
+    if (event.button != 0) {
+      return;
+    }
+    this.mouseDownPoint = mousePoint(event);
+  }
+
+  handleMouseUp(event: MouseEvent): void {
+    if (event.button != 0) {
+      return;
+    }
+    if (this.mouseDownPoint == null) {
+      console.log('Got mouseup event without mousedown - ignoring.');
+      return;
+    }
+    this.dragCallback(this.mouseDownPoint, mousePoint(event));
+    this.mouseDownPoint = null;
+  }
 }
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
