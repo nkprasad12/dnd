@@ -16,6 +16,9 @@ var HttpClient = function () {
   }
 }
 
+const gridColor: string = "rgba(255, 255, 255, 0.1)";
+const fogColor: string = "rgba(0, 0, 0, 1.0)";
+
 /** Represents the main game board. */
 class GameBoard {
 
@@ -50,7 +53,7 @@ class GameBoard {
     }
   }
 
-  setBackground(source: string) {
+  setBackground(source: string) : void {
     let image = new Image();
     image.src = source;
     image.onload = (event) => {
@@ -67,7 +70,8 @@ class GameBoard {
         getContext(canvas).clearRect(0, 0, this.width, this.height);
       }
       getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
-      this.drawGrid();
+      this.initializeTileGrid();
+      this.forAllTiles((tile) => tile.drawGridOutline());
       this.topCanvas.addEventListener(
         'mousedown',
         (e) => {
@@ -76,16 +80,35 @@ class GameBoard {
     }
   }
 
-  drawGrid() {
-    const gridColor: string = "rgba(255, 255, 255, 0.1)";
-    for (var i = 0; i < this.rows; i++) {
-      for (var j = 0; j < this.cols; j++) {
-        drawCanvasTile(j * this.tileSize, i * this.tileSize, this.tileSize, gridColor, this.gridCanvas);
+  initializeTileGrid() : void {
+    this.tiles = []
+    for (var i = 0; i < this.cols; i++) {
+      this.tiles.push([])
+    }
+    for (var i = 0; i < this.cols; i++) {
+      for (var j = 0; j < this.rows; j++) {
+        this.tiles[i].push(
+          new Tile(this.tileSize, i * this.tileSize, j * this.tileSize, this.fogOfWarCanvas, this.gridCanvas));
       }
     }
   }
 
-  outOfBounds(point: Point) {
+  forAllTiles(operation: (t: Tile) => any) : void {
+    for (var i = 0; i < this.cols; i++) {
+      for (var j = 0; j < this.rows; j++) {
+        operation(this.tiles[i][j]);
+      }
+    }
+  }  
+  
+  /* Returns the tile containing a given point on the canvas. Must be in bounds. */
+  tileForPoint(point: Point) : Tile {
+    const col = Math.floor(point.x / this.tileSize);
+    const row = Math.floor(point.y / this.tileSize);
+    return this.tiles[col][row];
+  }
+
+  outOfBounds(point: Point) : boolean {
     const { width, height } = this.topCanvas.getBoundingClientRect();
     if (point.x < 0 || point.y < 0) {
       return true;
@@ -97,16 +120,14 @@ class GameBoard {
     return false;
   }
 
-  handleMouseClick(point: Point) {
+  handleMouseClick(point: Point) : void {
     if (this.outOfBounds(point)) {
       return;
     }
-    const xStart = Math.floor(point.x / this.tileSize) * this.tileSize;
-    const yStart = Math.floor(point.y / this.tileSize) * this.tileSize;
-    fillCanvasTile(xStart, yStart, this.tileSize, "rgba(0, 0, 0, 1.0)", this.fogOfWarCanvas);
+    this.tileForPoint(point).toggleFog();
   }
 
-  onMouseClick(event: MouseEvent) {
+  onMouseClick(event: MouseEvent) : void {
     console.log('onMouseClick');
 
     const rect = this.topCanvas.getBoundingClientRect();
@@ -126,20 +147,50 @@ class Tile {
   startY: number;
 
   fogOfWarCanvas: HTMLCanvasElement;
+  gridCanvas: HTMLCanvasElement;
 
-  constructor(size: number, startX: number, startY: number, fogOfWarCanvas: HTMLCanvasElement) {
+  hasFog: boolean;
+
+  constructor(
+      size: number, 
+      startX: number, 
+      startY: number, 
+      fogOfWarCanvas: HTMLCanvasElement,
+      gridCanvas: HTMLCanvasElement) {
     this.size = size;
     this.startX = startX;
     this.startY = startY;
     this.fogOfWarCanvas = fogOfWarCanvas;
+    this.gridCanvas = gridCanvas;
+  }
+
+  drawGridOutline() : void {
+    drawCanvasTile(this.startX, this.startY, this.size, gridColor, this.gridCanvas);
+  }
+
+  setFog(showFog: boolean) : void {
+    if (showFog == this.hasFog) {
+      return;
+    }
+    if (showFog) {
+      fillCanvasTile(this.startX, this.startY, this.size, fogColor, this.fogOfWarCanvas);
+      this.hasFog = true;
+    } else {
+      getContext(this.fogOfWarCanvas).clearRect(this.startX, this.startY, this.size, this.size);
+      this.hasFog = false;
+    }
+  }
+
+  toggleFog() : void {
+    this.setFog(!this.hasFog);
   }
 }
 
-function getContext(canvas: HTMLCanvasElement) {
+function getContext(canvas: HTMLCanvasElement) : CanvasRenderingContext2D {
   return canvas.getContext("2d");
 }
 
-function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) {
+function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) : void {
   var ctx = getContext(canvas)
 
   ctx.beginPath();
@@ -149,7 +200,7 @@ function drawCanvasTile(x: number, y: number, size: number, color: string, canva
   ctx.closePath();
 }
 
-function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) {
+function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement) : void {
   var ctx = getContext(canvas);
 
   ctx.beginPath();
