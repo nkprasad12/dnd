@@ -35,9 +35,12 @@ def getCanvasSize() -> str:
 
 
 @bp.route('/', methods=['GET'])
+def index():
+  return render_template('index.html')
+
+@bp.route('/gameBoard', methods=['GET'])
 def canvas():
   return render_template('canvas.html')
-
 
 @bp.route('/sandbox', methods=['GET', 'POST'])
 def client():
