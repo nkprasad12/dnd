@@ -36,6 +36,7 @@ class GameBoard {
 
   allCanvases: Array<HTMLCanvasElement>;
   tiles: Array<Array<Tile>>;
+  menu: ContextMenu;
 
   constructor(tileSize: number) {
     this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
@@ -47,6 +48,7 @@ class GameBoard {
     this.allCanvases = [
       this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas];
 
+    this.menu = new ContextMenu();
     this.tileSize = Math.round(tileSize)
     if (this.tileSize != tileSize) {
       console.log("Rounded input tileSize to " + this.tileSize);
@@ -77,7 +79,26 @@ class GameBoard {
         (e) => {
           this.onMouseClick(e)
         });
+      this.topCanvas.addEventListener(
+        'contextmenu',
+         (e) => {
+           e.preventDefault();
+           const clickPoint = this.mousePoint(e);
+           var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
+           this.menu.showAt(clickPoint, activeTiles);
+         }
+      );
     }
+  }
+
+  /** Returns the absolute point of a mouse event. */
+  mousePoint(event: MouseEvent) : Point {
+    return {x: event.clientX, y: event.clientY}
+  }
+ 
+  canvasPoint(absolutePoint: Point) : Point {
+    const rect = this.topCanvas.getBoundingClientRect();
+    return {x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top};
   }
 
   initializeTileGrid() : void {
@@ -124,17 +145,20 @@ class GameBoard {
     if (this.outOfBounds(point)) {
       return;
     }
+    console.log("Handling click at " + point);
     this.tileForPoint(point).toggleFog();
   }
 
   onMouseClick(event: MouseEvent) : void {
-    console.log('onMouseClick');
-
-    const rect = this.topCanvas.getBoundingClientRect();
-    const xVal = event.clientX - rect.left;
-    const yVal = event.clientY - rect.top;
-    console.log("Mouse click canvas coordinates: (x: " + xVal + ", y: " + yVal + ")");
-    this.handleMouseClick({ x: xVal, y: yVal });
+    if (this.menu.isVisible()) {
+      this.menu.hide();
+      return;
+    }
+    if (event.button != 0) {
+      console.log('Ignoring mouse click for non-main button.');
+      return;
+    }
+    this.handleMouseClick(this.canvasPoint(this.mousePoint(event)));
   }
 
 }
@@ -183,6 +207,44 @@ class Tile {
 
   toggleFog() : void {
     this.setFog(!this.hasFog);
+  }
+}
+
+class ContextMenu {
+
+  menu = <HTMLElement>document.getElementById('rightClickMenu');
+  toggleFowButton = <HTMLElement>document.getElementById('toggle-fow');
+
+  point: Point;
+  tiles: Array<Tile>;
+
+  constructor() {
+    this.menu.style.display = 'none';
+    this.toggleFowButton.addEventListener(
+      'click',
+      () => {
+        for (let tile of this.tiles) {
+          tile.toggleFog();
+        }  
+        this.hide();
+      });
+  }
+
+  isVisible() : boolean {
+    return this.menu.style.display != 'none';
+  }
+
+  showAt(point: Point, selectedTiles: Array<Tile>) : void {
+    this.menu.style.top = point.y + "px";
+    this.menu.style.left = point.x + "px";
+    this.menu.style.display = 'initial';
+    this.point = point;
+    this.tiles = selectedTiles;
+  }
+
+  hide() : void {
+    this.menu.style.display = 'none';
+    this.tiles = [];
   }
 }
 

@@ -1,24 +1,62 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>DnD Game Board</title>
     <style>
-    	* { padding: 0; margin: 0; }
-    	canvas { background: transparent; display: block; margin: 0 auto; }
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: transparent;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #rightClickMenu {
+            display: none;
+            position: absolute;
+            width: 60px;
+            background-color: white;
+            box-shadow: 0 0 5px grey;
+            border-radius: 3px;
+        }
+
+        #rightClickMenu button {
+            width: 100%;
+            background-color: white;
+            border: none;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #rightClickMenu button:hover {
+            background-color: lightgray;
+        }
     </style>
 </head>
+
 <body>
 
-<div id="canvasHolder" style="position:relative;">
-    <canvas id="backgroundCanvas" style="z-index: 1; position:absolute; left:0px; top:0px;"></canvas>
-    <canvas id="fogOfWarCanvas" style="z-index: 2; position:absolute; left:0px; top:0px;" ></canvas>>
-    <canvas id="tokenCanvas" style="z-index: 3; position:absolute; left:0px; top:0px;" ></canvas>
-    <canvas id="gridCanvas" style="z-index: 4; position:absolute; left:0px; top:0px;" ></canvas>
-    <canvas id="topCanvas" style="z-index: 5; position:absolute; left:0px; top:0px;" ></canvas>
-</div>
+    <div id="canvasHolder" style="position:relative;">
+        <canvas id="backgroundCanvas" style="z-index: 1; position:absolute; left:0px; top:0px;"></canvas>
+        <canvas id="fogOfWarCanvas" style="z-index: 2; position:absolute; left:0px; top:0px;"></canvas>>
+        <canvas id="tokenCanvas" style="z-index: 3; position:absolute; left:0px; top:0px;"></canvas>
+        <canvas id="gridCanvas" style="z-index: 4; position:absolute; left:0px; top:0px;"></canvas>
+        <canvas id="topCanvas" style="z-index: 5; position:absolute; left:0px; top:0px;"></canvas>
+    </div>
 
-<script src="/static/js/client.js"></script>
+    <div id="rightClickMenu" style="z-index: 20">
+        <div>
+            <button id="toggle-fow">Toggle Fog of War</button>
+        </div>
+    </div>
+
+    <script src="/static/js/client.js"></script>
 
 </body>
+
 </html>
