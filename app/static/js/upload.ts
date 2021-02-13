@@ -26,3 +26,31 @@ upload.addEventListener('change', event => {
   console.log('Got image upload request')
   handleImageUpload(event)
 })
+
+var socket;
+
+// TODO - figure out how to import io here. Currently we're running a js script
+//        in the html before this script runs that sets up the io variable. 
+socket = io.connect('http://localhost:5000/chat')
+socket.on('connect', function () {
+  console.log('Connected to socket')
+  socket.emit('nitin', { data: 'I\'m connected from upload.ts!' });
+});
+
+// Make a container element for the list
+var listContainer = document.createElement('div');
+// Make the list
+var listElement = document.createElement('ul');
+document.getElementsByTagName('body')[0].appendChild(listContainer);
+listContainer.appendChild(listElement);
+
+socket.on('nitin', (message) => {
+  console.log('message' + message);
+  addToList(JSON.stringify(message));
+});
+
+function addToList(message: string) {
+  var listItem = document.createElement('li');
+  listItem.innerHTML = message;
+  listElement.appendChild(listItem);
+}

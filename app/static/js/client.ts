@@ -16,7 +16,17 @@ var HttpClient = function () {
   }
 }
 
-const defaultGridColor: string = "rgba(255, 255, 255, 0.1)";
+
+var socket;
+
+// TODO - figure out how to import io here. Currently we're running a js script
+//        in the html before this script runs that sets up the io variable. 
+socket = io.connect('http://localhost:5000/board')
+socket.on('connect', function () {
+  console.log('Connected to board socket')
+});
+
+const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
 const fogColor: string = "rgba(0, 0, 0, 1.0)";
 
@@ -41,6 +51,7 @@ class GameBoard {
   mouseStateMachine: MouseStateMachine;
 
   pendingTokens: Array<PendingToken>;
+  tokens: Array<Token>;
   activeToken: Token;
 
   constructor(tileSize: number) {
@@ -59,6 +70,7 @@ class GameBoard {
       console.log("Rounded input tileSize to " + this.tileSize);
     }
     this.pendingTokens = []
+    this.tokens = []
   }
 
   setBackground(source: string): void {
@@ -200,6 +212,24 @@ class GameBoard {
     } else {
       this.pendingTokens.push({ token: token, location: point });
     }
+    this.tokens.push(token);
+  }
+
+  onRemoteUpdate(update: {name: string, x: number, y: number}) {
+    console.log('onRemoteUpdate: ' + JSON.stringify(update));
+    console.log('Searching for ' + update.name);
+    for (var token of this.tokens) {
+      console.log('Token: ' + token.name);
+      if (token.name == update.name) {
+        var newTile = this.tileForPoint({x: update.x + 1, y: update.y + 1})
+        if (newTile != token.location) {
+          token.setLocation(newTile)
+        }
+        break;
+      } else {
+        console.log('Not a match');
+      }
+    } 
   }
 
   outOfBounds(point: Point): boolean {
@@ -462,7 +492,13 @@ class Token {
   }
 
   setLocation(tile: Tile): void {
+    if (this.location == tile) {
+      console.log('Same as current, ignoring update')
+      return;
+    }
     console.log(this.name + " setLocation: " + tile.startX + ", " + tile.startY);
+    socket.emit('board-update', {name: this.name, pt: {x: tile.startX, y: tile.startY}})
+    console.log('Just emitted event')
     tile.addToken(this);
     var oldLocation = this.location;
     this.location = tile
@@ -477,7 +513,7 @@ class Token {
   }
 }
 
-const backgroundUrl = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
+const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
@@ -485,3 +521,9 @@ var board = new GameBoard(60)
 board.setBackground(backgroundUrl)
 board.placeToken('Wolf', wolfUrl, { x: 5, y: 5 });
 board.placeToken('Egbert', egbertUrl, { x: 6, y: 6 });
+
+socket.on('board-update', (message) => {
+  console.log('message: ' + JSON.stringify(message));
+  var obj = message;
+  board.onRemoteUpdate({name: obj.name, x: obj.pt.x, y: obj.pt.y})
+});

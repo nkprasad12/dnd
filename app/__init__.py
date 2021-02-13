@@ -15,8 +15,8 @@ def create_app(test_config=None):
     logging.getLogger('flask_cors').level = logging.DEBUG
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
-    app.config.from_mapping(SECRET_KEY='dev')
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
