@@ -478,7 +478,10 @@ class Token {
 }
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
-const tokenUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
+const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
+const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
+
 var board = new GameBoard(60)
 board.setBackground(backgroundUrl)
-board.placeToken('Wolf', tokenUrl, { x: 5, y: 5 });
+board.placeToken('Wolf', wolfUrl, { x: 5, y: 5 });
+board.placeToken('Egbert', egbertUrl, { x: 6, y: 6 });
