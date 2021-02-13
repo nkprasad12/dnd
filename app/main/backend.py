@@ -40,6 +40,11 @@ def index():
     return render_template('index.html')
 
 
+@main.route('/boardTools', methods=['GET'])
+def board_tools():
+    return render_template('board_tools.html')
+
+
 @main.route('/gameBoard', methods=['GET'])
 def canvas():
     return render_template('canvas.html')
