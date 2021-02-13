@@ -1,11 +1,13 @@
 import os
 import logging
 
-from dnd.backend import backend
 from flask import Flask
 from flask_cors import CORS
+from flask_socketio import SocketIO
 
 UPLOAD_FOLDER = '/home/nitin/Documents/code/dnd/images'
+
+socketio = SocketIO()
 
 
 def create_app(test_config=None):
@@ -29,6 +31,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    app.register_blueprint(backend.bp)
+    from .main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
+    socketio.init_app(app)
 
     return app

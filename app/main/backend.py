@@ -1,5 +1,7 @@
 import os
 
+from . import main
+
 from flask import current_app
 from flask import Blueprint
 from flask import Flask
@@ -14,13 +16,11 @@ from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-bp = Blueprint('flask_app', __name__, url_prefix='/')
-
 visits = 0
 comments = []
 
 
-@bp.route('/game/<input>')
+@main.route('/game/<input>')
 def game(input: str) -> str:
   """Print 'DND!' as the response body."""
   global visits
@@ -28,21 +28,23 @@ def game(input: str) -> str:
   return f'Papapapapapapa {input}, visits: {visits}'
 
 
-@bp.route('/api/getCanvasSize')
+@main.route('/api/getCanvasSize')
 @cross_origin()
 def getCanvasSize() -> str:
   return '567x254'
 
 
-@bp.route('/', methods=['GET'])
+@main.route('/', methods=['GET'])
 def index():
   return render_template('index.html')
 
-@bp.route('/gameBoard', methods=['GET'])
+
+@main.route('/gameBoard', methods=['GET'])
 def canvas():
   return render_template('canvas.html')
 
-@bp.route('/sandbox', methods=['GET', 'POST'])
+
+@main.route('/sandbox', methods=['GET', 'POST'])
 def client():
   global comments
   if request.method == 'GET':
@@ -51,7 +53,7 @@ def client():
   return redirect(url_for('.client'))
 
 
-@bp.route('/uploadImage', methods=['POST'])
+@main.route('/uploadImage', methods=['POST'])
 def upload_file():
   print('Got uploadImage request')
   # check if the post request has the file part
@@ -74,7 +76,7 @@ def upload_file():
   print('We here')
 
 
-@bp.route('/retrieve_image/<image_key>')
+@main.route('/retrieve_image/<image_key>')
 def retrieve_image(image_key):
   image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_key)
   return send_file(image_path)

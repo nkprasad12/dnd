@@ -1,7 +1,7 @@
 export FLASK_APP=dnd
 export FLASK_ENV=development
-tsc dnd/static/js/client.ts
-tsc dnd/static/js/upload.ts
-flask run
+tsc dnd/app/static/js/client.ts
+tsc dnd/app/static/js/upload.ts
+python3 dnd/start_server.py
 # This will cause it to be pubically available
 # flask run --host=0.0.0.0
