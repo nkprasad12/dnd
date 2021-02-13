@@ -48,7 +48,7 @@ def client():
   if request.method == 'GET':
     return render_template('client_page.html', comments=comments)
   comments.append(request.form['contents'])
-  return redirect(url_for('client'))
+  return redirect(url_for('.client'))
 
 
 @bp.route('/uploadImage', methods=['POST'])

@@ -29,7 +29,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    print('Trying to import backend')
     app.register_blueprint(backend.bp)
 
     return app
