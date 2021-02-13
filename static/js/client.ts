@@ -40,6 +40,9 @@ class GameBoard {
   menu: ContextMenu;
   mouseStateMachine: MouseStateMachine;
 
+  pendingTokens: Array<PendingToken>;
+  activeToken: Token;
+
   constructor(tileSize: number) {
     this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
     this.fogOfWarCanvas = <HTMLCanvasElement>document.getElementById("fogOfWarCanvas");
@@ -55,6 +58,7 @@ class GameBoard {
     if (this.tileSize != tileSize) {
       console.log("Rounded input tileSize to " + this.tileSize);
     }
+    this.pendingTokens = []
   }
 
   setBackground(source: string): void {
@@ -76,12 +80,22 @@ class GameBoard {
       getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
       this.initializeTileGrid();
       this.forAllTiles((tile) => tile.defaultGrid());
+      while (this.pendingTokens.length > 0) {
+        var pendingToken = this.pendingTokens.pop();
+        var token = pendingToken.token;
+        var point = pendingToken.location;
+        token.setLocation(this.tiles[point.x][point.y]);
+      }
       this.topCanvas.addEventListener(
         'contextmenu',
         (e) => {
           e.preventDefault();
           if (this.menu.isVisible()) {
             this.menu.hide();
+            return;
+          }
+          if (this.activeToken != null) {
+            this.activeToken = null;
             return;
           }
           const clickPoint = mousePoint(e);
@@ -116,7 +130,27 @@ class GameBoard {
       }
     }
     console.log('Selected tiles: ' + selectedTiles.length);
+    if (selectedTiles.length == 1 && this.handleSingleTileClick(selectedTiles[0])) {
+      return;
+    } else if (selectedTiles.length > 1 && this.activeToken != null) {
+      this.activeToken = null;
+      return;
+    }
     this.menu.showAt(toPoint, selectedTiles);
+  }
+
+  handleSingleTileClick(tile: Tile): boolean {
+    if (this.activeToken != null) {
+      if (!tile.hasToken()) {
+        this.activeToken.setLocation(tile);
+      }
+      this.activeToken = null;
+      return true;
+    } else if (tile.hasToken()) {
+      this.activeToken = tile.getToken();
+      return true;
+    }
+    return false;
   }
 
   canvasPoint(absolutePoint: Point): Point {
@@ -152,10 +186,20 @@ class GameBoard {
     return { x: col, y: row };
   }
 
-  /* Returns the tile containing a given point on the canvas. Must be in bounds. */
+  /** Returns the tile containing a given point on the canvas. Must be in bounds. */
   tileForPoint(point: Point): Tile {
     const coordinates = this.tileCoordinates(point);
     return this.tiles[coordinates.x][coordinates.y];
+  }
+
+  /** Places the token on the given grid coordinates. */
+  placeToken(name: string, imageSource: string, point: Point): void {
+    var token = new Token(name, imageSource, this.tokenCanvas, this.tileSize);
+    if (this.tiles != null) {
+      token.setLocation(this.tiles[point.x][point.y])
+    } else {
+      this.pendingTokens.push({ token: token, location: point });
+    }
   }
 
   outOfBounds(point: Point): boolean {
@@ -171,6 +215,11 @@ class GameBoard {
   }
 }
 
+interface PendingToken {
+  token: Token;
+  location: Point;
+}
+
 /** Represents a tile in the game board. */
 class Tile {
 
@@ -182,6 +231,7 @@ class Tile {
   gridCanvas: HTMLCanvasElement;
 
   hasFog: boolean;
+  token: Token;
 
   constructor(
     size: number,
@@ -226,6 +276,24 @@ class Tile {
   toggleFog(): void {
     this.setFog(!this.hasFog);
   }
+
+  hasToken(): boolean {
+    return this.token != null;
+  }
+
+  addToken(token: Token): void {
+    this.token = token;
+  }
+
+  getToken(): Token {
+    return this.token;
+  }
+
+  popToken(): Token {
+    var token = this.token;
+    this.token = null;
+    return token;
+  }
 }
 
 class ContextMenu {
@@ -248,15 +316,15 @@ class ContextMenu {
         }
         this.hide();
       });
-      this.applyFogButton.addEventListener(
-        'click',
-        () => {
-          for (let tile of this.tiles) {
-            tile.setFog(true);
-            tile.defaultGrid();
-          }
-          this.hide();
-        });
+    this.applyFogButton.addEventListener(
+      'click',
+      () => {
+        for (let tile of this.tiles) {
+          tile.setFog(true);
+          tile.defaultGrid();
+        }
+        this.hide();
+      });
   }
 
   isVisible(): boolean {
@@ -367,6 +435,50 @@ class MouseStateMachine {
   }
 }
 
+class Token {
+
+  name: string;
+  imageSource: string;
+  image: CanvasImageSource;
+
+  location: Tile;
+  canvas: HTMLCanvasElement;
+  size: number;
+
+  constructor(name: string, imageSource: string, canvas: HTMLCanvasElement, size: number) {
+    this.name = name;
+    this.imageSource = imageSource;
+    this.canvas = canvas;
+    this.size = size;
+
+    let image = new Image();
+    image.src = this.imageSource;
+    image.onload = (event) => {
+      this.image = <CanvasImageSource>event.currentTarget;
+      if (this.location != null) {
+        this.setLocation(this.location);
+      }
+    }
+  }
+
+  setLocation(tile: Tile): void {
+    console.log(this.name + " setLocation: " + tile.startX + ", " + tile.startY);
+    tile.addToken(this);
+    var oldLocation = this.location;
+    this.location = tile
+    if (this.image == null) {
+      return;
+    }
+    if (oldLocation != null) {
+      oldLocation.popToken();
+      getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);
+    }
+    getContext(this.canvas).drawImage(this.image, tile.startX, tile.startY, this.size, this.size);
+  }
+}
+
 const backgroundUrl = 'http://localhost:5000/retrieve_image/Screenshot_from_2020-12-18_14-11-08.png'
+const tokenUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
 var board = new GameBoard(60)
 board.setBackground(backgroundUrl)
+board.placeToken('Wolf', tokenUrl, { x: 5, y: 5 });
