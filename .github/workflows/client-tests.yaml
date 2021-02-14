@@ -1,10 +1,12 @@
-name: Client Test CI 
+name: DnD Testing
 
 on:
   push: 
-    branches: [ main ]
+    branches:
+    - master
   pull_request:
-    branches: [ main ]
+    branches:
+    - master
 
 jobs:
   build:
@@ -15,7 +17,5 @@ jobs:
     - uses: actions/checkout@v2
     - run: npm ci
       working-directory: app/static
-    - name: tsc compile
-      uses: iCrawl/action-tsc@v1 
     - run: npm run test
       working-directory: app/static
