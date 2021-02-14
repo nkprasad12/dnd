@@ -45,52 +45,48 @@ class GameBoard {
     this.tokens = []
   }
 
-  setBackground(source: string): void {
-    let image = new Image();
-    image.src = source;
-    image.onload = (event) => {
-      let loadedImage = <CanvasImageSource>event.currentTarget;
-      this.width = <number>loadedImage.width;
-      this.height = <number>loadedImage.height;
-      console.log('Loaded image: ' + this.width + 'x' + this.height);
-      this.cols = Math.ceil(this.width / this.tileSize);
-      this.rows = Math.ceil(this.height / this.tileSize);
+  setBackground(loadedImage: CanvasImageSource): void {
+    this.width = <number>loadedImage.width;
+    this.height = <number>loadedImage.height;
+    console.log('Loaded image: ' + this.width + 'x' + this.height);
+    this.cols = Math.ceil(this.width / this.tileSize);
+    this.rows = Math.ceil(this.height / this.tileSize);
 
-      for (var canvas of this.allCanvases) {
-        canvas.width = this.width;
-        canvas.height = this.height;
-        getContext(canvas).clearRect(0, 0, this.width, this.height);
-      }
-      getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
-      this.initializeTileGrid();
-      this.forAllTiles((tile) => tile.defaultGrid());
-      while (this.pendingTokens.length > 0) {
-        var pendingToken = this.pendingTokens.pop();
-        var token = pendingToken.token;
-        var point = pendingToken.location;
-        token.setLocation(this.tiles[point.x][point.y]);
-      }
-      this.topCanvas.addEventListener(
-        'contextmenu',
-        (e) => {
-          e.preventDefault();
-          if (this.menu.isVisible()) {
-            this.menu.hide();
-            return;
-          }
-          if (this.activeToken != null) {
-            this.activeToken = null;
-            return;
-          }
-          const clickPoint = mousePoint(e);
-          var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
-          this.menu.showAt(clickPoint, activeTiles);
-        }
-      );
-      this.mouseStateMachine = new MouseStateMachine(
-        this.topCanvas,
-        (from, to) => { this.handleMouseDrag(from, to); });
+    for (var canvas of this.allCanvases) {
+      canvas.width = this.width;
+      canvas.height = this.height;
+      getContext(canvas).clearRect(0, 0, this.width, this.height);
     }
+    getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
+    this.initializeTileGrid();
+    this.forAllTiles((tile) => tile.defaultGrid());
+    while (this.pendingTokens.length > 0) {
+      var pendingToken = this.pendingTokens.pop();
+      var token = pendingToken.token;
+      var point = pendingToken.location;
+      token.setLocation(this.tiles[point.x][point.y]);
+    }
+    this.topCanvas.addEventListener(
+      'contextmenu',
+      (e) => {
+        e.preventDefault();
+        if (this.menu.isVisible()) {
+          this.menu.hide();
+          return;
+        }
+        if (this.activeToken != null) {
+          this.activeToken = null;
+          return;
+        }
+        const clickPoint = mousePoint(e);
+        var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
+        this.menu.showAt(clickPoint, activeTiles);
+      }
+    );
+    this.mouseStateMachine = new MouseStateMachine(
+      this.topCanvas,
+      (from, to) => { this.handleMouseDrag(from, to); });
+
   }
 
   handleMouseDrag(fromPoint: Point, toPoint: Point): void {
@@ -177,8 +173,8 @@ class GameBoard {
   }
 
   /** Places the token on the given grid coordinates. */
-  placeToken(name: string, imageSource: string, point: Point): void {
-    var token = new Token(name, imageSource, this.tokenCanvas, this.tileSize);
+  placeToken(name: string, loadedImage: CanvasImageSource, point: Point): void {
+    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize);
     if (this.tiles != null) {
       token.setLocation(this.tiles[point.x][point.y])
     } else {
@@ -187,13 +183,13 @@ class GameBoard {
     this.tokens.push(token);
   }
 
-  onRemoteUpdate(update: {name: string, x: number, y: number}) {
+  onRemoteUpdate(update: { name: string, x: number, y: number }) {
     console.log('onRemoteUpdate: ' + JSON.stringify(update));
     console.log('Searching for ' + update.name);
     for (var token of this.tokens) {
       console.log('Token: ' + token.name);
       if (token.name == update.name) {
-        var newTile = this.tileForPoint({x: update.x + 1, y: update.y + 1})
+        var newTile = this.tileForPoint({ x: update.x + 1, y: update.y + 1 })
         if (newTile != token.location) {
           token.setLocation(newTile)
         }
@@ -201,7 +197,7 @@ class GameBoard {
       } else {
         console.log('Not a match');
       }
-    } 
+    }
   }
 
   outOfBounds(point: Point): boolean {
@@ -440,27 +436,17 @@ class MouseStateMachine {
 class Token {
 
   name: string;
-  imageSource: string;
   image: CanvasImageSource;
 
   location: Tile;
   canvas: HTMLCanvasElement;
   size: number;
 
-  constructor(name: string, imageSource: string, canvas: HTMLCanvasElement, size: number) {
+  constructor(name: string, loadedImage: CanvasImageSource, canvas: HTMLCanvasElement, size: number) {
     this.name = name;
-    this.imageSource = imageSource;
     this.canvas = canvas;
     this.size = size;
-
-    let image = new Image();
-    image.src = this.imageSource;
-    image.onload = (event) => {
-      this.image = <CanvasImageSource>event.currentTarget;
-      if (this.location != null) {
-        this.setLocation(this.location);
-      }
-    }
+    this.image = loadedImage;
   }
 
   setLocation(tile: Tile): void {
@@ -474,9 +460,6 @@ class Token {
     tile.addToken(this);
     var oldLocation = this.location;
     this.location = tile
-    if (this.image == null) {
-      return;
-    }
     if (oldLocation != null) {
       oldLocation.popToken();
       getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);

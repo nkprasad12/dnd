@@ -1,4 +1,6 @@
 import { GameBoard } from './game_board.js'
+import { loadImages } from './utils/image_utils.js'
+
 // import { io } from 'socket.io-client'
 
 var socket;
@@ -18,10 +20,15 @@ const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
-var board = new GameBoard(60)
-board.setBackground(backgroundUrl)
-board.placeToken('Wolf', wolfUrl, { x: 5, y: 5 });
-board.placeToken('Egbert', egbertUrl, { x: 6, y: 6 });
+var board = new GameBoard(60);
+let loadedImages = 
+  loadImages([backgroundUrl, wolfUrl, egbertUrl])
+  .then((imageMap) => {
+    console.log(JSON.stringify(imageMap));
+    board.setBackground(imageMap.get(backgroundUrl));
+    board.placeToken('Wolf', imageMap.get(wolfUrl), { x: 5, y: 5 });
+    board.placeToken('Egbert', imageMap.get(egbertUrl), { x: 6, y: 6 });
+  });
 
 // socket.on('board-update', (message) => {
 //   console.log('message: ' + JSON.stringify(message));
