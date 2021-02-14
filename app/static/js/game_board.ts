@@ -22,7 +22,6 @@ class GameBoard {
   menu: ContextMenu;
   mouseStateMachine: MouseStateMachine;
 
-  pendingTokens: Array<PendingToken>;
   tokens: Array<Token>;
   activeToken: Token;
 
@@ -41,7 +40,6 @@ class GameBoard {
     if (this.tileSize != tileSize) {
       console.log("Rounded input tileSize to " + this.tileSize);
     }
-    this.pendingTokens = []
     this.tokens = []
   }
 
@@ -60,12 +58,6 @@ class GameBoard {
     getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
     this.initializeTileGrid();
     this.forAllTiles((tile) => tile.defaultGrid());
-    while (this.pendingTokens.length > 0) {
-      var pendingToken = this.pendingTokens.pop();
-      var token = pendingToken.token;
-      var point = pendingToken.location;
-      token.setLocation(this.tiles[point.x][point.y]);
-    }
     this.topCanvas.addEventListener(
       'contextmenu',
       (e) => {
@@ -177,8 +169,6 @@ class GameBoard {
     var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize);
     if (this.tiles != null) {
       token.setLocation(this.tiles[point.x][point.y])
-    } else {
-      this.pendingTokens.push({ token: token, location: point });
     }
     this.tokens.push(token);
   }
@@ -211,11 +201,6 @@ class GameBoard {
     }
     return false;
   }
-}
-
-interface PendingToken {
-  token: Token;
-  location: Point;
 }
 
 /** Represents a tile in the game board. */

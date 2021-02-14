@@ -3,7 +3,7 @@ import { loadImages } from './utils/image_utils.js'
 
 // import { io } from 'socket.io-client'
 
-var socket;
+// var socket;
 
 // TODO - figure out how to import io here. Currently we're running a js script
 //        in the html before this script runs that sets up the io variable. 
@@ -21,13 +21,13 @@ const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
 var board = new GameBoard(60);
-let loadedImages = 
-  loadImages([backgroundUrl, wolfUrl, egbertUrl])
+loadImages([backgroundUrl, wolfUrl, egbertUrl])
   .then((imageMap) => {
     console.log(JSON.stringify(imageMap));
     board.setBackground(imageMap.get(backgroundUrl));
     board.placeToken('Wolf', imageMap.get(wolfUrl), { x: 5, y: 5 });
     board.placeToken('Egbert', imageMap.get(egbertUrl), { x: 6, y: 6 });
+    console.log('Done loading!')
   });
 
 // socket.on('board-update', (message) => {
