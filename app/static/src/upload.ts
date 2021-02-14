@@ -1,4 +1,4 @@
-const handleImageUpload = (event) => {
+const handleImageUpload = (event: Event) => {
   const files = event.target.files
   const formData = new FormData()
   formData.append('file', files[0])
