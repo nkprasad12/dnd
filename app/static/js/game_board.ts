@@ -52,6 +52,8 @@ class GameBoard {
       getContext(canvas).clearRect(0, 0, this.width, this.height);
     }
     getContext(this.backgroundCanvas).drawImage(backgroundImage, 0, 0);
+
+    this.tiles = []
     this.initializeTileGrid();
     this.forAllTiles((tile) => tile.defaultGrid());
 
@@ -104,7 +106,7 @@ class GameBoard {
     console.log('Selected tiles: ' + selectedTiles.length);
     if (selectedTiles.length == 1 && this.handleSingleTileClick(selectedTiles[0])) {
       return;
-    } else if (selectedTiles.length > 1 && this.activeToken != null) {
+    } else if (selectedTiles.length > 1 && this.activeToken.present()) {
       this.activeToken = Maybe.absent();
       return;
     }
@@ -131,7 +133,6 @@ class GameBoard {
   }
 
   initializeTileGrid(): void {
-    this.tiles = []
     for (var i = 0; i < this.cols; i++) {
       this.tiles.push([])
     }
@@ -166,10 +167,9 @@ class GameBoard {
 
   /** Places the token on the given grid coordinates. */
   placeToken(name: string, loadedImage: CanvasImageSource, point: Point): void {
-    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize);
-    if (this.tiles != null) {
-      token.setLocation(this.tiles[point.x][point.y])
-    }
+    var tile = this.tiles[point.x][point.y];
+    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize, tile);
+    tile.addToken(token);
     this.tokens.push(token);
   }
 
@@ -227,6 +227,8 @@ class Tile {
     this.startY = startY;
     this.fogOfWarCanvas = fogOfWarCanvas;
     this.gridCanvas = gridCanvas;
+    this.hasFog = false;
+    this.token = Maybe.absent();
   }
 
   clearGrid(): void {
@@ -261,7 +263,7 @@ class Tile {
   }
 
   hasToken(): boolean {
-    return this.token != null;
+    return this.token.present();
   }
 
   addToken(token: Token): void {
@@ -283,10 +285,10 @@ class ContextMenu {
   clearFogButton = <HTMLElement>document.getElementById('clear-fow');
   applyFogButton = <HTMLElement>document.getElementById('apply-fow');
 
-  point: Point;
   tiles: Array<Tile>;
 
   constructor() {
+    this.tiles = []
     this.menu.style.display = 'none';
     this.clearFogButton.addEventListener(
       'click',
@@ -316,7 +318,6 @@ class ContextMenu {
     this.menu.style.top = point.y + "px";
     this.menu.style.left = point.x + "px";
     this.menu.style.display = 'initial';
-    this.point = point;
     this.tiles = selectedTiles;
 
     var fogCount = 0;
@@ -429,11 +430,13 @@ class Token {
   canvas: HTMLCanvasElement;
   size: number;
 
-  constructor(name: string, loadedImage: CanvasImageSource, canvas: HTMLCanvasElement, size: number) {
+  constructor(name: string, loadedImage: CanvasImageSource, canvas: HTMLCanvasElement, size: number, location: Tile) {
     this.name = name;
     this.canvas = canvas;
     this.size = size;
     this.image = loadedImage;
+    this.location = location;
+    getContext(this.canvas).drawImage(this.image, location.startX, location.startY, this.size, this.size);
   }
 
   setLocation(tile: Tile): void {
@@ -447,10 +450,8 @@ class Token {
     tile.addToken(this);
     var oldLocation = this.location;
     this.location = tile
-    if (oldLocation != null) {
-      oldLocation.popToken();
-      getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);
-    }
+    oldLocation.popToken();
+    getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);
     getContext(this.canvas).drawImage(this.image, tile.startX, tile.startY, this.size, this.size);
   }
 }
