@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-defaults:
-  run:
-    working-directory: app/static
-
 jobs:
   build:
 
@@ -21,3 +17,4 @@ jobs:
     - name: tsc compile
       uses: iCrawl/action-tsc@v1 
     - run: npm run test
+      working-directory: app/static
