@@ -17,5 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - run: npm ci 
+    - run: npm ci
+    - name: tsc compile
+      uses: iCrawl/action-tsc@v1 
     - run: npm run test
