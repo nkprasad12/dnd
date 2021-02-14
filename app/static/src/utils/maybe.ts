@@ -5,7 +5,7 @@ export class Maybe<T> {
   }
 
   static absent<U>(): Maybe<U> {
-    return new Maybe(<U> <unknown>null);
+    return new Maybe(<U><unknown>null);
   }
 
   private item: T;
