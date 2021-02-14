@@ -1,4 +1,4 @@
-import { Maybe } from "../src/utils/maybe.js"
+import { Maybe } from "../js/utils/maybe.js"
 
 class TestObject {
     foo: number;
