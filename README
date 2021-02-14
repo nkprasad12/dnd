@@ -1,3 +1,7 @@
 Set up server by going to parent folder and then:
 
 dnd/start_server
+
+Run Typescript unit tests by going to the app/static directory and then:
+
+npm run test
