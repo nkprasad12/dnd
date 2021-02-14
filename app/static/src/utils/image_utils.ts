@@ -22,6 +22,7 @@ function loadImage(source: string): Promise<LoadedImage> {
   });
 }
 
+/** Loads all the images requested in the URLs in the input array. */
 export function loadImages(sources: Array<string>): Promise<Map<string, CanvasImageSource>> {
   let promises = []
   for (let source of sources) {
