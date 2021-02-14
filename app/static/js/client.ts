@@ -20,14 +20,28 @@ const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
-var board = new GameBoard(60);
 loadImages([backgroundUrl, wolfUrl, egbertUrl])
   .then((imageMap) => {
     console.log(JSON.stringify(imageMap));
-    board.setBackground(imageMap.get(backgroundUrl));
-    board.placeToken('Wolf', imageMap.get(wolfUrl), { x: 5, y: 5 });
-    board.placeToken('Egbert', imageMap.get(egbertUrl), { x: 6, y: 6 });
-    console.log('Done loading!')
+    let backgroundImage = imageMap.get(backgroundUrl);
+    if (backgroundImage == undefined) {
+      throw 'ERROR: Background image is undefined!';
+    }
+    let board = new GameBoard(backgroundImage, 60);
+
+    let wolfImage = imageMap.get(wolfUrl);
+    if (wolfImage == undefined) {
+      console.log('ERROR: Wolf image is undefined!')
+    } else {
+      board.placeToken('Wolf', wolfImage, { x: 5, y: 5 });
+    }
+
+    let egbertImage = imageMap.get(egbertUrl);
+    if (egbertImage == undefined) {
+      console.log('ERROR: Egbert image is undefined!')
+    } else {
+      board.placeToken('Egbert', egbertImage, { x: 6, y: 5 });
+    }
   });
 
 // socket.on('board-update', (message) => {

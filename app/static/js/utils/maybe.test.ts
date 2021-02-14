@@ -1,4 +1,3 @@
-import { hasUncaughtExceptionCaptureCallback } from "process";
 import { Maybe } from "./maybe"
 
 class TestObject {

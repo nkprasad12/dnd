@@ -1,3 +1,5 @@
+import { Maybe } from "./utils/maybe.js"
+
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
 const fogColor: string = "rgba(0, 0, 0, 1.0)";
@@ -23,30 +25,24 @@ class GameBoard {
   mouseStateMachine: MouseStateMachine;
 
   tokens: Array<Token>;
-  activeToken: Token;
+  activeToken: Maybe<Token>;
 
-  constructor(tileSize: number) {
+  constructor(backgroundImage: CanvasImageSource, tileSize: number) {
     this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
     this.fogOfWarCanvas = <HTMLCanvasElement>document.getElementById("fogOfWarCanvas");
     this.tokenCanvas = <HTMLCanvasElement>document.getElementById("tokenCanvas");
     this.gridCanvas = <HTMLCanvasElement>document.getElementById("gridCanvas");
     this.topCanvas = <HTMLCanvasElement>document.getElementById("topCanvas");
-
     this.allCanvases = [
       this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas];
 
-    this.menu = new ContextMenu();
     this.tileSize = Math.round(tileSize)
     if (this.tileSize != tileSize) {
       console.log("Rounded input tileSize to " + this.tileSize);
     }
-    this.tokens = []
-  }
 
-  setBackground(loadedImage: CanvasImageSource): void {
-    this.width = <number>loadedImage.width;
-    this.height = <number>loadedImage.height;
-    console.log('Loaded image: ' + this.width + 'x' + this.height);
+    this.width = <number>backgroundImage.width;
+    this.height = <number>backgroundImage.height;
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
@@ -55,9 +51,14 @@ class GameBoard {
       canvas.height = this.height;
       getContext(canvas).clearRect(0, 0, this.width, this.height);
     }
-    getContext(this.backgroundCanvas).drawImage(loadedImage, 0, 0);
+    getContext(this.backgroundCanvas).drawImage(backgroundImage, 0, 0);
     this.initializeTileGrid();
     this.forAllTiles((tile) => tile.defaultGrid());
+
+    this.menu = new ContextMenu();
+    this.tokens = []
+    this.activeToken = Maybe.absent();
+
     this.topCanvas.addEventListener(
       'contextmenu',
       (e) => {
@@ -66,8 +67,8 @@ class GameBoard {
           this.menu.hide();
           return;
         }
-        if (this.activeToken != null) {
-          this.activeToken = null;
+        if (this.activeToken.present()) {
+          this.activeToken = Maybe.absent();
           return;
         }
         const clickPoint = mousePoint(e);
@@ -78,7 +79,6 @@ class GameBoard {
     this.mouseStateMachine = new MouseStateMachine(
       this.topCanvas,
       (from, to) => { this.handleMouseDrag(from, to); });
-
   }
 
   handleMouseDrag(fromPoint: Point, toPoint: Point): void {
@@ -105,21 +105,21 @@ class GameBoard {
     if (selectedTiles.length == 1 && this.handleSingleTileClick(selectedTiles[0])) {
       return;
     } else if (selectedTiles.length > 1 && this.activeToken != null) {
-      this.activeToken = null;
+      this.activeToken = Maybe.absent();
       return;
     }
     this.menu.showAt(toPoint, selectedTiles);
   }
 
   handleSingleTileClick(tile: Tile): boolean {
-    if (this.activeToken != null) {
+    if (this.activeToken.present()) {
       if (!tile.hasToken()) {
-        this.activeToken.setLocation(tile);
+        this.activeToken.get().setLocation(tile);
       }
-      this.activeToken = null;
+      this.activeToken = Maybe.absent();
       return true;
     } else if (tile.hasToken()) {
-      this.activeToken = tile.getToken();
+      this.activeToken = Maybe.of(tile.getToken());
       return true;
     }
     return false;
@@ -214,7 +214,7 @@ class Tile {
   gridCanvas: HTMLCanvasElement;
 
   hasFog: boolean;
-  token: Token;
+  token: Maybe<Token>;
 
   constructor(
     size: number,
@@ -265,17 +265,15 @@ class Tile {
   }
 
   addToken(token: Token): void {
-    this.token = token;
+    this.token = Maybe.of(token);
   }
 
   getToken(): Token {
-    return this.token;
+    return this.token.get();
   }
 
-  popToken(): Token {
-    var token = this.token;
-    this.token = null;
-    return token;
+  popToken(): void {
+    this.token = Maybe.absent();
   }
 }
 
@@ -342,7 +340,11 @@ class ContextMenu {
 }
 
 function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-  return canvas.getContext("2d");
+  let context = canvas.getContext("2d");
+  if (context == null) {
+    throw 'Canvas context was null!'
+  }
+  return context;
 }
 
 function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement): void {
@@ -382,12 +384,12 @@ class MouseStateMachine {
   element: HTMLElement;
   dragCallback: DragCallback;
 
-  mouseDownPoint: Point;
+  mouseDownPoint: Maybe<Point>;
 
   constructor(element: HTMLElement, dragCallback: DragCallback) {
     this.element = element;
     this.dragCallback = dragCallback;
-    this.mouseDownPoint = null;
+    this.mouseDownPoint = Maybe.absent();
 
     this.element.addEventListener(
       'mousedown',
@@ -402,19 +404,19 @@ class MouseStateMachine {
     if (event.button != 0) {
       return;
     }
-    this.mouseDownPoint = mousePoint(event);
+    this.mouseDownPoint = Maybe.of(mousePoint(event));
   }
 
   handleMouseUp(event: MouseEvent): void {
     if (event.button != 0) {
       return;
     }
-    if (this.mouseDownPoint == null) {
+    if (!this.mouseDownPoint.present()) {
       console.log('Got mouseup event without mousedown - ignoring.');
       return;
     }
-    this.dragCallback(this.mouseDownPoint, mousePoint(event));
-    this.mouseDownPoint = null;
+    this.dragCallback(this.mouseDownPoint.get(), mousePoint(event));
+    this.mouseDownPoint = Maybe.absent();
   }
 }
 
