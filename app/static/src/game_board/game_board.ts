@@ -1,9 +1,22 @@
-import { Maybe } from "./utils/maybe.js"
-import { Socket_ } from "./server/socket_connection.js"
+import { Maybe } from "../utils/maybe.js"
+import { Socket_ } from "../server/socket_connection.js"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
 const fogColor: string = "rgba(0, 0, 0, 1.0)";
+
+function createBoardCanvas(id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
+  let canvas = document.createElement('canvas');
+
+  canvas.id = id;
+  canvas.style.zIndex = zIndex;
+  canvas.style.position = "absolute";
+  canvas.style.left = "0px";
+  canvas.style.top = "0px";
+  parent.appendChild(canvas);
+
+  return canvas;
+}
 
 /** Represents the main game board. */
 class GameBoard {
@@ -28,12 +41,12 @@ class GameBoard {
   tokens: Array<Token>;
   activeToken: Maybe<Token>;
 
-  constructor(backgroundImage: CanvasImageSource, tileSize: number) {
-    this.backgroundCanvas = <HTMLCanvasElement>document.getElementById("backgroundCanvas");
-    this.fogOfWarCanvas = <HTMLCanvasElement>document.getElementById("fogOfWarCanvas");
-    this.tokenCanvas = <HTMLCanvasElement>document.getElementById("tokenCanvas");
-    this.gridCanvas = <HTMLCanvasElement>document.getElementById("gridCanvas");
-    this.topCanvas = <HTMLCanvasElement>document.getElementById("topCanvas");
+  constructor(backgroundImage: CanvasImageSource, tileSize: number, parent: HTMLElement) {
+    this.backgroundCanvas = createBoardCanvas("backgroundCanvas", "1", parent);
+    this.fogOfWarCanvas = createBoardCanvas("fogOfWarCanvas", "2", parent);
+    this.tokenCanvas = createBoardCanvas("tokenCanvas", "3", parent);
+    this.gridCanvas = createBoardCanvas("gridCanvas", "4", parent);
+    this.topCanvas = createBoardCanvas("topCanvas", "5", parent);
     this.allCanvases = [
       this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas];
 
@@ -47,7 +60,7 @@ class GameBoard {
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
-    for (var canvas of this.allCanvases) {
+    for (let canvas of this.allCanvases) {
       canvas.width = this.width;
       canvas.height = this.height;
       getContext(canvas).clearRect(0, 0, this.width, this.height);
