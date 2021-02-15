@@ -80,7 +80,6 @@ export class BoardModel {
   cols: number;
 
   tokens: Array<TokenModel>;
-  activeToken: Maybe<TokenModel>;
 
   contextMenuState: Maybe<ContextMenuModel>;
   fogOfWarState: Array<Array<boolean>>;
@@ -91,7 +90,7 @@ export class BoardModel {
     tokens: Array<TokenModel>,
     contextMenuState: Maybe<ContextMenuModel>) {
 
-    this.backgroundImage = backgroundImage;
+    this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize)
     if (this.tileSize != tileSize) {
       console.log("Rounded input tileSize to " + this.tileSize);
@@ -102,10 +101,13 @@ export class BoardModel {
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
-    this.tokens = tokens;
-    this.activeToken = Maybe.absent();
+    this.tokens = deepCopyList(tokens, (token) => token.deepCopy());
 
-    this.contextMenuState = contextMenuState;
+    if (contextMenuState.present()) {
+      this.contextMenuState = Maybe.of(contextMenuState.get().deepCopy());
+    } else {
+      this.contextMenuState = Maybe.absent();
+    }
     this.fogOfWarState = [];
     for (let i = 0; i < this.cols; i++) {
       let colState: Array<boolean> = [];
@@ -125,11 +127,11 @@ export class BoardModelBuilder {
 
   static from(model: BoardModel): BoardModelBuilder {
     let builder = new BoardModelBuilder()
-      .setBackgroundImage(model.backgroundImage.deepCopy())
+      .setBackgroundImage(model.backgroundImage)
       .setTileSize(model.tileSize)
-      .setTokens(deepCopyList(model.tokens, (token) => token.deepCopy()));
+      .setTokens(model.tokens);
     if (model.contextMenuState.present()) {
-      builder.setContextMenu(model.contextMenuState.get().deepCopy());
+      builder.setContextMenu(model.contextMenuState.get());
     }
     return builder;
   }

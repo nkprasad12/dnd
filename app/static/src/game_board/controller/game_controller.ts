@@ -1,4 +1,4 @@
-import { BoardModel } from "../model/board_model.js";
+import { BoardModel, TokenModel } from "../model/board_model.js";
 import { BoardView } from '../view/board_view.js'
 import { InputListener } from './input_listener.js'
 import { Point, Location, areLocationsEqual } from "../../common/common.js"
@@ -7,7 +7,7 @@ import { Maybe } from "../../utils/maybe.js"
 export class GameController {
 
   view: BoardView;
-  model: BoardModel;
+  model: ModelHandler;
   inputListener: InputListener;
 
   activeTokenIndex: Maybe<number>;
@@ -18,8 +18,7 @@ export class GameController {
       throw 'canvasHolder is null! Can not display board';
     }
     this.view = new BoardView(canvasHolder);
-    this.model = model;
-    this.view.bind(this.model);
+    this.model = new ModelHandler(this.view, model);
     this.inputListener = new InputListener(
       this.view,
       (from, to) => { this.handleMouseDrag(from, to); },
@@ -35,8 +34,9 @@ export class GameController {
   }
 
   boardLocation(relativePoint: Point): Location {
-    const col = Math.floor(relativePoint.x / this.model.tileSize);
-    const row = Math.floor(relativePoint.y / this.model.tileSize);
+    let tileSize = this.model.tileSize();
+    const col = Math.floor(relativePoint.x / tileSize);
+    const row = Math.floor(relativePoint.y / tileSize);
     return { col: col, row: row };
   }
 
@@ -69,35 +69,63 @@ export class GameController {
     if (this.activeTokenIndex.present()) {
       console.log('ActiveToken is present');
       let activeIndex = this.activeTokenIndex.get();
-      let newModel = this.model.deepCopy();
+      let newModel = this.model.copyModel();
       if (tileTokenIndex == -1) {
         console.log('Target tile is empty, moving token');
         newModel.tokens[activeIndex].location = tile;
       }
       newModel.tokens[activeIndex].isActive = false;
       this.activeTokenIndex = Maybe.absent();
-      this.model = newModel;
-      this.view.bind(newModel);
+      this.model.update(newModel);
       return true;
     } else if (tileTokenIndex >= 0) {
       console.log('Picking up token');
-      let newModel = this.model.deepCopy();
+      let newModel = this.model.copyModel();
       newModel.tokens[tileTokenIndex].isActive = true;
       this.activeTokenIndex = Maybe.of(tileTokenIndex);
-      this.model = newModel;
-      this.view.bind(newModel);
+      this.model.update(newModel);
       return true;
     }
     return false;
   }
 
   tokenIndexOfTile(tile: Location): number {
-    for (let i = 0; i < this.model.tokens.length; i++) {
-      let token = this.model.tokens[i];
+    let tokens = this.model.tokens();
+    for (let i = 0; i < tokens.length; i++) {
+      let token = tokens[i];
       if (areLocationsEqual(token.location, tile)) {
         return i;
       }
     }
     return -1;
+  }
+}
+
+class ModelHandler {
+
+  view: BoardView;
+  model: BoardModel;
+
+  constructor(view: BoardView, model: BoardModel) {
+    this.view = view;
+    this.model = model;
+    this.view.bind(this.model);
+  }
+
+  update(newModel: BoardModel): void {
+    this.model = newModel;
+    this.view.bind(this.copyModel());
+  }
+
+  copyModel(): BoardModel {
+    return this.model.deepCopy();
+  }
+
+  tokens(): Array<TokenModel> {
+    return this.model.tokens;
+  }
+
+  tileSize(): number {
+    return this.model.tileSize;
   }
 }
