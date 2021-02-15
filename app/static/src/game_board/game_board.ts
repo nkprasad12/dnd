@@ -88,7 +88,7 @@ class GameBoard {
           return;
         }
         const clickPoint = mousePoint(e);
-        var activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
+        let activeTiles = [this.tileForPoint(this.canvasPoint(clickPoint))];
         this.menu.showAt(clickPoint, activeTiles);
       }
     );
@@ -106,14 +106,14 @@ class GameBoard {
     const to = this.tileCoordinates(this.canvasPoint(toPoint));
     console.log('Mouse drag: ' + JSON.stringify(from) + " -> " + JSON.stringify(to));
 
-    var selectedTiles = []
+    let selectedTiles = []
     const xFrom = Math.min(from.x, to.x);
     const xTo = Math.max(from.x, to.x);
     const yFrom = Math.min(from.y, to.y);
     const yTo = Math.max(from.y, to.y);
 
-    for (var i = xFrom; i <= xTo; i++) {
-      for (var j = yFrom; j <= yTo; j++) {
+    for (let i = xFrom; i <= xTo; i++) {
+      for (let j = yFrom; j <= yTo; j++) {
         selectedTiles.push(this.tiles[i][j]);
       }
     }
@@ -147,11 +147,11 @@ class GameBoard {
   }
 
   initializeTileGrid(): void {
-    for (var i = 0; i < this.cols; i++) {
+    for (let i = 0; i < this.cols; i++) {
       this.tiles.push([])
     }
-    for (var i = 0; i < this.cols; i++) {
-      for (var j = 0; j < this.rows; j++) {
+    for (let i = 0; i < this.cols; i++) {
+      for (let j = 0; j < this.rows; j++) {
         this.tiles[i].push(
           new Tile(this.tileSize, i * this.tileSize, j * this.tileSize, this.fogOfWarCanvas, this.gridCanvas));
       }
@@ -159,8 +159,8 @@ class GameBoard {
   }
 
   forAllTiles(operation: (t: Tile) => any): void {
-    for (var i = 0; i < this.cols; i++) {
-      for (var j = 0; j < this.rows; j++) {
+    for (let i = 0; i < this.cols; i++) {
+      for (let j = 0; j < this.rows; j++) {
         operation(this.tiles[i][j]);
       }
     }
@@ -181,8 +181,8 @@ class GameBoard {
 
   /** Places the token on the given grid coordinates. */
   placeToken(name: string, loadedImage: CanvasImageSource, point: Point, socket: Socket_): void {
-    var tile = this.tiles[point.x][point.y];
-    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize, tile, socket);
+    let tile = this.tiles[point.x][point.y];
+    let token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize, tile, socket);
     tile.addToken(token);
     this.tokens.push(token);
   }
@@ -190,10 +190,10 @@ class GameBoard {
   onRemoteUpdate(update: { name: string, x: number, y: number }) {
     console.log('onRemoteUpdate: ' + JSON.stringify(update));
     console.log('Searching for ' + update.name);
-    for (var token of this.tokens) {
+    for (let token of this.tokens) {
       console.log('Token: ' + token.name);
       if (token.name == update.name) {
-        var newTile = this.tileForPoint({ x: update.x + 1, y: update.y + 1 })
+        let newTile = this.tileForPoint({ x: update.x + 1, y: update.y + 1 })
         if (newTile != token.location) {
           token.setLocation(newTile)
         }
@@ -334,8 +334,8 @@ class ContextMenu {
     this.menu.style.display = 'initial';
     this.tiles = selectedTiles;
 
-    var fogCount = 0;
-    var clearCount = 0;
+    let fogCount = 0;
+    let clearCount = 0;
     for (let tile of this.tiles) {
       tile.selectedGrid();
       fogCount += tile.hasFog ? 1 : 0;
@@ -363,7 +363,7 @@ function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 function drawCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement): void {
-  var ctx = getContext(canvas)
+  let ctx = getContext(canvas)
 
   ctx.beginPath();
   ctx.rect(x, y, size, size);
@@ -373,7 +373,7 @@ function drawCanvasTile(x: number, y: number, size: number, color: string, canva
 }
 
 function fillCanvasTile(x: number, y: number, size: number, color: string, canvas: HTMLCanvasElement): void {
-  var ctx = getContext(canvas);
+  let ctx = getContext(canvas);
 
   ctx.beginPath();
   ctx.rect(x, y, size, size);
@@ -465,7 +465,7 @@ class Token {
     console.log(this.name + " setLocation: " + tile.startX + ", " + tile.startY);
     this.socket.emit('board-update', { name: this.name, pt: { x: tile.startX, y: tile.startY } });
     tile.addToken(this);
-    var oldLocation = this.location;
+    let oldLocation = this.location;
     this.location = tile;
     oldLocation.popToken();
     getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);
