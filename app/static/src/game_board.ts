@@ -1,4 +1,5 @@
 import { Maybe } from "./utils/maybe.js"
+import { Socket_ } from "./server/socket_connection.js"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
@@ -166,9 +167,9 @@ class GameBoard {
   }
 
   /** Places the token on the given grid coordinates. */
-  placeToken(name: string, loadedImage: CanvasImageSource, point: Point): void {
+  placeToken(name: string, loadedImage: CanvasImageSource, point: Point, socket: Socket_): void {
     var tile = this.tiles[point.x][point.y];
-    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize, tile);
+    var token = new Token(name, loadedImage, this.tokenCanvas, this.tileSize, tile, socket);
     tile.addToken(token);
     this.tokens.push(token);
   }
@@ -425,12 +426,16 @@ class Token {
 
   name: string;
   image: CanvasImageSource;
+  socket: Socket_;
 
   location: Tile;
   canvas: HTMLCanvasElement;
   size: number;
 
-  constructor(name: string, loadedImage: CanvasImageSource, canvas: HTMLCanvasElement, size: number, location: Tile) {
+  constructor(name: string, loadedImage: CanvasImageSource, canvas: HTMLCanvasElement,
+    size: number, location: Tile, socket: Socket_) {
+
+    this.socket = socket;
     this.name = name;
     this.canvas = canvas;
     this.size = size;
@@ -445,11 +450,10 @@ class Token {
       return;
     }
     console.log(this.name + " setLocation: " + tile.startX + ", " + tile.startY);
-    // socket.emit('board-update', {name: this.name, pt: {x: tile.startX, y: tile.startY}})
-    console.log('Just emitted event')
+    this.socket.emit('board-update', { name: this.name, pt: { x: tile.startX, y: tile.startY } });
     tile.addToken(this);
     var oldLocation = this.location;
-    this.location = tile
+    this.location = tile;
     oldLocation.popToken();
     getContext(this.canvas).clearRect(oldLocation.startX - 1, oldLocation.startY - 1, this.size + 2, this.size + 2);
     getContext(this.canvas).drawImage(this.image, tile.startX, tile.startY, this.size, this.size);
