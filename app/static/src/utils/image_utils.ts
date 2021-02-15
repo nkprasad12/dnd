@@ -1,4 +1,4 @@
-class LoadedImage {
+export class LoadedImage {
   image: CanvasImageSource;
   source: string;
 
