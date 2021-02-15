@@ -54,7 +54,7 @@ export class BoardView {
     this.bindFogOfWarState(newModel);
     this.bindContextMenu(newModel);
 
-    this.model = Maybe.of(newModel);
+    this.model = Maybe.of(newModel.deepCopy());
   }
 
   private bindBackgroundImage(newModel: BoardModel): void {
@@ -98,12 +98,14 @@ export class BoardView {
   }
 
   private bindTokens(newModel: BoardModel): void {
+    console.log('bindTokens');
     let oldTokens: Array<TokenModel> = []
     if (this.model.present()) {
       oldTokens = this.model.get().tokens;
     }
+    console.log('oldTokens: ' + JSON.stringify(oldTokens));
     let newTokens = newModel.tokens;
-
+    console.log('newTokens: ' + JSON.stringify(newTokens));
     for (let oldToken of oldTokens) {
       let hasMatch = false;
       for (let newToken of newTokens) {

@@ -6,6 +6,10 @@ export class LoadedImage {
     this.image = image;
     this.source = source;
   }
+
+  deepCopy(): LoadedImage {
+    return new LoadedImage(this.image, this.source);
+  }
 }
 
 function loadImage(source: string): Promise<LoadedImage> {

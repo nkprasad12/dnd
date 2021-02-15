@@ -3,6 +3,7 @@ import { BoardModelBuilder, ContextMenuModel, TokenModel } from './game_board/mo
 import { BoardView } from './game_board/view/board_view.js'
 import { LoadedImage, loadImages } from './utils/image_utils.js'
 import { Socket_, connectTo } from './server/socket_connection.js'
+import { GameController } from './game_board/controller/game_controller.js'
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
@@ -27,7 +28,7 @@ Promise.all([socketPromise, imagesPromies])
       throw 'canvasHolder is null! Can not display board';
     }
     // let board = new GameBoard(backgroundImage, 60, canvasHolder);
-    let boardView = new BoardView(canvasHolder);
+    // let boardView = new BoardView(canvasHolder);
 
     modelBuilder.setBackgroundImage(new LoadedImage(backgroundImage, backgroundUrl));
 
@@ -57,14 +58,15 @@ Promise.all([socketPromise, imagesPromies])
           {col: 6, row: 6}, false));
     }
 
-    modelBuilder.setContextMenu(
-      new ContextMenuModel(
-        {x: 30, y: 200},
-        [{col: 5, row: 5}, {col: 5, row: 6}, {col: 6, row: 5}, {col: 6, row: 6}]
-      )
-    );
+    // modelBuilder.setContextMenu(
+    //   new ContextMenuModel(
+    //     {x: 30, y: 200},
+    //     [{col: 5, row: 5}, {col: 5, row: 6}, {col: 6, row: 5}, {col: 6, row: 6}]
+    //   )
+    // );
 
-    boardView.bind(modelBuilder.build());
+    // boardView.bind(modelBuilder.build());
+    let _gameController = new GameController(modelBuilder.build());
 
     // socket.on('board-update', (obj) => {
     //   board.onRemoteUpdate({ name: obj.name, x: obj.pt.x, y: obj.pt.y })
