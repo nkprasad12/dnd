@@ -19,7 +19,11 @@ Promise.all([socketPromise, imagesPromies])
     if (backgroundImage == undefined) {
       throw 'ERROR: Background image is undefined!';
     }
-    let board = new GameBoard(backgroundImage, 60);
+    let canvasHolder = document.getElementById('canvasHolder');
+    if (canvasHolder == null) {
+      throw 'canvasHolder is null! Can not display board';
+    }
+    let board = new GameBoard(backgroundImage, 60, canvasHolder);
 
     let wolfImage = imageMap.get(wolfUrl);
     if (wolfImage == undefined) {
@@ -39,4 +43,3 @@ Promise.all([socketPromise, imagesPromies])
       board.onRemoteUpdate({ name: obj.name, x: obj.pt.x, y: obj.pt.y })
     });
   });
-
