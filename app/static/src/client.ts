@@ -1,5 +1,5 @@
 // import { GameBoard } from './game_board/game_board.js'
-import { BoardModelBuilder, TokenModel } from './game_board/model/board_model.js'
+import { BoardModelBuilder, ContextMenuModel, TokenModel } from './game_board/model/board_model.js'
 import { BoardView } from './game_board/view/board_view.js'
 import { LoadedImage, loadImages } from './utils/image_utils.js'
 import { Socket_, connectTo } from './server/socket_connection.js'
@@ -56,6 +56,13 @@ Promise.all([socketPromise, imagesPromies])
            60,
           {col: 6, row: 6}, false));
     }
+
+    modelBuilder.setContextMenu(
+      new ContextMenuModel(
+        {x: 30, y: 200},
+        [{col: 5, row: 5}, {col: 5, row: 6}, {col: 6, row: 5}, {col: 6, row: 6}]
+      )
+    );
 
     boardView.bind(modelBuilder.build());
 

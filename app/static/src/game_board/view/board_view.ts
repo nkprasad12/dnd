@@ -147,8 +147,7 @@ export class BoardView {
     }
     let newSelection: Array<Location> = [];
     if (newModel.contextMenuState.present()) {
-      // this.menu.showAt();
-      console.log('TODO: show the context menu');
+      this.menu.bind(newModel.contextMenuState.get().clickPoint);
       newSelection = newModel.contextMenuState.get().selectedTiles;
     } else {
       this.menu.hide();

@@ -68,7 +68,12 @@ export class BoardModel {
   contextMenuState: Maybe<ContextMenuModel>;
   fogOfWarState: Array<Array<boolean>>;
 
-  constructor(backgroundImage: LoadedImage, tileSize: number, tokens: Array<TokenModel>) {
+  constructor(
+    backgroundImage: LoadedImage,
+    tileSize: number,
+    tokens: Array<TokenModel>,
+    contextMenuState: Maybe<ContextMenuModel>) {
+
     this.backgroundImage = backgroundImage;
     this.tileSize = Math.round(tileSize)
     if (this.tileSize != tileSize) {
@@ -83,7 +88,7 @@ export class BoardModel {
     this.tokens = tokens;
     this.activeToken = Maybe.absent();
 
-    this.contextMenuState = Maybe.absent();
+    this.contextMenuState = contextMenuState;
     this.fogOfWarState = [];
     for (let i = 0; i < this.cols; i++) {
       let colState: Array<boolean> = [];
@@ -100,11 +105,13 @@ export class BoardModelBuilder {
   backgroundImage: Maybe<LoadedImage>;
   tileSize: number;
   tokens: Array<TokenModel>;
+  contextMenu: Maybe<ContextMenuModel>;
 
   constructor() {
     this.backgroundImage = Maybe.absent();
     this.tileSize = -1;
     this.tokens = [];
+    this.contextMenu = Maybe.absent()
   }
 
   setBackgroundImage(image: LoadedImage): BoardModelBuilder {
@@ -122,6 +129,11 @@ export class BoardModelBuilder {
     return this;
   }
 
+  setContextMenu(contextMenu: ContextMenuModel): BoardModelBuilder {
+    this.contextMenu = Maybe.of(contextMenu);
+    return this;
+  }
+
   build(): BoardModel {
     if (!this.backgroundImage.present()) {
       throw 'BoardModelBuilder requires backgroundImage';
@@ -129,6 +141,7 @@ export class BoardModelBuilder {
     if (this.tileSize < 1) {
       throw 'BoardModelBuilder requires a tileSize >= 1';
     }
-    return new BoardModel(this.backgroundImage.get(), this.tileSize, this.tokens);
+    return new BoardModel(
+      this.backgroundImage.get(), this.tileSize, this.tokens, this.contextMenu);
   }
 }
