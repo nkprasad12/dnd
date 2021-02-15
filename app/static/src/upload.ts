@@ -1,6 +1,17 @@
-const handleImageUpload = (event: Event) => {
-  const files = event.target.files
+import { Socket_, connectTo } from './server/socket_connection.js'
+
+interface HTMLInputEvent extends Event {
+  target: HTMLInputElement & EventTarget;
+}
+
+const handleImageUpload = (event: HTMLInputEvent) => {
+  if (event == null) {
+    console.log('File upload event was null');
+    return;
+  }
+  const files = event.target.files;
   const formData = new FormData()
+  // @ts-ignore
   formData.append('file', files[0])
 
   fetch('http://127.0.0.1:5000/uploadImage', {
@@ -20,22 +31,7 @@ const handleImageUpload = (event: Event) => {
     })
 }
 
-var upload = document.querySelector('#fileUpload')
-console.log(upload)
-upload.addEventListener('change', event => {
-  console.log('Got image upload request')
-  handleImageUpload(event)
-})
-
-var socket;
-
-// TODO - figure out how to import io here. Currently we're running a js script
-//        in the html before this script runs that sets up the io variable. 
-socket = io.connect('http://localhost:5000/chat')
-socket.on('connect', function () {
-  console.log('Connected to socket')
-  socket.emit('nitin', { data: 'I\'m connected from upload.ts!' });
-});
+listenForFileUpload();
 
 // Make a container element for the list
 var listContainer = document.createElement('div');
@@ -44,13 +40,28 @@ var listElement = document.createElement('ul');
 document.getElementsByTagName('body')[0].appendChild(listContainer);
 listContainer.appendChild(listElement);
 
-socket.on('nitin', (message) => {
-  console.log('message' + message);
-  addToList(JSON.stringify(message));
-});
+let socketPromise: Promise<Socket_> = connectTo('chat');
+socketPromise
+  .then((socket) => {
+    socket.emit('nitin', 'Connected from upload.ts');
+    socket.on('nitin', (message) => { addToList(JSON.stringify(message)); });
+  });
 
 function addToList(message: string) {
   var listItem = document.createElement('li');
   listItem.innerHTML = message;
   listElement.appendChild(listItem);
+}
+
+function listenForFileUpload() {
+  let upload = document.querySelector('#fileUpload');
+  if (upload == null) {
+    console.log('Could not file fileUpload element. Uploads will not work.');
+    return;
+  }
+  upload.addEventListener('change', (event) => {
+    console.log('Got image upload request')
+    // @ts-ignore
+    handleImageUpload(event)
+  });
 }
