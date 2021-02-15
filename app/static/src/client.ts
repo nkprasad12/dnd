@@ -3,7 +3,7 @@ import { loadImages } from './utils/image_utils.js'
 import { Socket_, connectTo } from './server/socket_connection.js'
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
-const wolfUrl = 'http://localhost:5000/retrieve_image/wolf.jpg'
+const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
 let socketPromise = connectTo('board');

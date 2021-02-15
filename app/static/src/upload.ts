@@ -34,9 +34,9 @@ const handleImageUpload = (event: HTMLInputEvent) => {
 listenForFileUpload();
 
 // Make a container element for the list
-var listContainer = document.createElement('div');
+let listContainer = document.createElement('div');
 // Make the list
-var listElement = document.createElement('ul');
+let listElement = document.createElement('ul');
 document.getElementsByTagName('body')[0].appendChild(listContainer);
 listContainer.appendChild(listElement);
 
@@ -48,7 +48,7 @@ socketPromise
   });
 
 function addToList(message: string) {
-  var listItem = document.createElement('li');
+  let listItem = document.createElement('li');
   listItem.innerHTML = message;
   listElement.appendChild(listItem);
 }
