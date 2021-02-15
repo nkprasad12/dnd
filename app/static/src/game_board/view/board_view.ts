@@ -54,7 +54,7 @@ export class BoardView {
     this.bindFogOfWarState(newModel);
     this.bindContextMenu(newModel);
 
-    this.model = Maybe.of(newModel.deepCopy());
+    this.model = Maybe.of(newModel);
   }
 
   private bindBackgroundImage(newModel: BoardModel): void {
