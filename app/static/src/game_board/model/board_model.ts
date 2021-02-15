@@ -1,6 +1,6 @@
 import { LoadedImage } from "../../utils/image_utils.js"
 import { Maybe } from "../../utils/maybe.js"
-import { Location, Point, areLocationsEqual } from "../../common/common.js"
+import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "../../common/common.js"
 
 /** Data model for a token on the game board. */
 export class TokenModel {
@@ -37,6 +37,16 @@ export class TokenModel {
     }
     return true;
   }
+
+  deepCopy(): TokenModel {
+    return new TokenModel(
+      this.name, 
+      this.image.deepCopy(),
+      this.size,
+      copyLocation(this.location),
+      this.isActive
+    );
+  }
 }
 
 /** Data model for a context menu on the game board. */
@@ -48,6 +58,13 @@ export class ContextMenuModel {
   constructor(clickPoint: Point, selectedTiles: Array<Location>) {
     this.clickPoint = clickPoint;
     this.selectedTiles = selectedTiles;
+  }
+
+  deepCopy(): ContextMenuModel {
+    return new ContextMenuModel(
+      copyPoint(this.clickPoint),
+      deepCopyList(this.selectedTiles, copyLocation)
+    );
   }
 }
 
@@ -98,9 +115,24 @@ export class BoardModel {
       this.fogOfWarState.push(colState);
     }
   }
+
+  deepCopy(): BoardModel {
+    return BoardModelBuilder.from(this).build();
+  }
 }
 
 export class BoardModelBuilder {
+
+  static from(model: BoardModel): BoardModelBuilder {
+    let builder = new BoardModelBuilder()
+      .setBackgroundImage(model.backgroundImage.deepCopy())
+      .setTileSize(model.tileSize)
+      .setTokens(deepCopyList(model.tokens, (token) => token.deepCopy()));
+    if (model.contextMenuState.present()) {
+      builder.setContextMenu(model.contextMenuState.get().deepCopy());
+    }
+    return builder;
+  }
 
   backgroundImage: Maybe<LoadedImage>;
   tileSize: number;
@@ -121,6 +153,11 @@ export class BoardModelBuilder {
 
   setTileSize(tileSize: number): BoardModelBuilder {
     this.tileSize = tileSize;
+    return this;
+  }
+
+  setTokens(tokens: Array<TokenModel>): BoardModelBuilder {
+    this.tokens = tokens;
     return this;
   }
 
