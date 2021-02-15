@@ -1,4 +1,4 @@
-import { GameBoard } from './game_board.js'
+import { GameBoard } from './game_board/game_board.js'
 import { loadImages } from './utils/image_utils.js'
 import { Socket_, connectTo } from './server/socket_connection.js'
 
