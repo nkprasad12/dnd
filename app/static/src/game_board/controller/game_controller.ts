@@ -1,8 +1,9 @@
-import { BoardModel } from "../model/board_model.js";
-import { BoardView } from '../view/board_view.js'
-import { InputListener } from './input_listener.js'
-import { ModelHandler } from "./model_handler.js";
-import { InteractionStateMachine } from "./interaction_state_machine.js";
+import { BoardModel } from "/src/game_board/model/board_model";
+import { BoardView } from '/src/game_board/view/board_view'
+
+import { InputListener } from './input_listener'
+import { InteractionStateMachine } from "./interaction_state_machine";
+import { ModelHandler } from "./model_handler";
 
 export class GameController {
 

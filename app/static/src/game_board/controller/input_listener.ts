@@ -1,5 +1,5 @@
-import { Point } from "../../common/common.js"
-import { Maybe } from "../../utils/maybe.js"
+import { Point } from "/src/common/common"
+import { Maybe } from "/src/utils/maybe"
 
 /** Handles inputs from the user. */
 export class InputListener {

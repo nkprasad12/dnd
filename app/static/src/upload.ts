@@ -1,4 +1,4 @@
-import { Socket_, connectTo } from './server/socket_connection.js'
+import { Socket_, connectTo } from './server/socket_connection'
 
 interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
