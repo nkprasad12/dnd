@@ -201,9 +201,12 @@ class ContextMenuOpenState extends InteractionState {
   }
 
   onContextMenuClickInternal(action: number, model: BoardModel): ClickResult {
+    // TODO: Refactor how the context menu interaction works.
+    for (let tile of model.contextMenuState.selectedTiles) {
+      model.fogOfWarState[tile.col][tile.row] = (action == 2);
+    }
     model.contextMenuState.isVisible = false;
     model.contextMenuState.selectedTiles = [];
-    console.log('TODO: handle action ' + action);
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 }

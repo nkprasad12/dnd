@@ -9,7 +9,6 @@ export class GameController {
   view: BoardView;
   modelHandler: ModelHandler;
   canvasListener: InputListener;
-  contextMenuListener: InputListener;
   inputHandler: InteractionStateMachine;
 
   constructor(model: BoardModel) {
@@ -21,10 +20,30 @@ export class GameController {
     this.modelHandler = new ModelHandler(this.view, model);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
-      this.view.topCanvas, 
+      this.view.topCanvas,
       (from, to, button) => this.inputHandler.onDragEvent(from, to, button));
-    this.contextMenuListener = new InputListener(
-      this.view.menu.menu,
-      (_from, _to, _button) => this.inputHandler.onContextMenuClick(5));
+    this.listenForContextMenuClicks();
+  }
+
+  // TODO: Refactor how this is done.
+  listenForContextMenuClicks() {
+    // @ts-ignore
+    let clearFogListener = new InputListener(
+      this.view.menu.clearFogButton,
+      (_from, _to, button) => {
+        if (button != 0) {
+          console.log('Ignoring non-left click on clearFog');
+        }
+        this.inputHandler.onContextMenuClick(1);
+      });
+    // @ts-ignore
+    let addFogListener = new InputListener(
+      this.view.menu.applyFogButton,
+      (_from, _to, button) => {
+        if (button != 0) {
+          console.log('Ignoring non-left click on addFog');
+        }
+        this.inputHandler.onContextMenuClick(2);
+      });
   }
 }
