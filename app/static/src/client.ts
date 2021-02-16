@@ -1,21 +1,22 @@
 // import { GameBoard } from './game_board/game_board.js'
-import { BoardModelBuilder, ContextMenuModel, TokenModel } from './game_board/model/board_model.js'
-import { BoardView } from './game_board/view/board_view.js'
+import { BoardModelBuilder, TokenModel } from './game_board/model/board_model.js'
+// import { BoardView } from './game_board/view/board_view.js'
 import { LoadedImage, loadImages } from './utils/image_utils.js'
-import { Socket_, connectTo } from './server/socket_connection.js'
+// import { Socket_, connectTo } from './server/socket_connection.js'
 import { GameController } from './game_board/controller/game_controller.js'
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
-let socketPromise = connectTo('board');
-let imagesPromies = loadImages([backgroundUrl, wolfUrl, egbertUrl]);
+// let socketPromise = connectTo('board');
+let imagesPromise = loadImages([backgroundUrl, wolfUrl, egbertUrl]);
 
-Promise.all([socketPromise, imagesPromies])
+// Promise.all([imagesPromise, socketPromise])
+Promise.all([imagesPromise])
   .then((inputs) => {
-    // let socket: Socket_ = inputs[0];
-    let imageMap: Map<string, CanvasImageSource> = inputs[1];
+    // let socket: Socket_ = inputs[1];
+    let imageMap: Map<string, CanvasImageSource> = inputs[0];
 
     let modelBuilder = new BoardModelBuilder().setTileSize(60);
     
@@ -66,6 +67,7 @@ Promise.all([socketPromise, imagesPromies])
     // );
 
     // boardView.bind(modelBuilder.build());
+    // @ts-ignore
     let _gameController = new GameController(modelBuilder.build());
 
     // socket.on('board-update', (obj) => {
