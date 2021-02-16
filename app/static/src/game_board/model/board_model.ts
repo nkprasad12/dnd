@@ -54,16 +54,20 @@ export class ContextMenuModel {
 
   clickPoint: Point;
   selectedTiles: Array<Location>;
+  isVisible: boolean;
 
-  constructor(clickPoint: Point, selectedTiles: Array<Location>) {
+  // TODO: Separate tile selection from the context menu.
+  constructor(clickPoint: Point, selectedTiles: Array<Location>, isVisible: boolean) {
     this.clickPoint = clickPoint;
     this.selectedTiles = selectedTiles;
+    this.isVisible = isVisible;
   }
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(
       copyPoint(this.clickPoint),
-      deepCopyList(this.selectedTiles, copyLocation)
+      deepCopyList(this.selectedTiles, copyLocation),
+      this.isVisible
     );
   }
 }
@@ -81,14 +85,14 @@ export class BoardModel {
 
   tokens: Array<TokenModel>;
 
-  contextMenuState: Maybe<ContextMenuModel>;
+  contextMenuState: ContextMenuModel;
   fogOfWarState: Array<Array<boolean>>;
 
   constructor(
     backgroundImage: LoadedImage,
     tileSize: number,
     tokens: Array<TokenModel>,
-    contextMenuState: Maybe<ContextMenuModel>) {
+    contextMenuState: ContextMenuModel) {
 
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize)
@@ -103,11 +107,7 @@ export class BoardModel {
 
     this.tokens = deepCopyList(tokens, (token) => token.deepCopy());
 
-    if (contextMenuState.present()) {
-      this.contextMenuState = Maybe.of(contextMenuState.get().deepCopy());
-    } else {
-      this.contextMenuState = Maybe.absent();
-    }
+    this.contextMenuState = contextMenuState.deepCopy();
     this.fogOfWarState = [];
     for (let i = 0; i < this.cols; i++) {
       let colState: Array<boolean> = [];
@@ -126,26 +126,23 @@ export class BoardModel {
 export class BoardModelBuilder {
 
   static from(model: BoardModel): BoardModelBuilder {
-    let builder = new BoardModelBuilder()
+    return new BoardModelBuilder()
       .setBackgroundImage(model.backgroundImage)
       .setTileSize(model.tileSize)
-      .setTokens(model.tokens);
-    if (model.contextMenuState.present()) {
-      builder.setContextMenu(model.contextMenuState.get());
-    }
-    return builder;
+      .setTokens(model.tokens)
+      .setContextMenu(model.contextMenuState);
   }
 
   backgroundImage: Maybe<LoadedImage>;
   tileSize: number;
   tokens: Array<TokenModel>;
-  contextMenu: Maybe<ContextMenuModel>;
+  contextMenu: ContextMenuModel;
 
   constructor() {
     this.backgroundImage = Maybe.absent();
     this.tileSize = -1;
     this.tokens = [];
-    this.contextMenu = Maybe.absent()
+    this.contextMenu = new ContextMenuModel({x: 0, y: 0}, [], false);
   }
 
   setBackgroundImage(image: LoadedImage): BoardModelBuilder {
@@ -169,7 +166,7 @@ export class BoardModelBuilder {
   }
 
   setContextMenu(contextMenu: ContextMenuModel): BoardModelBuilder {
-    this.contextMenu = Maybe.of(contextMenu);
+    this.contextMenu = contextMenu
     return this;
   }
 
