@@ -1,5 +1,5 @@
-import { Maybe } from "../utils/maybe.js"
-import { Socket_ } from "../server/socket_connection.js"
+import { Maybe } from "/src/utils/maybe"
+import { Socket_ } from "/src/server/socket_connection"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";

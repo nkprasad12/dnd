@@ -1,6 +1,6 @@
-import { BoardModel, TokenModel, ContextMenuModel } from "../model/board_model.js"
-import { Maybe } from "../../utils/maybe.js"
-import { Location, areLocationsEqual } from "../../common/common.js"
+import { Location, areLocationsEqual } from "/src/common/common"
+import { Maybe } from "/src/utils/maybe"
+import { BoardModel, TokenModel, ContextMenuModel } from "/src/game_board/model/board_model"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";

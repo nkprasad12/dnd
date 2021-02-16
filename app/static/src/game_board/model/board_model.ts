@@ -1,6 +1,6 @@
-import { LoadedImage } from "../../utils/image_utils.js"
-import { Maybe } from "../../utils/maybe.js"
-import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "../../common/common.js"
+import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "/src/common/common"
+import { LoadedImage } from "/src/utils/image_utils"
+import { Maybe } from "/src/utils/maybe"
 
 /** Data model for a token on the game board. */
 export class TokenModel {

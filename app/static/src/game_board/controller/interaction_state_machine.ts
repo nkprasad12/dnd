@@ -1,6 +1,7 @@
-import { ModelHandler, INVALID_INDEX } from "./model_handler.js";
-import { Point, Location, areLocationsEqual } from "../../common/common.js"
-import { BoardModel } from "../model/board_model.js";
+import { Point, Location, areLocationsEqual } from "/src/common/common"
+import { BoardModel } from "/src/game_board/model/board_model";
+
+import { ModelHandler, INVALID_INDEX } from "./model_handler";
 
 interface ClickData {
   tile: Location;

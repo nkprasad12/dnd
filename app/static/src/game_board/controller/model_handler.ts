@@ -1,6 +1,6 @@
-import { BoardModel, TokenModel } from "../model/board_model.js";
-import { BoardView } from '../view/board_view.js';
-import { Location, areLocationsEqual } from "../../common/common.js"
+import { Location, areLocationsEqual } from "/src/common/common"
+import { BoardModel, TokenModel } from "/src/game_board/model/board_model";
+import { BoardView } from '/src/game_board/view/board_view';
 
 export const INVALID_INDEX: number = -1;
 
