@@ -51,6 +51,7 @@ abstract class InteractionState {
     if (mouseButton != 0 && mouseButton != 2) {
       return this;
     }
+    console.log('Handling mouse event');
 
     let isLeftClick = mouseButton == 0;
     let from = this.clickDataForPoint(fromPoint);
@@ -76,11 +77,23 @@ abstract class InteractionState {
     return result.newState;
   }
 
-  clickDataForPoint(absolutePoint: Point): ClickData {
+  protected onContextMenuClickInternal(_action: number, _model: BoardModel): ClickResult {
+    throw 'Invalid state for onContextMenuClickInternal';
+  }
+
+  onContextMenuClick(action: number): InteractionState {
+    console.log('Handling context menu click');
+    let newModel = this.modelHandler.copyModel();
+    let result = this.onContextMenuClickInternal(action, newModel);
+    this.modelHandler.update(result.model);
+    return result.newState;
+  }
+
+  private clickDataForPoint(absolutePoint: Point): ClickData {
     return {point: absolutePoint, tile: this.tileForPoint(absolutePoint)};
   }
 
-  tileForPoint(absolutePoint: Point): Location {
+  private tileForPoint(absolutePoint: Point): Location {
     const rect = this.modelHandler.view.topCanvas.getBoundingClientRect();
     let relativePoint = { x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top };
     let tileSize = this.modelHandler.tileSize();
@@ -109,6 +122,9 @@ class DefaultState extends InteractionState {
 
   onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
     let tokenIndex = this.modelHandler.tokenIndexOfTile(clickData.tile);
+    if (tokenIndex == INVALID_INDEX) {
+      return this.onRightClick(clickData, model);
+    }
     model.tokens[tokenIndex].isActive = true;
     return {model: model, newState: new PickedUpTokenState(this.modelHandler)};
   }
@@ -183,6 +199,13 @@ class ContextMenuOpenState extends InteractionState {
     model.contextMenuState.clickPoint = clickData.point;
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
+
+  onContextMenuClickInternal(action: number, model: BoardModel): ClickResult {
+    model.contextMenuState.isVisible = false;
+    model.contextMenuState.selectedTiles = [];
+    console.log('TODO: handle action ' + action);
+    return {model: model, newState: new DefaultState(this.modelHandler)};
+  }
 }
 
 export class InteractionStateMachine {
@@ -195,6 +218,11 @@ export class InteractionStateMachine {
 
   onDragEvent(fromPoint: Point, toPoint: Point, mouseButton: number): void {
     let newState = this.currentState.onDragEvent(fromPoint, toPoint, mouseButton);
+    this.currentState = newState;
+  }
+
+  onContextMenuClick(action: number): void {
+    let newState = this.currentState.onContextMenuClick(action);
     this.currentState = newState;
   }
 }

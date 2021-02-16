@@ -1,17 +1,16 @@
-import { BoardView } from '../view/board_view.js'
 import { Point } from "../../common/common.js"
 import { Maybe } from "../../utils/maybe.js"
 
 /** Handles inputs from the user. */
 export class InputListener {
  
-  view: BoardView;
+  view: HTMLElement;
   mouseStateMachine: MouseStateMachine;
 
-  constructor(view: BoardView, dragCallback: DragCallback) {
+  constructor(view: HTMLElement, dragCallback: DragCallback) {
     this.view = view;
-    this.mouseStateMachine = new MouseStateMachine(view.topCanvas, dragCallback);
-    view.topCanvas.addEventListener(
+    this.mouseStateMachine = new MouseStateMachine(view, dragCallback);
+    view.addEventListener(
       'contextmenu', (event) => { event.preventDefault(); });
   }
 }
