@@ -1,6 +1,6 @@
-import { BoardModel, TokenModel } from "../model/board_model.js"
+import { BoardModel, TokenModel, ContextMenuModel } from "../model/board_model.js"
 import { Maybe } from "../../utils/maybe.js"
-import { Location, Point, areLocationsEqual } from "../../common/common.js"
+import { Location, areLocationsEqual } from "../../common/common.js"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
 const selectedGridColor: string = "rgba(0, 255, 0, 0.5)";
@@ -98,14 +98,11 @@ export class BoardView {
   }
 
   private bindTokens(newModel: BoardModel): void {
-    console.log('bindTokens');
     let oldTokens: Array<TokenModel> = []
     if (this.model.present()) {
       oldTokens = this.model.get().tokens;
     }
-    console.log('oldTokens: ' + JSON.stringify(oldTokens));
     let newTokens = newModel.tokens;
-    console.log('newTokens: ' + JSON.stringify(newTokens));
     for (let oldToken of oldTokens) {
       let hasMatch = false;
       for (let newToken of newTokens) {
@@ -143,16 +140,14 @@ export class BoardView {
   }
 
   private bindContextMenu(newModel: BoardModel): void {
+    this.menu.bind(newModel.contextMenuState);
     let oldSelection: Array<Location> = [];
-    if (this.model.present() && this.model.get().contextMenuState.present()) {
-      oldSelection = this.model.get().contextMenuState.get().selectedTiles;
+    if (this.model.present()) {
+      oldSelection = this.model.get().contextMenuState.selectedTiles;
     }
     let newSelection: Array<Location> = [];
-    if (newModel.contextMenuState.present()) {
-      this.menu.bind(newModel.contextMenuState.get().clickPoint);
-      newSelection = newModel.contextMenuState.get().selectedTiles;
-    } else {
-      this.menu.hide();
+    if (newModel.contextMenuState.isVisible) {
+      newSelection = newModel.contextMenuState.selectedTiles;
     }
 
     for (let oldTile of oldSelection) {
@@ -238,7 +233,7 @@ class Tile {
   clearGrid(): void {
     getContext(this.gridCanvas)
       .clearRect(
-        this.startX * this.size - 1, this.startY * this.size - 1,
+        this.startX - 1, this.startY - 1,
         this.size + 2, this.size + 2);
   }
 
@@ -281,19 +276,16 @@ class ContextMenu {
     this.applyFogButton.style.display = 'initial';
   }
 
-  bind(point: Point): void {
-    this.menu.style.top = point.y + "px";
-    this.menu.style.left = point.x + "px";
-    this.menu.style.display = 'initial';
-    // TODO: Remove irrelevant menu options.
-  }
-
-  hide(): void {
-    this.menu.style.display = 'none';
-    for (let tile of this.tiles) {
-      tile.defaultGrid();
+  bind(model: ContextMenuModel): void {
+    if (model.isVisible) {
+      let point = model.clickPoint;
+      this.menu.style.top = point.y + "px";
+      this.menu.style.left = point.x + "px";
+      this.menu.style.display = 'initial';
+    } else {
+      this.menu.style.display = 'none';
     }
-    this.tiles = [];
+    // TODO: Remove irrelevant menu options.
   }
 }
 

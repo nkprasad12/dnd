@@ -8,23 +8,15 @@ export class InputListener {
   view: BoardView;
   mouseStateMachine: MouseStateMachine;
 
-  constructor(view: BoardView, dragCallback: DragCallback, contextCallback: ContextCallback) {
+  constructor(view: BoardView, dragCallback: DragCallback) {
     this.view = view;
     this.mouseStateMachine = new MouseStateMachine(view.topCanvas, dragCallback);
     view.topCanvas.addEventListener(
-      'contextmenu',
-      (event) => {
-        event.preventDefault();
-        const clickPoint = mousePoint(event);
-        contextCallback(clickPoint);
-      }
-    );
+      'contextmenu', (event) => { event.preventDefault(); });
   }
 }
 
-type ContextCallback = (clickPoint: Point) => any;
-
-type DragCallback = (from: Point, to: Point) => any;
+type DragCallback = (from: Point, to: Point, mouseButton: number) => any;
 
 /** Returns the absolute point of a mouse event. */
 function mousePoint(event: MouseEvent): Point {
@@ -53,21 +45,15 @@ class MouseStateMachine {
   }
 
   handleMouseDown(event: MouseEvent): void {
-    if (event.button != 0) {
-      return;
-    }
     this.mouseDownPoint = Maybe.of(mousePoint(event));
   }
 
   handleMouseUp(event: MouseEvent): void {
-    if (event.button != 0) {
-      return;
-    }
     if (!this.mouseDownPoint.present()) {
       console.log('Got mouseup event without mousedown - ignoring.');
       return;
     }
-    this.dragCallback(this.mouseDownPoint.get(), mousePoint(event));
+    this.dragCallback(this.mouseDownPoint.get(), mousePoint(event), event.button);
     this.mouseDownPoint = Maybe.absent();
   }
 }
