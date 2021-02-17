@@ -4,6 +4,8 @@ import { BoardView } from '/src/game_board/view/board_view'
 import { InputListener } from './input_listener'
 import { InteractionStateMachine } from "./interaction_state_machine";
 import { ModelHandler } from "./model_handler";
+import { RemoteBoard } from "/src/game_board/remote/remote_board";
+import { RemoteBoardModel } from "/src/game_board/model/remote_board_model";
 
 export class GameController {
 
@@ -11,6 +13,7 @@ export class GameController {
   private readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
+  private readonly remoteBoard: RemoteBoard
 
   constructor(model: BoardModel) {
     let canvasHolder = document.getElementById('canvasHolder');
@@ -18,7 +21,14 @@ export class GameController {
       throw 'canvasHolder is null! Can not display board';
     }
     this.view = new BoardView(canvasHolder);
-    this.modelHandler = new ModelHandler(this.view, model);
+    this.remoteBoard =
+      new RemoteBoard(
+        RemoteBoardModel.create(model),
+        (remoteDiff) => {
+          console.log("TODO: handle remote diff");
+          console.log(remoteDiff);
+        });
+    this.modelHandler = new ModelHandler(this.view, model, this.remoteBoard);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
       this.view.topCanvas,
