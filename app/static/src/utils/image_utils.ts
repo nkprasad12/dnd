@@ -1,5 +1,4 @@
 export class LoadedImage {
-
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
 
   deepCopy(): LoadedImage {
@@ -9,30 +8,32 @@ export class LoadedImage {
 
 function loadImage(source: string): Promise<LoadedImage> {
   return new Promise((resolve, reject) => {
-    let image = new Image();
+    const image = new Image();
     image.src = source;
     image.onload = (event: Event) => {
-      let loadedImage = new LoadedImage(<CanvasImageSource>event.currentTarget, source);
+      const loadedImage =
+          new LoadedImage(<CanvasImageSource>event.currentTarget, source);
       resolve(loadedImage);
-    }
+    };
     image.onerror = () => {
-      reject("Failed to load image");
-    }
+      reject(new Error('Failed to load image'));
+    };
   });
 }
 
 /** Loads all the images requested in the URLs in the input array. */
-export function loadImages(sources: Array<string>): Promise<Map<string, CanvasImageSource>> {
-  let promises = []
-  for (let source of sources) {
+export function loadImages(
+    sources: Array<string>): Promise<Map<string, CanvasImageSource>> {
+  const promises = [];
+  for (const source of sources) {
     promises.push(loadImage(source));
   }
   return Promise.all(promises)
-    .then((res) => {
-      let imageMap = new Map();
-      for (let loadedImage of res) {
-        imageMap.set(loadedImage.source, loadedImage.image);
-      }
-      return imageMap;
-    });
+      .then((res) => {
+        const imageMap = new Map();
+        for (const loadedImage of res) {
+          imageMap.set(loadedImage.source, loadedImage.image);
+        }
+        return imageMap;
+      });
 }

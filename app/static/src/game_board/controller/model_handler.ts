@@ -1,18 +1,16 @@
-import { RemoteBoardDiff, RemoteBoardModel } from "/src/game_board/model/remote_board_model";
-import { RemoteBoard } from "/src/game_board/remote/remote_board";
-import { Location, areLocationsEqual } from "/src/common/common"
-import { BoardModel, TokenModel } from "/src/game_board/model/board_model";
-import { BoardView } from '/src/game_board/view/board_view';
+import {RemoteBoardDiff, RemoteBoardModel} from '/src/game_board/model/remote_board_model';
+import {RemoteBoard} from '/src/game_board/remote/remote_board';
+import {Location, areLocationsEqual} from '/src/common/common';
+import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
+import {BoardView} from '/src/game_board/view/board_view';
 
 export const INVALID_INDEX: number = -1;
 
 export class ModelHandler {
-
   constructor(
     readonly view: BoardView,
     private model: BoardModel,
     private readonly remoteBoard: RemoteBoard) {
-
     this.view.bind(this.model);
   }
 
@@ -39,9 +37,9 @@ export class ModelHandler {
   }
 
   activeTokenIndex(): number {
-    let tokens = this.tokens();
+    const tokens = this.tokens();
     for (let i = 0; i < tokens.length; i++) {
-      let token = tokens[i];
+      const token = tokens[i];
       if (token.isActive) {
         return i;
       }
@@ -50,9 +48,9 @@ export class ModelHandler {
   }
 
   tokenIndexOfTile(tile: Location): number {
-    let tokens = this.tokens();
+    const tokens = this.tokens();
     for (let i = 0; i < tokens.length; i++) {
-      let token = tokens[i];
+      const token = tokens[i];
       if (areLocationsEqual(token.location, tile)) {
         return i;
       }
