@@ -9,6 +9,7 @@ const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
+console.log('With moved TSConfi');
 // let socketPromise = connectTo('board');
 let imagesPromise = loadImages([backgroundUrl, wolfUrl, egbertUrl]);
 
