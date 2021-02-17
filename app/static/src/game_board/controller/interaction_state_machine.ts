@@ -34,11 +34,7 @@ function tilesInDrag(fromData: ClickData, toData: ClickData) {
 
 abstract class InteractionState {
 
-  modelHandler: ModelHandler;
-
-  constructor(modelHandler: ModelHandler) {
-    this.modelHandler = modelHandler;
-  }
+  constructor(protected readonly modelHandler: ModelHandler) {}
 
   protected abstract onLeftDrag(fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult;
 

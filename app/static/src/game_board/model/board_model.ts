@@ -1,23 +1,12 @@
 import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "/src/common/common"
 import { LoadedImage } from "/src/utils/image_utils"
-import { Maybe } from "/src/utils/maybe"
 
 /** Data model for a token on the game board. */
 export class TokenModel {
 
-  name: string;
-  image: LoadedImage;
-  size: number;
-  location: Location;
-  isActive: boolean;
-
-  constructor(name: string, loadedImage: LoadedImage, size: number, location: Location, isActive: boolean) {
-    this.name = name;
-    this.image = loadedImage;
-    this.size = size;
-    this.location = location;
-    this.isActive = isActive;
-  }
+  constructor(
+    public name: string, public image: LoadedImage, public size: number, 
+    public location: Location, public isActive: boolean) {}
 
   equals(other: TokenModel): boolean {
     if (this.name != other.name) {
@@ -52,16 +41,9 @@ export class TokenModel {
 /** Data model for a context menu on the game board. */
 export class ContextMenuModel {
 
-  clickPoint: Point;
-  selectedTiles: Array<Location>;
-  isVisible: boolean;
-
   // TODO: Separate tile selection from the context menu.
-  constructor(clickPoint: Point, selectedTiles: Array<Location>, isVisible: boolean) {
-    this.clickPoint = clickPoint;
-    this.selectedTiles = selectedTiles;
-    this.isVisible = isVisible;
-  }
+  constructor(
+    public clickPoint: Point, public selectedTiles: Location[], public isVisible: boolean) {}
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(
@@ -75,25 +57,17 @@ export class ContextMenuModel {
 /** Data model representing the game board. */
 export class BoardModel {
 
-  backgroundImage: LoadedImage;
-  tileSize: number;
-
   width: number;
   height: number;
   rows: number;
   cols: number;
 
-  tokens: Array<TokenModel>;
-
-  contextMenuState: ContextMenuModel;
-  fogOfWarState: Array<Array<boolean>>;
-
   constructor(
-    backgroundImage: LoadedImage,
-    tileSize: number,
-    tokens: Array<TokenModel>,
-    contextMenuState: ContextMenuModel,
-    fogOfWarState: Array<Array<boolean>>) {
+    public backgroundImage: LoadedImage,
+    public tileSize: number,
+    public tokens: TokenModel[],
+    public contextMenuState: ContextMenuModel,
+    public fogOfWarState: boolean[][]) {
 
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize)
@@ -143,22 +117,14 @@ export class BoardModelBuilder {
       .setFogOfWarState(model.fogOfWarState);
   }
 
-  backgroundImage: Maybe<LoadedImage>;
-  tileSize: number;
-  tokens: Array<TokenModel>;
-  contextMenu: ContextMenuModel;
-  fogOfWarState: Array<Array<boolean>>;
-
-  constructor() {
-    this.backgroundImage = Maybe.absent();
-    this.tileSize = -1;
-    this.tokens = [];
-    this.contextMenu = new ContextMenuModel({x: 0, y: 0}, [], false);
-    this.fogOfWarState = [];
-  }
+  private backgroundImage?: LoadedImage = undefined;
+  private tileSize = -1;
+  private tokens: TokenModel[] = [];
+  private contextMenu: ContextMenuModel = new ContextMenuModel({x: 0, y: 0}, [], false);
+  private fogOfWarState: boolean[][] = [];
 
   setBackgroundImage(image: LoadedImage): BoardModelBuilder {
-    this.backgroundImage = Maybe.of(image);
+    this.backgroundImage = image;
     return this;
   }
 
@@ -167,7 +133,7 @@ export class BoardModelBuilder {
     return this;
   }
 
-  setTokens(tokens: Array<TokenModel>): BoardModelBuilder {
+  setTokens(tokens: TokenModel[]): BoardModelBuilder {
     this.tokens = tokens;
     return this;
   }
@@ -182,20 +148,20 @@ export class BoardModelBuilder {
     return this;
   }
 
-  setFogOfWarState(state: Array<Array<boolean>>): BoardModelBuilder {
+  setFogOfWarState(state: boolean[][]): BoardModelBuilder {
     this.fogOfWarState = state;
     return this;
   }
 
   build(): BoardModel {
-    if (!this.backgroundImage.present()) {
+    if (this.backgroundImage == undefined) {
       throw 'BoardModelBuilder requires backgroundImage';
     }
     if (this.tileSize < 1) {
       throw 'BoardModelBuilder requires a tileSize >= 1';
     }
     return new BoardModel(
-      this.backgroundImage.get(), this.tileSize, this.tokens, this.contextMenu, 
+      this.backgroundImage, this.tileSize, this.tokens, this.contextMenu, 
       this.fogOfWarState);
   }
 }

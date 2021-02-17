@@ -1,19 +1,4 @@
 import { Point } from "/src/common/common"
-import { Maybe } from "/src/utils/maybe"
-
-/** Handles inputs from the user. */
-export class InputListener {
- 
-  view: HTMLElement;
-  mouseStateMachine: MouseStateMachine;
-
-  constructor(view: HTMLElement, dragCallback: DragCallback) {
-    this.view = view;
-    this.mouseStateMachine = new MouseStateMachine(view, dragCallback);
-    view.addEventListener(
-      'contextmenu', (event) => { event.preventDefault(); });
-  }
-}
 
 type DragCallback = (from: Point, to: Point, mouseButton: number) => any;
 
@@ -22,17 +7,14 @@ function mousePoint(event: MouseEvent): Point {
   return { x: event.clientX, y: event.clientY }
 }
 
-class MouseStateMachine {
+/** Handles inputs from the user. */
+export class InputListener {
 
-  element: HTMLElement;
-  dragCallback: DragCallback;
+  mouseDownPoint?: Point = undefined;
 
-  mouseDownPoint: Maybe<Point>;
-
-  constructor(element: HTMLElement, dragCallback: DragCallback) {
-    this.element = element;
-    this.dragCallback = dragCallback;
-    this.mouseDownPoint = Maybe.absent();
+  constructor(
+    private readonly element: HTMLElement,
+    private readonly dragCallback: DragCallback) {
 
     this.element.addEventListener(
       'mousedown',
@@ -41,18 +23,21 @@ class MouseStateMachine {
     this.element.addEventListener(
       'mouseup',
       (e) => { this.handleMouseUp(e); });
+
+    this.element.addEventListener(
+      'contextmenu', (event) => { event.preventDefault(); });
   }
 
-  handleMouseDown(event: MouseEvent): void {
-    this.mouseDownPoint = Maybe.of(mousePoint(event));
+  private handleMouseDown(event: MouseEvent): void {
+    this.mouseDownPoint = mousePoint(event);
   }
 
-  handleMouseUp(event: MouseEvent): void {
-    if (!this.mouseDownPoint.present()) {
+  private handleMouseUp(event: MouseEvent): void {
+    if (this.mouseDownPoint == undefined) {
       console.log('Got mouseup event without mousedown - ignoring.');
       return;
     }
-    this.dragCallback(this.mouseDownPoint.get(), mousePoint(event), event.button);
-    this.mouseDownPoint = Maybe.absent();
+    this.dragCallback(this.mouseDownPoint, mousePoint(event), event.button);
+    this.mouseDownPoint = undefined;
   }
 }

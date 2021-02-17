@@ -1,5 +1,4 @@
 import { Location, areLocationsEqual } from "/src/common/common"
-import { Maybe } from "/src/utils/maybe"
 import { BoardModel, TokenModel, ContextMenuModel } from "/src/game_board/model/board_model"
 
 const defaultGridColor: string = "rgba(255, 255, 255, 0.3)";
@@ -22,16 +21,17 @@ function createBoardCanvas(id: string, zIndex: string, parent: HTMLElement): HTM
 /** View for a game board. */
 export class BoardView {
 
-  backgroundCanvas: HTMLCanvasElement;
-  fogOfWarCanvas: HTMLCanvasElement;
-  tokenCanvas: HTMLCanvasElement;
-  gridCanvas: HTMLCanvasElement;
-  topCanvas: HTMLCanvasElement;
-  allCanvases: Array<HTMLCanvasElement>;
+  private readonly backgroundCanvas: HTMLCanvasElement;
+  private readonly fogOfWarCanvas: HTMLCanvasElement;
+  private readonly tokenCanvas: HTMLCanvasElement;
+  private readonly gridCanvas: HTMLCanvasElement;
+  private readonly allCanvases: Array<HTMLCanvasElement>;
+  readonly topCanvas: HTMLCanvasElement;
 
-  tiles: Array<Array<Tile>>;
-  menu: ContextMenu;
-  model: Maybe<BoardModel>;
+  readonly menu: ContextMenu = new ContextMenu();
+
+  private tiles: Tile[][] = [];
+  private model?: BoardModel = undefined;
 
   constructor(parent: HTMLElement) {
     this.backgroundCanvas = createBoardCanvas("backgroundCanvas", "1", parent);
@@ -41,10 +41,6 @@ export class BoardView {
     this.topCanvas = createBoardCanvas("topCanvas", "5", parent);
     this.allCanvases = [
       this.backgroundCanvas, this.fogOfWarCanvas, this.tokenCanvas, this.gridCanvas, this.topCanvas];
-
-    this.tiles = [];
-    this.menu = new ContextMenu();
-    this.model = Maybe.absent();
   }
 
   bind(newModel: BoardModel): void {
@@ -54,13 +50,13 @@ export class BoardView {
     this.bindFogOfWarState(newModel);
     this.bindContextMenu(newModel);
 
-    this.model = Maybe.of(newModel);
+    this.model = newModel;
   }
 
   private bindBackgroundImage(newModel: BoardModel): void {
     let needsUpdate =
-      !this.model.present() ||
-      (this.model.get().backgroundImage.source != newModel.backgroundImage.source);
+      this.model == undefined ||
+      (this.model.backgroundImage.source != newModel.backgroundImage.source);
 
     if (!needsUpdate) {
       return;
@@ -76,8 +72,8 @@ export class BoardView {
 
   private bindGrid(newModel: BoardModel): void {
     let needsUpdate = false;
-    if (this.model.present()) {
-      let model = this.model.get();
+    if (this.model != undefined) {
+      let model = this.model;
       needsUpdate = needsUpdate || (model.cols != newModel.cols);
       needsUpdate = needsUpdate || (model.rows != newModel.rows);
       needsUpdate = needsUpdate || (model.tileSize != newModel.tileSize);
@@ -99,8 +95,8 @@ export class BoardView {
 
   private bindTokens(newModel: BoardModel): void {
     let oldTokens: Array<TokenModel> = []
-    if (this.model.present()) {
-      oldTokens = this.model.get().tokens;
+    if (this.model != undefined) {
+      oldTokens = this.model.tokens;
     }
     let newTokens = newModel.tokens;
     for (let oldToken of oldTokens) {
@@ -142,8 +138,8 @@ export class BoardView {
   private bindContextMenu(newModel: BoardModel): void {
     this.menu.bind(newModel.contextMenuState);
     let oldSelection: Array<Location> = [];
-    if (this.model.present()) {
-      oldSelection = this.model.get().contextMenuState.selectedTiles;
+    if (this.model != undefined) {
+      oldSelection = this.model.contextMenuState.selectedTiles;
     }
     let newSelection: Array<Location> = [];
     if (newModel.contextMenuState.isVisible) {

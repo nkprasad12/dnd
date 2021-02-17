@@ -25,13 +25,9 @@ const baseUrl = 'http://localhost:5000/'
 
 class SocketConnection extends Socket_ {
 
-  socket: Socket_;
-  namespace: string;
 
-  constructor(socket: Socket_, namespace: string) {
+  constructor(private readonly socket: Socket_, private readonly namespace: string) {
     super();
-    this.socket = socket;
-    this.namespace = namespace;
   }
 
   on(event: string, listener: (message: any) => any): void {
