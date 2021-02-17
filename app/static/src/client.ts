@@ -2,75 +2,54 @@
 import { BoardModelBuilder, TokenModel } from '/src/game_board/model/board_model'
 // import { BoardView } from './game_board/view/board_view'
 import { LoadedImage, loadImages } from '/src/utils/image_utils'
-// import { Socket_, connectTo } from './server/socket_connection'
+import { connectTo } from '/src/server/socket_connection'
 import { GameController } from '/src/game_board/controller/game_controller'
 
 const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
-// let socketPromise = connectTo('board');
+let canvasHolder = document.getElementById('canvasHolder');
+if (canvasHolder == null) {
+  throw 'canvasHolder is null! Can not display board';
+}
+
+let socketPromise = connectTo('board');
 let imagesPromise = loadImages([backgroundUrl, wolfUrl, egbertUrl]);
 
-// Promise.all([imagesPromise, socketPromise])
-Promise.all([imagesPromise])
+Promise.all([imagesPromise, socketPromise])
   .then((inputs) => {
-    // let socket: Socket_ = inputs[1];
-    let imageMap: Map<string, CanvasImageSource> = inputs[0];
+    let [imageMap, socket] = inputs;
 
     let modelBuilder = new BoardModelBuilder().setTileSize(60);
 
-    let backgroundImage = imageMap.get(backgroundUrl);
-    if (backgroundImage == undefined) {
-      throw 'ERROR: Background image is undefined!';
-    }
-    let canvasHolder = document.getElementById('canvasHolder');
-    if (canvasHolder == null) {
-      throw 'canvasHolder is null! Can not display board';
-    }
-    // let board = new GameBoard(backgroundImage, 60, canvasHolder);
-    // let boardView = new BoardView(canvasHolder);
+    modelBuilder.setBackgroundImage(
+      new LoadedImage(getOrThrow(imageMap, backgroundUrl), backgroundUrl));
+    modelBuilder.addToken(
+      TokenModel.create(
+        'Wolf',
+        new LoadedImage(getOrThrow(imageMap, wolfUrl), wolfUrl),
+        60,
+        { col: 5, row: 5 }, false));
+    modelBuilder.addToken(
+      TokenModel.create(
+        'Egbert',
+        new LoadedImage(getOrThrow(imageMap, egbertUrl), egbertUrl),
+        60,
+        { col: 6, row: 6 }, false));
 
-    modelBuilder.setBackgroundImage(new LoadedImage(backgroundImage, backgroundUrl));
-
-    let wolfImage = imageMap.get(wolfUrl);
-    if (wolfImage == undefined) {
-      console.log('ERROR: Wolf image is undefined!')
-    } else {
-      modelBuilder.addToken(
-        TokenModel.create(
-          'Wolf',
-          new LoadedImage(wolfImage, wolfUrl),
-          60,
-          { col: 5, row: 5 }, false));
-      // board.placeToken('Wolf', wolfImage, { x: 5, y: 5 }, socket);
-    }
-
-    let egbertImage = imageMap.get(egbertUrl);
-    if (egbertImage == undefined) {
-      console.log('ERROR: Egbert image is undefined!')
-    } else {
-      // board.placeToken('Egbert', egbertImage, { x: 6, y: 5 }, socket);
-      modelBuilder.addToken(
-        TokenModel.create(
-          'Egbert',
-          new LoadedImage(egbertImage, egbertUrl),
-          60,
-          { col: 6, row: 6 }, false));
-    }
-
-    // modelBuilder.setContextMenu(
-    //   new ContextMenuModel(
-    //     {x: 30, y: 200},
-    //     [{col: 5, row: 5}, {col: 5, row: 6}, {col: 6, row: 5}, {col: 6, row: 6}]
-    //   )
-    // );
-
-    // boardView.bind(modelBuilder.build());
-    // @ts-ignore
-    let _gameController = new GameController(modelBuilder.build());
+    let gameController = new GameController(modelBuilder.build(), socket);
+    console.log(gameController);
 
     // socket.on('board-update', (obj) => {
     //   board.onRemoteUpdate({ name: obj.name, x: obj.pt.x, y: obj.pt.y })
     // });
   });
+
+function getOrThrow<K, V>(map: Map<K, V>, key: K): V {
+  let value = map.get(key);
+  if (value == undefined) {
+    throw 'No value for key: ' + String(key);
+  }
+  return value;
+} 

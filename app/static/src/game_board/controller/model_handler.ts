@@ -1,4 +1,4 @@
-import { RemoteBoardModel } from "/src/game_board/model/remote_board_model";
+import { RemoteBoardDiff, RemoteBoardModel } from "/src/game_board/model/remote_board_model";
 import { RemoteBoard } from "/src/game_board/remote/remote_board";
 import { Location, areLocationsEqual } from "/src/common/common"
 import { BoardModel, TokenModel } from "/src/game_board/model/board_model";
@@ -20,6 +20,10 @@ export class ModelHandler {
     this.model = newModel;
     this.view.bind(this.copyModel());
     this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
+  }
+
+  applyDiff(diff: RemoteBoardDiff): void {
+    this.update(this.model.mergedFrom(diff));
   }
 
   copyModel(): BoardModel {
