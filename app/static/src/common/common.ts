@@ -26,8 +26,8 @@ export function copyLocation(a: Location): Location {
   return {row: a.row, col: a.col};
 }
 
-export function deepCopyList<T> (list: Array<T>, copyFunction: (a: T) => T) {
-  let newList: Array<T> = [];
+export function deepCopyList<T> (list: T[], copyFunction: (a: T) => T) {
+  let newList: T[] = [];
   for (let item of list) {
     newList.push(copyFunction(item));
   }

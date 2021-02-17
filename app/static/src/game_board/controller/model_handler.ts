@@ -6,12 +6,7 @@ export const INVALID_INDEX: number = -1;
 
 export class ModelHandler {
 
-  view: BoardView;
-  model: BoardModel;
-
-  constructor(view: BoardView, model: BoardModel) {
-    this.view = view;
-    this.model = model;
+  constructor(readonly view: BoardView, private model: BoardModel) {
     this.view.bind(this.model);
   }
 

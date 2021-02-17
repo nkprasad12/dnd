@@ -7,10 +7,10 @@ import { ModelHandler } from "./model_handler";
 
 export class GameController {
 
-  view: BoardView;
-  modelHandler: ModelHandler;
-  canvasListener: InputListener;
-  inputHandler: InteractionStateMachine;
+  private readonly view: BoardView;
+  private readonly modelHandler: ModelHandler;
+  readonly canvasListener: InputListener;
+  private readonly inputHandler: InteractionStateMachine;
 
   constructor(model: BoardModel) {
     let canvasHolder = document.getElementById('canvasHolder');
@@ -27,7 +27,7 @@ export class GameController {
   }
 
   // TODO: Refactor how this is done.
-  listenForContextMenuClicks() {
+  private listenForContextMenuClicks() {
     // @ts-ignore
     let clearFogListener = new InputListener(
       this.view.menu.clearFogButton,

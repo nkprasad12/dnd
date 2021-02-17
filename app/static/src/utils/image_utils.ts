@@ -1,11 +1,6 @@
 export class LoadedImage {
-  image: CanvasImageSource;
-  source: string;
 
-  constructor(image: CanvasImageSource, source: string) {
-    this.image = image;
-    this.source = source;
-  }
+  constructor(readonly image: CanvasImageSource, readonly source: string) {}
 
   deepCopy(): LoadedImage {
     return new LoadedImage(this.image, this.source);
