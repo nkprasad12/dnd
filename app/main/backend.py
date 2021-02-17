@@ -75,6 +75,8 @@ def upload_file():
         flash('No selected file')
         return 'Record not found', 400
     if file and _allowed_file(file.filename):
+        # TODO: Append UUID to the file name to prevent duplicates.
+        #       also record the simple name.
         filename = secure_filename(file.filename)
         file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
         print(filename)
