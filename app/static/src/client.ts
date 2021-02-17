@@ -9,7 +9,6 @@ const backgroundUrl = 'http://localhost:5000/retrieve_image/grrrr.jpg'
 const wolfUrl = 'http://localhost:5000/retrieve_image/demon.png'
 const egbertUrl = 'http://localhost:5000/retrieve_image/egbert.png'
 
-console.log('With moved TSConfi');
 // let socketPromise = connectTo('board');
 let imagesPromise = loadImages([backgroundUrl, wolfUrl, egbertUrl]);
 
@@ -20,7 +19,7 @@ Promise.all([imagesPromise])
     let imageMap: Map<string, CanvasImageSource> = inputs[0];
 
     let modelBuilder = new BoardModelBuilder().setTileSize(60);
-    
+
     let backgroundImage = imageMap.get(backgroundUrl);
     if (backgroundImage == undefined) {
       throw 'ERROR: Background image is undefined!';
@@ -39,11 +38,11 @@ Promise.all([imagesPromise])
       console.log('ERROR: Wolf image is undefined!')
     } else {
       modelBuilder.addToken(
-        new TokenModel(
+        TokenModel.create(
           'Wolf',
-           new LoadedImage(wolfImage, wolfUrl),
-           60,
-          {col: 5, row: 5}, false));
+          new LoadedImage(wolfImage, wolfUrl),
+          60,
+          { col: 5, row: 5 }, false));
       // board.placeToken('Wolf', wolfImage, { x: 5, y: 5 }, socket);
     }
 
@@ -53,11 +52,11 @@ Promise.all([imagesPromise])
     } else {
       // board.placeToken('Egbert', egbertImage, { x: 6, y: 5 }, socket);
       modelBuilder.addToken(
-        new TokenModel(
+        TokenModel.create(
           'Egbert',
-           new LoadedImage(egbertImage, egbertUrl),
-           60,
-          {col: 6, row: 6}, false));
+          new LoadedImage(egbertImage, egbertUrl),
+          60,
+          { col: 6, row: 6 }, false));
     }
 
     // modelBuilder.setContextMenu(

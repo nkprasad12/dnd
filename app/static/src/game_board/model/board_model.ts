@@ -1,14 +1,28 @@
 import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "/src/common/common"
+import { getId } from "/src/common/id_generator"
 import { LoadedImage } from "/src/utils/image_utils"
 
 /** Data model for a token on the game board. */
 export class TokenModel {
 
-  constructor(
-    public name: string, public image: LoadedImage, public size: number, 
-    public location: Location, public isActive: boolean) {}
+  static create(
+    name: string,
+    image: LoadedImage,
+    size: number,
+    location: Location,
+    isActive: boolean): TokenModel {
+
+    return new TokenModel(getId(), name, image, size, location, isActive);
+  }
+
+  private constructor(
+    readonly id: string, public name: string, public image: LoadedImage, public size: number,
+    public location: Location, public isActive: boolean) { }
 
   equals(other: TokenModel): boolean {
+    if (this.id != other.id) {
+      return false;
+    }
     if (this.name != other.name) {
       return false;
     }
@@ -29,11 +43,12 @@ export class TokenModel {
 
   deepCopy(): TokenModel {
     return new TokenModel(
-      this.name, 
+      this.id,
+      this.name,
       this.image.deepCopy(),
       this.size,
       copyLocation(this.location),
-      this.isActive
+      this.isActive,
     );
   }
 }
@@ -43,7 +58,7 @@ export class ContextMenuModel {
 
   // TODO: Separate tile selection from the context menu.
   constructor(
-    public clickPoint: Point, public selectedTiles: Location[], public isVisible: boolean) {}
+    public clickPoint: Point, public selectedTiles: Location[], public isVisible: boolean) { }
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(
@@ -84,7 +99,7 @@ export class BoardModel {
 
     this.contextMenuState = contextMenuState.deepCopy();
     // TODO: Figure out how to do this more efficiently
-    let useFowState = 
+    let useFowState =
       fogOfWarState.length == this.cols &&
       fogOfWarState[0].length == this.rows;
     this.fogOfWarState = [];
@@ -120,7 +135,7 @@ export class BoardModelBuilder {
   private backgroundImage?: LoadedImage = undefined;
   private tileSize = -1;
   private tokens: TokenModel[] = [];
-  private contextMenu: ContextMenuModel = new ContextMenuModel({x: 0, y: 0}, [], false);
+  private contextMenu: ContextMenuModel = new ContextMenuModel({ x: 0, y: 0 }, [], false);
   private fogOfWarState: boolean[][] = [];
 
   setBackgroundImage(image: LoadedImage): BoardModelBuilder {
@@ -161,7 +176,7 @@ export class BoardModelBuilder {
       throw 'BoardModelBuilder requires a tileSize >= 1';
     }
     return new BoardModel(
-      this.backgroundImage, this.tileSize, this.tokens, this.contextMenu, 
+      this.backgroundImage, this.tileSize, this.tokens, this.contextMenu,
       this.fogOfWarState);
   }
 }
