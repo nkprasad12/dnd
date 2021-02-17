@@ -1,7 +1,7 @@
 // @ts-ignore
-import { test_, expect_ } from "../test_util.ts"
+import {test_, expect_} from '../test_util.ts';
 
-import { Maybe } from "../../src/utils/maybe"
+import {Maybe} from '../../src/utils/maybe';
 
 class TestObject {
   foo: number;
@@ -16,11 +16,11 @@ test_('Absent Maybe returns present false', () => {
 });
 
 test_('Present Maybe returns present true', () => {
-  let testObject = new TestObject(5);
+  const testObject = new TestObject(5);
   expect_(Maybe.of(testObject).present()).toBe(true);
 });
 
 test_('Present Maybe returns original', () => {
-  let testObject = new TestObject(5);
+  const testObject = new TestObject(5);
   expect_(Maybe.of(testObject).get()).toBe(testObject);
 });

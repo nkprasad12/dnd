@@ -1,28 +1,27 @@
-import { BoardModel, TokenModel } from "./board_model";
-import { areLocationsEqual, Location } from "/src/common/common"
+import {BoardModel, TokenModel} from './board_model';
+import {areLocationsEqual, Location} from '/src/common/common';
 
-/** 
+/**
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
 export class RemoteTokenModel {
-
   static create(tokenModel: TokenModel): RemoteTokenModel {
     return new RemoteTokenModel(
-      tokenModel.id,
-      tokenModel.location,
-      tokenModel.name,
-      tokenModel.image.source,
-      tokenModel.size
+        tokenModel.id,
+        tokenModel.location,
+        tokenModel.name,
+        tokenModel.image.source,
+        tokenModel.size,
     );
   }
 
   private constructor(
-    readonly id: string,
-    readonly location: Location,
-    readonly name: string,
-    readonly imageSource: string,
-    readonly size: number) { }
+      readonly id: string,
+      readonly location: Location,
+      readonly name: string,
+      readonly imageSource: string,
+      readonly size: number) { }
 
   equals(other: RemoteTokenModel): boolean {
     if (this.name != other.name) {
@@ -46,7 +45,7 @@ export class RemoteTokenModel {
       return this;
     }
     return new RemoteTokenModel(
-      this.id,
+        this.id,
       diff.location === undefined ? this.location : diff.location,
       diff.name === undefined ? this.name : diff.name,
       diff.imageSource === undefined ? this.imageSource : diff.imageSource,
@@ -57,17 +56,22 @@ export class RemoteTokenModel {
 
 /** Represents a mutation of RemoteTokenModel. */
 export class RemoteTokenDiff {
-
-  static computeBetween(newModel: RemoteTokenModel, oldModel: RemoteTokenModel): RemoteTokenDiff {
+  static computeBetween(
+      newModel: RemoteTokenModel,
+      oldModel: RemoteTokenModel): RemoteTokenDiff {
     if (newModel.id != oldModel.id) {
-      throw '[RemoteTokenDiff] Trying to compute diff between models of different ID!'
+      throw new Error('[RemoteTokenDiff] Models have different IDs!');
     }
     return new RemoteTokenDiff(
-      newModel.id,
-      areLocationsEqual(newModel.location, oldModel.location) ? undefined : newModel.location,
-      newModel.name === oldModel.name ? undefined : newModel.name,
-      newModel.imageSource === oldModel.imageSource ? undefined : newModel.imageSource,
-      newModel.size === oldModel.size ? undefined : newModel.size
+        newModel.id,
+        areLocationsEqual(newModel.location, oldModel.location) ?
+            undefined : newModel.location,
+        newModel.name === oldModel.name ?
+            undefined : newModel.name,
+        newModel.imageSource === oldModel.imageSource ?
+            undefined : newModel.imageSource,
+        newModel.size === oldModel.size ?
+            undefined : newModel.size,
     );
   }
 
@@ -79,17 +83,16 @@ export class RemoteTokenDiff {
     readonly size?: number) { }
 }
 
-/** 
+/**
  * Represents the data model for a remote board.
  * This is a subset of BoardModel that is relevant to the shared game state.
  */
 export class RemoteBoardModel {
-
   static create(model: BoardModel): RemoteBoardModel {
     return new RemoteBoardModel(
-      model.backgroundImage.source,
-      model.tileSize,
-      model.tokens.map(RemoteTokenModel.create)
+        model.backgroundImage.source,
+        model.tileSize,
+        model.tokens.map(RemoteTokenModel.create),
     );
   }
 
@@ -99,14 +102,14 @@ export class RemoteBoardModel {
     readonly tokens: RemoteTokenModel[]) { }
 
   mergedWith(diff: RemoteBoardDiff): RemoteBoardModel {
-    let mergedTokens: RemoteTokenModel[] = [];
+    const mergedTokens: RemoteTokenModel[] = [];
     mergedTokens.concat(diff.newTokens);
-    for (let token of this.tokens) {
+    for (const token of this.tokens) {
       if (diff.removedTokens.includes(token.id)) {
         continue;
       }
       let finalToken = token;
-      for (let tokenDiff of diff.tokenDiffs) {
+      for (const tokenDiff of diff.tokenDiffs) {
         if (tokenDiff.id === token.id) {
           finalToken = finalToken.mergedWith(tokenDiff);
           break;
@@ -117,30 +120,30 @@ export class RemoteBoardModel {
     return new RemoteBoardModel(
       diff.imageSource === undefined ? this.imageSource : diff.imageSource,
       diff.tileSize === undefined ? this.tileSize : diff.tileSize,
-      mergedTokens
+      mergedTokens,
     );
   }
 }
 
 /** Represents a mutation of RemoteBoardModel. */
 export class RemoteBoardDiff {
-
   static computeBetween(
-    newModel: RemoteBoardModel, oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
+      newModel: RemoteBoardModel,
+      oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
+    const newTokens: RemoteTokenModel[] = [];
+    const modifiedTokens: RemoteTokenDiff[] = [];
+    const removedTokens: string[] = [];
 
-    let newTokens: RemoteTokenModel[] = [];
-    let modifiedTokens: RemoteTokenDiff[] = [];
-    let removedTokens: string[] = [];
-
-    for (let newToken of newModel.tokens) {
+    for (const newToken of newModel.tokens) {
       let foundMatch = false;
-      for (let oldToken of oldModel.tokens) {
+      for (const oldToken of oldModel.tokens) {
         if (newToken.id != oldToken.id) {
           continue;
         }
         foundMatch = true;
         if (!newToken.equals(oldToken)) {
-          modifiedTokens.push(RemoteTokenDiff.computeBetween(newToken, oldToken));
+          modifiedTokens.push(
+              RemoteTokenDiff.computeBetween(newToken, oldToken));
         }
         break;
       }
@@ -148,9 +151,9 @@ export class RemoteBoardDiff {
         newTokens.push(newToken);
       }
     }
-    for (let oldToken of oldModel.tokens) {
+    for (const oldToken of oldModel.tokens) {
       let foundMatch = false;
-      for (let newToken of newModel.tokens) {
+      for (const newToken of newModel.tokens) {
         if (oldToken.id != newToken.id) {
           continue;
         }
@@ -158,16 +161,17 @@ export class RemoteBoardDiff {
         break;
       }
       if (!foundMatch) {
-        removedTokens.push(oldToken.id)
+        removedTokens.push(oldToken.id);
       }
     }
 
-    let diffImageSource =
-      newModel.imageSource === oldModel.imageSource ? undefined : newModel.imageSource;
-    let diffTileSize =
+    const diffImageSource =
+      newModel.imageSource === oldModel.imageSource ?
+          undefined : newModel.imageSource;
+    const diffTileSize =
       newModel.tileSize === oldModel.tileSize ? undefined : newModel.tileSize;
 
-    let isValidDiff =
+    const isValidDiff =
       modifiedTokens.length > 0 ||
       removedTokens.length > 0 ||
       newTokens.length > 0 ||
@@ -179,11 +183,11 @@ export class RemoteBoardDiff {
     }
 
     return new RemoteBoardDiff(
-      modifiedTokens,
-      removedTokens,
-      newTokens,
-      diffImageSource,
-      diffTileSize
+        modifiedTokens,
+        removedTokens,
+        newTokens,
+        diffImageSource,
+        diffTileSize,
     );
   }
 

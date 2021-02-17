@@ -8,4 +8,4 @@ function expect_(obj: any): any {
   return expect(obj);
 }
 
-export { test_, expect_ }
+export {test_, expect_};

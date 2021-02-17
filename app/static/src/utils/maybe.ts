@@ -1,5 +1,4 @@
 export class Maybe<T> {
-
   static of<U>(item: U): Maybe<U> {
     return new Maybe(item);
   }
