@@ -1,5 +1,6 @@
 import { Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList } from "/src/common/common"
 import { getId } from "/src/common/id_generator"
+import { RemoteBoardDiff } from "/src/game_board/model/remote_board_model";
 import { LoadedImage } from "/src/utils/image_utils"
 
 /** Data model for a token on the game board. */
@@ -118,6 +119,25 @@ export class BoardModel {
 
   deepCopy(): BoardModel {
     return BoardModelBuilder.from(this).build();
+  }
+
+  mergedFrom(diff: RemoteBoardDiff): BoardModel {
+    // TODO: Handle this correctly.
+    // TODO TODO TODO
+    // This isn't working because the TokenIds created are different for each client
+    let newModel = this.deepCopy();
+    console.log('Tokens before')
+    console.log(newModel.tokens)
+    for (let tokenDiff of diff.tokenDiffs) {
+      for (let i = 0; i < newModel.tokens.length; i++) {
+        if (newModel.tokens[i].id == tokenDiff.id && tokenDiff.location) {
+          newModel.tokens[i].location = tokenDiff.location;
+          break;
+        }
+      } 
+    }
+    console.log(newModel.tokens)
+    return newModel;
   }
 }
 
