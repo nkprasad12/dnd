@@ -38,7 +38,8 @@ Promise.all([imagesPromise, socketPromise])
               60,
               {col: 6, row: 6}, false));
 
-      const gameController = new GameController(modelBuilder.build(), socket);
+      const gameController =
+          new GameController('canvasHolder', modelBuilder.build(), socket);
       console.log(gameController);
 
     // socket.on('board-update', (obj) => {
