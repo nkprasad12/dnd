@@ -7,6 +7,7 @@ import {ModelHandler} from './model_handler';
 import {RemoteBoard} from '/src/game_board/remote/remote_board';
 import {RemoteBoardModel} from '/src/game_board/model/remote_board_model';
 import {Socket_} from '/src/server/socket_connection';
+import {getElementById} from '/src/common/common';
 
 export class GameController {
   private readonly view: BoardView;
@@ -15,12 +16,8 @@ export class GameController {
   private readonly inputHandler: InteractionStateMachine;
   private readonly remoteBoard: RemoteBoard
 
-  constructor(model: BoardModel, socket: Socket_) {
-    const canvasHolder = document.getElementById('canvasHolder');
-    if (canvasHolder == null) {
-      throw new Error('canvasHolder is null! Can not display board');
-    }
-    this.view = new BoardView(canvasHolder);
+  constructor(parentId: string, model: BoardModel, socket: Socket_) {
+    this.view = new BoardView(getElementById(parentId));
     this.remoteBoard =
       new RemoteBoard(
           socket,

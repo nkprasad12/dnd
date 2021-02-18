@@ -53,6 +53,9 @@ abstract class InteractionState {
       return this;
     }
     console.log('Handling mouse event');
+    console.log(fromPoint);
+    console.log('->');
+    console.log(toPoint);
 
     const isLeftClick = mouseButton == 0;
     const from = this.clickDataForPoint(fromPoint);
@@ -139,6 +142,8 @@ class DefaultState extends InteractionState {
     model.contextMenuState.isVisible = true;
     model.contextMenuState.selectedTiles = [clickData.tile];
     model.contextMenuState.clickPoint = clickData.point;
+    console.log('New contextMenuState');
+    console.log(model.contextMenuState);
     return {
       model: model,
       newState: new ContextMenuOpenState(this.modelHandler)};
