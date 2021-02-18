@@ -33,3 +33,18 @@ export function deepCopyList<T>(list: T[], copyFunction: (a: T) => T) {
   }
   return newList;
 }
+
+export function checkDefined<T>(t: T|undefined, varName: string): T {
+  if (t === undefined) {
+    throw new Error(varName + ' was unexpectedly undefined!');
+  }
+  return t;
+}
+
+export function getElementById(id: string): HTMLElement {
+  const element = document.getElementById(id);
+  if (element == null) {
+    throw new Error('getElementById on invalid id: ' + id);
+  }
+  return element;
+}

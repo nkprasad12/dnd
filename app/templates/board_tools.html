@@ -45,50 +45,16 @@
         </div>
     </div>
 
-    <br><br><br>
+    <br>
+    or
+    <br>
 
-    <button id="createBoard" type="button" class="btn btn-primary">Create New Board</button>
-
-    <div id="createBoardModal" class="modal">
-
-      <div class="modal-content">
-          <span id="closeCreateBoardModal" class="close">&times;</span>
-          <p>Create New Board</p>
-          <label for="boardName">Board Name</label><br>
-          <input type="text" id="boardName" name="boardName" value=""><br><br>
-          <label for="gridSize">Grid Size</label><br>
-          <input type="text" id="gridSize" name="gridSize" value="50"><br><br>
-          <label for="backgroundUpload">Upload Background</label><br>
-          <input type="file" accept="image/*" id="uploadBackground" name="backgroundUpload"/><br><br>
-          <p id="createBoardMessage">(Upload image last or it won't work lol)</p>
-          <button id="createBoardSubmit" type="button" class="btn btn-success">Confirm</button>
-      </div>
-
-    </div>
-
-    <br><br><br>
-
-    <form>
-        <label for="backgroundUpload">Upload Background</label><br>
-        <input type="file" id="backgroundUpload" name="backgroundUpload"/><br>
-        <br><input type="button" id="previewBoard" value="Preview Board"><br>
-        <br><input type="submit" id="createBoard" value="Save Board">
-    </form>
+    <div id="createNewBoardFormStub"></div>
+    <button id="createNewBoard" type="button" class="btn btn-primary">Create New Board</button>
 
     <br><br><br>
 
     <div id="previewBoardStub" style="position:relative;"></div>
-
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-
-      <!-- Modal content -->
-      <div class="modal-content">
-          <span id="closeModal" class="close">&times;</span>
-          <p>Some text in the Modal..</p>
-      </div>
-
-    </div>
 
     <script type="module" src="/static/js/board_tools/main.js"></script>
 
