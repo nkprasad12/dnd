@@ -1,5 +1,6 @@
-import {checkDefined, getElementById} from '/src/common/common';
-import {BoardModel, BoardModelBuilder} from '/src/game_board/model/board_model';
+import {checkDefined, getElementById, Location} from '/src/common/common';
+import {ModelHandler} from '/src/game_board/controller/model_handler';
+import {BoardModel, BoardModelBuilder, TokenModel} from '/src/game_board/model/board_model';
 import {LoadedImage} from '/src/utils/image_utils';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
@@ -239,30 +240,16 @@ function addAllInputFields(
 }
 
 /** Class for a form requesting information to make a game board. */
-export class BoardForm {
-  static createOnClick(
-      bindingElementId: string,
-      parentId: string,
-      onNewBoard: (model: BoardModel) => any): void {
-    const boardForm = new BoardForm(getElementById(parentId), onNewBoard);
-    getElementById(bindingElementId).onclick = () => {
-      boardForm.show();
-    };
-  }
-
+abstract class BaseDialogForm {
   private readonly modal: HTMLElement;
   private readonly modalContent: HTMLElement;
   private readonly submitButton: HTMLElement;
 
-  private boardName: TextInputEntry = new TextInputEntry('Board Name');
-  private tileSize: NumberInputEntry =
-      new NumberInputEntry('Tile Size (pixels)');
-  private backgroundImage: ImageInputEntry =
-      new ImageInputEntry('Background Image');
-
-  private constructor(
+  protected constructor(
       parent: HTMLElement,
-      onNewBoard: (boardModel: BoardModel) => any) {
+      title: string,
+      inputFields: FormInputEntry<any>[],
+      onSubmit: () => any) {
     this.modal = addModal(parent);
     this.modalContent = addModalContent(this.modal);
     const closeSpan = addCloseSpan(this.modalContent);
@@ -270,35 +257,118 @@ export class BoardForm {
         'click', () => {
           this.hide();
         });
-    addParagraph(this.modalContent, 'Create New Board');
+    addParagraph(this.modalContent, title);
     addAllInputFields(
         this.modalContent,
-        [this.boardName, this.tileSize, this.backgroundImage],
+        inputFields,
         (allReady) => {
           this.submitButton.style.display = allReady ? 'block' : 'none';
         });
-    this.submitButton = addSubmitButton(this.modalContent, 'Create Board');
+    this.submitButton = addSubmitButton(this.modalContent, 'Create');
     this.submitButton.style.display = 'none';
     this.submitButton.onclick = (_unused) => {
-      const boardName = checkDefined(this.boardName.getResolved(), 'boardName');
-      const tileSize = checkDefined(this.tileSize.getResolved(), 'tileSize');
-      const backgroundImage =
-          checkDefined(this.backgroundImage.getResolved(), 'backgroundImage');
       this.hide();
-      console.log(boardName);
-      onNewBoard(
-          new BoardModelBuilder()
-              .setBackgroundImage(backgroundImage)
-              .setTileSize(tileSize)
-              .build());
+      onSubmit();
     };
   }
 
-  show(): void {
+  protected show(): void {
     this.modal.style.display = 'block';
   }
 
-  private hide(): void {
+  protected hide(): void {
     this.modal.style.display = 'none';
+  }
+}
+
+/** Class for a form requesting information to make a game board. */
+export class NewBoardForm extends BaseDialogForm {
+  static createOnClick(
+      bindingElementId: string,
+      parentId: string,
+      onNewBoard: (model: BoardModel) => any): void {
+    const boardForm = new NewBoardForm(getElementById(parentId), onNewBoard);
+    getElementById(bindingElementId).onclick = () => {
+      boardForm.show();
+    };
+  }
+
+  private constructor(
+      parent: HTMLElement,
+      onNewBoard: (boardModel: BoardModel) => any) {
+    const boardNameEntry: TextInputEntry = new TextInputEntry('Board Name');
+    const tileSizeEntry: NumberInputEntry =
+        new NumberInputEntry('Tile Size (pixels)');
+    const backgroundImageEntry: ImageInputEntry =
+        new ImageInputEntry('Background Image');
+    super(
+        parent, 'Create a new board',
+        [boardNameEntry, tileSizeEntry, backgroundImageEntry],
+        () => {
+          const boardName =
+              checkDefined(boardNameEntry.getResolved(), 'boardName');
+          const tileSize =
+              checkDefined(tileSizeEntry.getResolved(), 'tileSize');
+          const backgroundImage =
+              checkDefined(
+                  backgroundImageEntry.getResolved(), 'backgroundImage');
+          console.log(boardName);
+          onNewBoard(
+              new BoardModelBuilder()
+                  .setBackgroundImage(backgroundImage)
+                  .setTileSize(tileSize)
+                  .build());
+        },
+    );
+  }
+}
+
+const TOKEN_FORM_STUB = 'addNewIconFormStub';
+
+/** Class for a form requesting information to make a game board. */
+export class NewTokenForm extends BaseDialogForm {
+  static create(tile: Location, modelHandler: ModelHandler) {
+    const form = new NewTokenForm(
+        // TODO: get this from the menu itself.
+        getElementById(TOKEN_FORM_STUB),
+        tile,
+        (token) => {
+          console.log('NewTokenForm onNewToken');
+          const newModel = modelHandler.copyModel();
+          newModel.tokens.push(token);
+          modelHandler.update(newModel);
+        });
+    form.show();
+  }
+
+  static createOnClick(
+      bindingElementId: string,
+      parentId: string,
+      tile: Location,
+      onNewToken: (model: TokenModel) => any): void {
+    const boardForm =
+        new NewTokenForm(getElementById(parentId), tile, onNewToken);
+    getElementById(bindingElementId).onclick = () => {
+      boardForm.show();
+    };
+  }
+
+  private constructor(
+      parent: HTMLElement,
+      tile: Location,
+      onNewToken: (model: TokenModel) => any) {
+    const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
+    const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
+    super(
+        parent, 'Create a new token',
+        [nameEntry, iconEntry],
+        () => {
+          const name = checkDefined(nameEntry.getResolved(), 'name');
+          const icon = checkDefined(iconEntry.getResolved(), 'icon');
+          const token = TokenModel.create(name, icon, 1, tile, false);
+          console.log(token);
+          onNewToken(token);
+        },
+    );
   }
 }

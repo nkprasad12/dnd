@@ -2,6 +2,7 @@ import {Point, Location, areLocationsEqual} from '/src/common/common';
 import {BoardModel} from '/src/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';
+import {NewTokenForm} from '/src/board_tools/board_form';
 
 interface ClickData {
   tile: Location;
@@ -52,10 +53,6 @@ abstract class InteractionState {
     if (mouseButton != 0 && mouseButton != 2) {
       return this;
     }
-    console.log('Handling mouse event');
-    console.log(fromPoint);
-    console.log('->');
-    console.log(toPoint);
 
     const isLeftClick = mouseButton == 0;
     const from = this.clickDataForPoint(fromPoint);
@@ -218,8 +215,17 @@ class ContextMenuOpenState extends InteractionState {
 
   onContextMenuClickInternal(action: number, model: BoardModel): ClickResult {
     // TODO: Refactor how the context menu interaction works.
-    for (const tile of model.contextMenuState.selectedTiles) {
-      model.fogOfWarState[tile.col][tile.row] = (action == 2);
+    if (action == 1) {
+      for (const tile of model.contextMenuState.selectedTiles) {
+        model.fogOfWarState[tile.col][tile.row] = false;
+      }
+    } else if (action == 2) {
+      for (const tile of model.contextMenuState.selectedTiles) {
+        model.fogOfWarState[tile.col][tile.row] = true;
+      }
+    } else {
+      NewTokenForm.create(
+          model.contextMenuState.selectedTiles[0], this.modelHandler);
     }
     model.contextMenuState.isVisible = false;
     model.contextMenuState.selectedTiles = [];
