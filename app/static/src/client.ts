@@ -1,5 +1,5 @@
 // import { GameBoard } from './game_board/game_board'
-import {BoardModelBuilder, TokenModel} from '/src/game_board/model/board_model';
+import {BoardModelBuilder} from '/src/game_board/model/board_model';
 // import { BoardView } from './game_board/view/board_view'
 import {LoadedImage, loadImages} from '/src/utils/image_utils';
 import {connectTo} from '/src/server/socket_connection';
@@ -25,18 +25,18 @@ Promise.all([imagesPromise, socketPromise])
 
       modelBuilder.setBackgroundImage(
           new LoadedImage(getOrThrow(imageMap, backgroundUrl), backgroundUrl));
-      modelBuilder.addToken(
-          TokenModel.create(
-              'Wolf',
-              new LoadedImage(getOrThrow(imageMap, wolfUrl), wolfUrl),
-              1,
-              {col: 5, row: 5}, false));
-      modelBuilder.addToken(
-          TokenModel.create(
-              'Egbert',
-              new LoadedImage(getOrThrow(imageMap, egbertUrl), egbertUrl),
-              1,
-              {col: 6, row: 6}, false));
+      // modelBuilder.addToken(
+      //     TokenModel.create(
+      //         'Wolf',
+      //         new LoadedImage(getOrThrow(imageMap, wolfUrl), wolfUrl),
+      //         1,
+      //         {col: 5, row: 5}, false));
+      // modelBuilder.addToken(
+      //     TokenModel.create(
+      //         'Egbert',
+      //         new LoadedImage(getOrThrow(imageMap, egbertUrl), egbertUrl),
+      //         1,
+      //         {col: 6, row: 6}, false));
 
       const gameController =
           new GameController('canvasHolder', modelBuilder.build(), socket);

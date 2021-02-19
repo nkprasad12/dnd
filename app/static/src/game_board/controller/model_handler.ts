@@ -20,8 +20,12 @@ export class ModelHandler {
     this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
   }
 
-  applyDiff(diff: RemoteBoardDiff): void {
-    this.update(this.model.mergedFrom(diff));
+  async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {
+    const newModel = await this.model.mergedFrom(diff);
+    this.model = newModel;
+    console.log('New merged model from remote diff');
+    console.log(this.model);
+    this.view.bind(this.copyModel());
   }
 
   copyModel(): BoardModel {

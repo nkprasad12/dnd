@@ -1,7 +1,7 @@
-import {Location, Point, areLocationsEqual, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
+import {Location, Point, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
-import {RemoteBoardDiff} from '/src/game_board/model/remote_board_model';
-import {LoadedImage} from '/src/utils/image_utils';
+import {RemoteBoardDiff, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
+import {LoadedImage, loadImage} from '/src/utils/image_utils';
 
 /** Data model for a token on the game board. */
 export class TokenModel {
@@ -11,47 +11,84 @@ export class TokenModel {
       size: number,
       location: Location,
       isActive: boolean): TokenModel {
-    return new TokenModel(getId(), name, image, size, location, isActive);
+    return new TokenModel(
+        getId(), name, image.source, image.image, size, location, isActive);
   }
 
-  private constructor(
+  static async fromRemote(model: RemoteTokenModel): Promise<TokenModel> {
+    const loadedImage = await loadImage(model.imageSource);
+    return new TokenModel(
+        model.id, model.name, loadedImage.source, loadedImage.image,
+        model.size, model.location, false);
+  }
+
+  constructor(
       readonly id: string,
-      public name: string,
-      public image: LoadedImage,
-      public size: number,
-      public location: Location,
-      public isActive: boolean) { }
+      readonly name: string,
+      readonly imageSource: string,
+      readonly image: CanvasImageSource,
+      readonly size: number,
+      readonly location: Location,
+      readonly isActive: boolean) {
+
+  }
+
+  mergedWith(_diff: RemoteTokenDiff): RemoteTokenModel {
+    throw new Error('We should not be here!');
+  }
 
   equals(other: TokenModel): boolean {
-    if (this.id != other.id) {
-      return false;
-    }
-    if (this.name != other.name) {
-      return false;
-    }
-    if (this.image.source != other.image.source) {
-      return false;
-    }
-    if (this.size != other.size) {
-      return false;
-    }
-    if (!areLocationsEqual(this.location, other.location)) {
-      return false;
-    }
     if (this.isActive != other.isActive) {
       return false;
     }
-    return true;
+    return RemoteTokenModel.equals(this.remoteCopy(), other.remoteCopy());
   }
 
   deepCopy(): TokenModel {
     return new TokenModel(
         this.id,
         this.name,
-        this.image.deepCopy(),
+        this.imageSource,
+        this.image,
         this.size,
-        copyLocation(this.location),
+        this.location,
         this.isActive,
+    );
+  }
+
+  remoteCopy(): RemoteTokenModel {
+    return new RemoteTokenModel(
+        this.id,
+        this.location,
+        this.name,
+        this.imageSource,
+        this.size,
+    );
+  }
+
+  mutableCopy(): MutableTokenModel {
+    return new MutableTokenModel(
+        this.id, this.name, this.imageSource, this.image, this.size,
+        this.location, this.isActive,
+    );
+  }
+}
+
+/** Mutable version of TokenModel. */
+export class MutableTokenModel {
+  constructor(
+      public id: string,
+      public name: string,
+      public imageSource: string,
+      public image: CanvasImageSource,
+      public size: number,
+      public location: Location,
+      public isActive: boolean) {}
+
+  freeze(): TokenModel {
+    return new TokenModel(
+        this.id, this.name, this.imageSource, this.image, this.size,
+        this.location, this.isActive,
     );
   }
 }
@@ -122,24 +159,36 @@ export class BoardModel {
     return BoardModelBuilder.from(this).build();
   }
 
-  mergedFrom(diff: RemoteBoardDiff): BoardModel {
-    // TODO: Handle this correctly.
-    // TODO TODO TODO
-    // This isn't working because the TokenIds created are
-    // different for each client
+  async mergedFrom(diff: RemoteBoardDiff): Promise<BoardModel> {
     const newModel = this.deepCopy();
-    console.log('Tokens before');
-    console.log(newModel.tokens);
     for (const tokenDiff of diff.tokenDiffs) {
       for (let i = 0; i < newModel.tokens.length; i++) {
         if (newModel.tokens[i].id == tokenDiff.id && tokenDiff.location) {
-          newModel.tokens[i].location = tokenDiff.location;
+          const mutableToken = newModel.tokens[i].mutableCopy();
+          mutableToken.location = tokenDiff.location;
+          newModel.tokens[i] = mutableToken.freeze();
           break;
         }
       }
     }
+    newModel.tokens.filter((token) => !diff.removedTokens.includes(token.id));
+    const newTokens =
+        await Promise.all(diff.newTokens.map(TokenModel.fromRemote));
+    newModel.tokens = newModel.tokens.concat(newTokens);
     console.log(newModel.tokens);
-    return newModel;
+    if (diff.tileSize) {
+      newModel.tileSize = diff.tileSize;
+    }
+    if (diff.imageSource) {
+      newModel.backgroundImage = await loadImage(diff.imageSource);
+    }
+    return new BoardModelBuilder()
+        .setBackgroundImage(newModel.backgroundImage)
+        .setContextMenu(newModel.contextMenuState)
+        .setFogOfWarState(newModel.fogOfWarState)
+        .setTileSize(newModel.tileSize)
+        .setTokens(newModel.tokens)
+        .build();
   }
 }
 

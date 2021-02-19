@@ -2,5 +2,5 @@
 export function getId(): string {
   const dateComponent = String(Date.now());
   const randomComponent = String(Math.floor(Math.random() * 10000));
-  return dateComponent + randomComponent;
+  return randomComponent + '-' + dateComponent;
 }

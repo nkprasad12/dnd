@@ -16,4 +16,4 @@ def nitintest(message):
 @socketio.on('board-update', namespace='/board')
 def nitintest(message):
     print(f"Got message: {message}")
-    emit('board-update', message, broadcast=True)
+    emit('board-update', message, broadcast=True, include_self=False)
