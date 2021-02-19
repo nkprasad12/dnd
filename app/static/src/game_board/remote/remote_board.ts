@@ -15,8 +15,6 @@ export class RemoteBoard {
     this.socket.on(
         UPDATE_EVENT,
         (boardUpdate) => {
-          console.log('Got board update');
-          console.log(boardUpdate);
           this.onRemoteUpdate(boardUpdate);
         });
   }
@@ -29,8 +27,6 @@ export class RemoteBoard {
     }
     this.remoteModel = newRemoteModel;
     this.socket.emit(UPDATE_EVENT, diff);
-    console.log('Sent board update');
-    console.log(diff);
   }
 
   onRemoteUpdate(remoteDiff: RemoteBoardDiff): void {

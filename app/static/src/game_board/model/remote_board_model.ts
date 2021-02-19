@@ -1,4 +1,4 @@
-import {BoardModel, TokenModel} from './board_model';
+import {BoardModel} from './board_model';
 import {areLocationsEqual, Location} from '/src/common/common';
 
 /**
@@ -6,17 +6,7 @@ import {areLocationsEqual, Location} from '/src/common/common';
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
 export class RemoteTokenModel {
-  static create(tokenModel: TokenModel): RemoteTokenModel {
-    return new RemoteTokenModel(
-        tokenModel.id,
-        tokenModel.location,
-        tokenModel.name,
-        tokenModel.image.source,
-        tokenModel.size,
-    );
-  }
-
-  private constructor(
+  protected constructor(
       readonly id: string,
       readonly location: Location,
       readonly name: string,
@@ -92,7 +82,7 @@ export class RemoteBoardModel {
     return new RemoteBoardModel(
         model.backgroundImage.source,
         model.tileSize,
-        model.tokens.map(RemoteTokenModel.create),
+        model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
     );
   }
 
@@ -142,6 +132,9 @@ export class RemoteBoardDiff {
         }
         foundMatch = true;
         if (!newToken.equals(oldToken)) {
+          console.log('Found token diff (new, old)');
+          console.log(newToken);
+          console.log(oldToken);
           modifiedTokens.push(
               RemoteTokenDiff.computeBetween(newToken, oldToken));
         }

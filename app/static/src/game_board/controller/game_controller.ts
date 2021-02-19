@@ -25,7 +25,7 @@ export class GameController {
           (remoteDiff) => {
             console.log('TODO: handle remote diff');
             console.log(remoteDiff);
-            this.modelHandler.applyDiff(remoteDiff);
+            this.modelHandler.applyRemoteDiff(remoteDiff);
           });
     this.modelHandler = new ModelHandler(this.view, model, this.remoteBoard);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);

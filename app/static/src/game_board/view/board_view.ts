@@ -197,7 +197,7 @@ export class BoardView {
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
     const tokenSize = tokenModel.size * newModel.tileSize;
     getContext(this.tokenCanvas)
-        .drawImage(tokenModel.image.image,
+        .drawImage(tokenModel.image,
             tokenModel.location.col * newModel.tileSize,
             tokenModel.location.row * newModel.tileSize,
             tokenSize, tokenSize);

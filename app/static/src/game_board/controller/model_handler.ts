@@ -20,8 +20,9 @@ export class ModelHandler {
     this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
   }
 
-  applyDiff(diff: RemoteBoardDiff): void {
-    this.update(this.model.mergedFrom(diff));
+  applyRemoteDiff(diff: RemoteBoardDiff): void {
+    this.model = this.model.mergedFrom(diff);
+    this.view.bind(this.copyModel());
   }
 
   copyModel(): BoardModel {

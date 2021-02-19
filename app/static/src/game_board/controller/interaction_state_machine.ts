@@ -131,7 +131,9 @@ class DefaultState extends InteractionState {
     if (tokenIndex == INVALID_INDEX) {
       return this.onRightClick(clickData, model);
     }
-    model.tokens[tokenIndex].isActive = true;
+    const mutableToken = model.tokens[tokenIndex].mutableCopy();
+    mutableToken.isActive = true;
+    model.tokens[tokenIndex] = mutableToken.freeze();
     return {model: model, newState: new PickedUpTokenState(this.modelHandler)};
   }
 
@@ -139,8 +141,6 @@ class DefaultState extends InteractionState {
     model.contextMenuState.isVisible = true;
     model.contextMenuState.selectedTiles = [clickData.tile];
     model.contextMenuState.clickPoint = clickData.point;
-    console.log('New contextMenuState');
-    console.log(model.contextMenuState);
     return {
       model: model,
       newState: new ContextMenuOpenState(this.modelHandler)};
@@ -172,8 +172,10 @@ class PickedUpTokenState extends InteractionState {
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
-    model.tokens[activeTokenIndex].isActive = false;
-    model.tokens[activeTokenIndex].location = clickData.tile;
+    const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
+    mutableToken.isActive = false;
+    mutableToken.location = clickData.tile;
+    model.tokens[activeTokenIndex] = mutableToken.freeze();
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 
@@ -182,7 +184,9 @@ class PickedUpTokenState extends InteractionState {
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
-    model.tokens[activeTokenIndex].isActive = false;
+    const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
+    mutableToken.isActive = false;
+    model.tokens[activeTokenIndex] = mutableToken.freeze();
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 }
