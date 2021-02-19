@@ -1,5 +1,5 @@
 // import { GameBoard } from './game_board/game_board'
-import {BoardModelBuilder} from '/src/game_board/model/board_model';
+import {BoardModel} from '/src/game_board/model/board_model';
 // import { BoardView } from './game_board/view/board_view'
 import {LoadedImage, loadImages} from '/src/utils/image_utils';
 import {connectTo} from '/src/server/socket_connection';
@@ -21,7 +21,7 @@ Promise.all([imagesPromise, socketPromise])
     .then((inputs) => {
       const [imageMap, socket] = inputs;
 
-      const modelBuilder = new BoardModelBuilder().setTileSize(60);
+      const modelBuilder = BoardModel.Builder.forNewBoard().setTileSize(60);
 
       modelBuilder.setBackgroundImage(
           new LoadedImage(getOrThrow(imageMap, backgroundUrl), backgroundUrl));

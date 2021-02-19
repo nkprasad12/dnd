@@ -117,7 +117,9 @@ export class BoardModel {
   rows: number;
   cols: number;
 
-  constructor(
+  private constructor(
+      readonly id: string,
+      public name: string,
       public backgroundImage: LoadedImage,
       public tileSize: number,
       public tokens: TokenModel[],
@@ -156,7 +158,7 @@ export class BoardModel {
   }
 
   deepCopy(): BoardModel {
-    return BoardModelBuilder.from(this).build();
+    return BoardModel.Builder.from(this).build();
   }
 
   async mergedFrom(diff: RemoteBoardDiff): Promise<BoardModel> {
@@ -182,19 +184,14 @@ export class BoardModel {
     if (diff.imageSource) {
       newModel.backgroundImage = await loadImage(diff.imageSource);
     }
-    return new BoardModelBuilder()
-        .setBackgroundImage(newModel.backgroundImage)
-        .setContextMenu(newModel.contextMenuState)
-        .setFogOfWarState(newModel.fogOfWarState)
-        .setTileSize(newModel.tileSize)
-        .setTokens(newModel.tokens)
-        .build();
+    return BoardModel.Builder.from(newModel).build();
   }
-}
 
-export class BoardModelBuilder {
-  static from(model: BoardModel): BoardModelBuilder {
-    return new BoardModelBuilder()
+static Builder = class {
+  static from(model: BoardModel): BoardModel.Builder {
+    return new BoardModel.Builder()
+        .setId(model.id)
+        .setName(model.name)
         .setBackgroundImage(model.backgroundImage)
         .setTileSize(model.tileSize)
         .setTokens(model.tokens)
@@ -202,6 +199,16 @@ export class BoardModelBuilder {
         .setFogOfWarState(model.fogOfWarState);
   }
 
+  static forNewBoard(): BoardModel.Builder {
+    const id = getId();
+    console.log('Warning: creating new board with id: ' + id);
+    return new BoardModel.Builder().setId(id);
+  }
+
+  constructor() {}
+
+  private id?: string = undefined;
+  private name?: string = undefined;
   private backgroundImage?: LoadedImage = undefined;
   private tileSize = -1;
   private tokens: TokenModel[] = [];
@@ -209,45 +216,69 @@ export class BoardModelBuilder {
       new ContextMenuModel({x: 0, y: 0}, [], false);
   private fogOfWarState: boolean[][] = [];
 
-  setBackgroundImage(image: LoadedImage): BoardModelBuilder {
+  private setId(id: string): BoardModel.Builder {
+    this.id = id;
+    return this;
+  }
+
+  setBackgroundImage(image: LoadedImage): BoardModel.Builder {
     this.backgroundImage = image;
     return this;
   }
 
-  setTileSize(tileSize: number): BoardModelBuilder {
+  setTileSize(tileSize: number): BoardModel.Builder {
     this.tileSize = tileSize;
     return this;
   }
 
-  setTokens(tokens: TokenModel[]): BoardModelBuilder {
+  setTokens(tokens: TokenModel[]): BoardModel.Builder {
     this.tokens = tokens;
     return this;
   }
 
-  addToken(token: TokenModel): BoardModelBuilder {
+  addToken(token: TokenModel): BoardModel.Builder {
     this.tokens.push(token);
     return this;
   }
 
-  setContextMenu(contextMenu: ContextMenuModel): BoardModelBuilder {
+  setContextMenu(contextMenu: ContextMenuModel): BoardModel.Builder {
     this.contextMenu = contextMenu;
     return this;
   }
 
-  setFogOfWarState(state: boolean[][]): BoardModelBuilder {
+  setFogOfWarState(state: boolean[][]): BoardModel.Builder {
     this.fogOfWarState = state;
     return this;
   }
 
+  setName(name: string): BoardModel.Builder {
+    if (name.length === 0) {
+      throw new Error('Board name can not be empty!');
+    }
+    this.name = name;
+    return this;
+  }
+
   build(): BoardModel {
-    if (this.backgroundImage == undefined) {
-      throw new Error('BoardModelBuilder requires backgroundImage');
+    if (this.id === undefined) {
+      throw new Error('BoardModel.Builder requires id');
+    }
+    if (this.backgroundImage === undefined) {
+      throw new Error('BoardModel.Builder requires backgroundImage');
     }
     if (this.tileSize < 1) {
-      throw new Error('BoardModelBuilder requires a tileSize >= 1');
+      throw new Error('BoardModel.Builder requires a tileSize >= 1');
+    }
+    if (this.name === undefined) {
+      throw new Error('BoardModel.Builder must have a name');
     }
     return new BoardModel(
-        this.backgroundImage, this.tileSize, this.tokens, this.contextMenu,
-        this.fogOfWarState);
+        this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
+        this.contextMenu, this.fogOfWarState);
   }
+}
+}
+
+export namespace BoardModel {
+  export type Builder = InstanceType<typeof BoardModel.Builder>;
 }
