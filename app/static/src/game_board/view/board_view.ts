@@ -195,19 +195,21 @@ export class BoardView {
   }
 
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
+    const tokenSize = tokenModel.size * newModel.tileSize;
     getContext(this.tokenCanvas)
         .drawImage(tokenModel.image.image,
             tokenModel.location.col * newModel.tileSize,
             tokenModel.location.row * newModel.tileSize,
-            tokenModel.size, tokenModel.size);
+            tokenSize, tokenSize);
   }
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
+    const tokenSize = tokenModel.size * newModel.tileSize;
     getContext(this.tokenCanvas)
         .clearRect(
             tokenModel.location.col * newModel.tileSize - 1,
             tokenModel.location.row * newModel.tileSize - 1,
-            tokenModel.size + 2, tokenModel.size + 2);
+            tokenSize + 2, tokenSize + 2);
   }
 }
 
@@ -278,6 +280,7 @@ class ContextMenu {
   menu = <HTMLElement>document.getElementById('rightClickMenu');
   clearFogButton = <HTMLElement>document.getElementById('clear-fow');
   applyFogButton = <HTMLElement>document.getElementById('apply-fow');
+  addTokenButton = <HTMLElement>document.getElementById('add-token');
 
   tiles: Array<Tile>;
 
@@ -286,6 +289,7 @@ class ContextMenu {
     this.menu.style.display = 'none';
     this.clearFogButton.style.display = 'initial';
     this.applyFogButton.style.display = 'initial';
+    this.addTokenButton.style.display = 'initial';
   }
 
   bind(model: ContextMenuModel): void {

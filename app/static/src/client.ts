@@ -29,13 +29,13 @@ Promise.all([imagesPromise, socketPromise])
           TokenModel.create(
               'Wolf',
               new LoadedImage(getOrThrow(imageMap, wolfUrl), wolfUrl),
-              60,
+              1,
               {col: 5, row: 5}, false));
       modelBuilder.addToken(
           TokenModel.create(
               'Egbert',
               new LoadedImage(getOrThrow(imageMap, egbertUrl), egbertUrl),
-              60,
+              1,
               {col: 6, row: 6}, false));
 
       const gameController =
