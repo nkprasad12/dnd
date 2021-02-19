@@ -6,40 +6,41 @@ import {areLocationsEqual, Location} from '/src/common/common';
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
 export class RemoteTokenModel {
-  protected constructor(
+  constructor(
       readonly id: string,
       readonly location: Location,
       readonly name: string,
       readonly imageSource: string,
       readonly size: number) { }
 
-  equals(other: RemoteTokenModel): boolean {
-    if (this.name != other.name) {
+  static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
+    if (first.name != other.name) {
       return false;
     }
-    if (this.imageSource != other.imageSource) {
+    if (first.imageSource != other.imageSource) {
       return false;
     }
-    if (this.size != other.size) {
+    if (first.size != other.size) {
       return false;
     }
-    if (!areLocationsEqual(this.location, other.location)) {
+    if (!areLocationsEqual(first.location, other.location)) {
       return false;
     }
     return true;
   }
 
-  mergedWith(diff: RemoteTokenDiff): RemoteTokenModel {
-    if (diff.id != this.id) {
+  static mergedWith(
+      model: RemoteTokenModel, diff: RemoteTokenDiff): RemoteTokenModel {
+    if (diff.id != model.id) {
       console.log('[RemoteTokenModel] Diff ID does not match current ID');
-      return this;
+      return model;
     }
     return new RemoteTokenModel(
-        this.id,
-      diff.location === undefined ? this.location : diff.location,
-      diff.name === undefined ? this.name : diff.name,
-      diff.imageSource === undefined ? this.imageSource : diff.imageSource,
-      diff.size === undefined ? this.size : diff.size,
+        model.id,
+        diff.location === undefined ? model.location : diff.location,
+        diff.name === undefined ? model.name : diff.name,
+        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+        diff.size === undefined ? model.size : diff.size,
     );
   }
 }
@@ -91,25 +92,26 @@ export class RemoteBoardModel {
     readonly tileSize: number,
     readonly tokens: RemoteTokenModel[]) { }
 
-  mergedWith(diff: RemoteBoardDiff): RemoteBoardModel {
-    const mergedTokens: RemoteTokenModel[] = [];
-    mergedTokens.concat(diff.newTokens);
-    for (const token of this.tokens) {
+  static mergedWith(
+      model: RemoteBoardModel, diff: RemoteBoardDiff): RemoteBoardModel {
+    let mergedTokens: RemoteTokenModel[] = [];
+    mergedTokens = mergedTokens.concat(diff.newTokens);
+    for (const token of model.tokens) {
       if (diff.removedTokens.includes(token.id)) {
         continue;
       }
       let finalToken = token;
       for (const tokenDiff of diff.tokenDiffs) {
         if (tokenDiff.id === token.id) {
-          finalToken = finalToken.mergedWith(tokenDiff);
+          finalToken = RemoteTokenModel.mergedWith(finalToken, tokenDiff);
           break;
         }
       }
       mergedTokens.push(finalToken);
     }
     return new RemoteBoardModel(
-      diff.imageSource === undefined ? this.imageSource : diff.imageSource,
-      diff.tileSize === undefined ? this.tileSize : diff.tileSize,
+      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+      diff.tileSize === undefined ? model.tileSize : diff.tileSize,
       mergedTokens,
     );
   }
@@ -131,10 +133,7 @@ export class RemoteBoardDiff {
           continue;
         }
         foundMatch = true;
-        if (!newToken.equals(oldToken)) {
-          console.log('Found token diff (new, old)');
-          console.log(newToken);
-          console.log(oldToken);
+        if (!RemoteTokenModel.equals(newToken, oldToken)) {
           modifiedTokens.push(
               RemoteTokenDiff.computeBetween(newToken, oldToken));
         }

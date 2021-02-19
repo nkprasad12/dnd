@@ -23,8 +23,6 @@ export class GameController {
           socket,
           RemoteBoardModel.create(model),
           (remoteDiff) => {
-            console.log('TODO: handle remote diff');
-            console.log(remoteDiff);
             this.modelHandler.applyRemoteDiff(remoteDiff);
           });
     this.modelHandler = new ModelHandler(this.view, model, this.remoteBoard);

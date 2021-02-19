@@ -6,7 +6,7 @@ export class LoadedImage {
   }
 }
 
-function loadImage(source: string): Promise<LoadedImage> {
+export function loadImage(source: string): Promise<LoadedImage> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.src = source;
@@ -22,18 +22,16 @@ function loadImage(source: string): Promise<LoadedImage> {
 }
 
 /** Loads all the images requested in the URLs in the input array. */
-export function loadImages(
+export async function loadImages(
     sources: Array<string>): Promise<Map<string, CanvasImageSource>> {
   const promises = [];
   for (const source of sources) {
     promises.push(loadImage(source));
   }
-  return Promise.all(promises)
-      .then((res) => {
-        const imageMap = new Map();
-        for (const loadedImage of res) {
-          imageMap.set(loadedImage.source, loadedImage.image);
-        }
-        return imageMap;
-      });
+  const res = await Promise.all(promises);
+  const imageMap = new Map();
+  for (const loadedImage of res) {
+    imageMap.set(loadedImage.source, loadedImage.image);
+  }
+  return imageMap;
 }

@@ -100,7 +100,7 @@ export class BoardView {
   }
 
   private bindTokens(newModel: BoardModel): void {
-    let oldTokens: Array<TokenModel> = [];
+    let oldTokens: TokenModel[] = [];
     if (this.model != undefined) {
       oldTokens = this.model.tokens;
     }
