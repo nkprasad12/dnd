@@ -81,6 +81,8 @@ export class RemoteTokenDiff {
 export class RemoteBoardModel {
   static create(model: BoardModel): RemoteBoardModel {
     return new RemoteBoardModel(
+        model.id,
+        model.name,
         model.backgroundImage.source,
         model.tileSize,
         model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
@@ -88,12 +90,18 @@ export class RemoteBoardModel {
   }
 
   private constructor(
+    readonly id: string,
+    readonly name: string,
     readonly imageSource: string,
     readonly tileSize: number,
     readonly tokens: RemoteTokenModel[]) { }
 
   static mergedWith(
       model: RemoteBoardModel, diff: RemoteBoardDiff): RemoteBoardModel {
+    if (model.id != diff.id) {
+      throw new Error(
+          '[RemoteBoardModel] mergedWith called with different ids');
+    }
     let mergedTokens: RemoteTokenModel[] = [];
     mergedTokens = mergedTokens.concat(diff.newTokens);
     for (const token of model.tokens) {
@@ -110,9 +118,11 @@ export class RemoteBoardModel {
       mergedTokens.push(finalToken);
     }
     return new RemoteBoardModel(
-      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-      diff.tileSize === undefined ? model.tileSize : diff.tileSize,
-      mergedTokens,
+        model.id,
+        diff.name === undefined ? model.name : diff.name,
+        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+        diff.tileSize === undefined ? model.tileSize : diff.tileSize,
+        mergedTokens,
     );
   }
 }
@@ -122,6 +132,10 @@ export class RemoteBoardDiff {
   static computeBetween(
       newModel: RemoteBoardModel,
       oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
+    if (newModel.id != oldModel.id) {
+      throw new Error(
+          '[RemoteBoardDiff] computeBetween called with diferent ids');
+    }
     const newTokens: RemoteTokenModel[] = [];
     const modifiedTokens: RemoteTokenDiff[] = [];
     const removedTokens: string[] = [];
@@ -162,8 +176,11 @@ export class RemoteBoardDiff {
           undefined : newModel.imageSource;
     const diffTileSize =
       newModel.tileSize === oldModel.tileSize ? undefined : newModel.tileSize;
+    const diffName =
+      newModel.name === oldModel.name ? undefined : newModel.name;
 
     const isValidDiff =
+      diffName != undefined ||
       modifiedTokens.length > 0 ||
       removedTokens.length > 0 ||
       newTokens.length > 0 ||
@@ -175,6 +192,8 @@ export class RemoteBoardDiff {
     }
 
     return new RemoteBoardDiff(
+        newModel.id,
+        diffName,
         modifiedTokens,
         removedTokens,
         newTokens,
@@ -183,7 +202,9 @@ export class RemoteBoardDiff {
     );
   }
 
-  constructor(
+  private constructor(
+    readonly id: string,
+    readonly name?: string,
     readonly tokenDiffs: RemoteTokenDiff[] = [],
     readonly removedTokens: string[] = [],
     readonly newTokens: RemoteTokenModel[] = [],
