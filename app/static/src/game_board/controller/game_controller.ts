@@ -57,5 +57,16 @@ export class GameController {
           }
           this.inputHandler.onContextMenuClick(2);
         });
+
+    // @ts-ignore
+    // eslint-disable-next-line no-unused-vars
+    const addTokenListener = new InputListener(
+        this.view.menu.addTokenButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(3);
+        });
   }
 }
