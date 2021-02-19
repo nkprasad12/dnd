@@ -1,6 +1,4 @@
-Set up server by going to parent folder and then:
-
-dnd/start_server
+Set up server running ./start_server from the root directory.
 
 Run Typescript unit tests by going to the app/static directory and then:
 
