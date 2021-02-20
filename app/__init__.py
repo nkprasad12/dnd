@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 UPLOAD_FOLDER = '/home/nitin/Documents/code/dnd/images'
+DB_FOLDER = '/home/nitin/Documents/code/dnd/server_db'
 
 socketio = SocketIO()
 
@@ -16,6 +17,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['DB_FOLDER'] = DB_FOLDER
     app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
 
     if test_config is None:
