@@ -6,14 +6,19 @@ visits = 0
 
 
 @socketio.on('nitin', namespace='/chat')
-def nitintest(message):
+def chat_nitin(message):
     global visits
     visits += 1
-    print(f"Got message: {message} # {visits}")
+    print(f'Got message: {message} # {visits}')
     emit('nitin', {'data': f'BLAHBLAH{visits}'}, broadcast=True)
 
 
 @socketio.on('board-update', namespace='/board')
-def nitintest(message):
-    print(f"Got message: {message}")
+def board_update(message):
+    print(f'[board-update] {message}')
     emit('board-update', message, broadcast=True, include_self=False)
+
+
+@socketio.on('board-create-request', namespace='/board')
+def board_create(message):
+  print(f'[board-create-request] {message}')

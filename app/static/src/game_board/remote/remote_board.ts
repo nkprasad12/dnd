@@ -35,4 +35,9 @@ export class RemoteBoard {
     console.log(this.remoteModel);
     this.onUpdate(remoteDiff);
   }
+
+  getRemoteModel(): RemoteBoardModel {
+    // TODO: Return a copy instead.
+    return this.remoteModel;
+  }
 }

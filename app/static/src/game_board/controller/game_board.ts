@@ -40,7 +40,7 @@ export class GameBoard {
   }
 
   // TODO: Refactor how this is done.
-  private listenForContextMenuClicks() {
+  private listenForContextMenuClicks(): void {
     // @ts-ignore
     // eslint-disable-next-line no-unused-vars
     const clearFogListener = new InputListener(
@@ -72,5 +72,9 @@ export class GameBoard {
           }
           this.inputHandler.onContextMenuClick(3);
         });
+  }
+
+  getRemoteModel(): RemoteBoardModel {
+    return this.remoteBoard.getRemoteModel();
   }
 }

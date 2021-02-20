@@ -50,7 +50,15 @@
     <br>
 
     <div id="createNewBoardFormStub" style="z-index: 30"></div>
-    <button id="createNewBoard" type="button" class="btn btn-primary">Create New Board</button>
+    <div style="display:flex; flex-direction: row;">
+      <button id="createNewBoard" type="button" class="btn btn-primary">Create New Board</button>
+      <div class="divider"></div>
+      <button id="saveNewBoard" type="button" class="btn btn-success" style="display: none">Save Board</button>
+    </div>
+
+    <br><br><br>
+
+    Preview below
 
     <br><br><br>
 
@@ -68,6 +76,7 @@
   </div>
   <div id="addNewIconFormStub" style="z-index: 30" style="display: top"></div>
 
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js" crossorigin="anonymous"></script>
   <script type="module" src="/static/js/board_tools/board_tools.js"></script>
 
 </body>

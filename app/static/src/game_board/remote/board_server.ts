@@ -16,7 +16,7 @@ export class BoardServer {
     this.socket.emit(BOARD_UPDATE, diff);
   }
 
-  uploadBoard(model: RemoteBoardModel): void {
+  createBoard(model: RemoteBoardModel): void {
     this.socket.emit(BOARD_CREATE_REQUEST, model);
   }
 

@@ -115,3 +115,9 @@
 #rightClickMenu button:hover {
   background-color: lightgray;
 }
+
+.divider{
+  width:15px;
+  height:auto;
+  display:inline-block;
+}
