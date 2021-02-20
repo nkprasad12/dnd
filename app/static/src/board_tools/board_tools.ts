@@ -9,6 +9,8 @@ const NEW_BOARD_BUTTON = 'createNewBoard';
 const SAVE_BOARD_BUTTON = 'saveNewBoard';
 const BOARD_FORM_STUB = 'createNewBoardFormStub';
 
+const LOAD_BOARD_BUTTON = 'loadBoard';
+
 const PREVIEW_BOARD_STUB = 'previewBoardStub';
 
 NewBoardForm.createOnClick(
@@ -25,3 +27,18 @@ async function saveBoard(model: RemoteBoardModel): Promise<void> {
   const server = new BoardServer(socket);
   server.createBoard(model);
 }
+
+function setupLoadButton(): void {
+  const boardId = '7078-1613797799655';
+  const loadButton = getElementById(LOAD_BOARD_BUTTON);
+  loadButton.style.display = 'initial';
+  loadButton.onclick = () => loadBoard(boardId);
+}
+
+async function loadBoard(boardId: string): Promise<void> {
+  const socket = await connectTo('board');
+  const server = new BoardServer(socket);
+  server.requestBoard(boardId);
+}
+
+setupLoadButton();
