@@ -6,22 +6,28 @@ import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler} from './model_handler';
 import {RemoteBoard} from '/src/game_board/remote/remote_board';
 import {RemoteBoardModel} from '/src/game_board/model/remote_board_model';
-import {Socket_} from '/src/server/socket_connection';
 import {getElementById} from '/src/common/common';
+import {BoardServer} from '/src/game_board/remote/board_server';
+import {LocalConnection} from '/src/server/local_connection';
 
-export class GameController {
+export class GameBoard {
+  static createLocal(parentId: string, model: BoardModel): GameBoard {
+    return new GameBoard(
+        parentId, model, new BoardServer(new LocalConnection()));
+  }
+
   private readonly view: BoardView;
   private readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
   private readonly remoteBoard: RemoteBoard
 
-  constructor(parentId: string, model: BoardModel, socket: Socket_) {
+  constructor(parentId: string, model: BoardModel, server: BoardServer) {
     this.view = new BoardView(getElementById(parentId));
     this.remoteBoard =
       new RemoteBoard(
-          socket,
           RemoteBoardModel.create(model),
+          server,
           (remoteDiff) => {
             this.modelHandler.applyRemoteDiff(remoteDiff);
           });

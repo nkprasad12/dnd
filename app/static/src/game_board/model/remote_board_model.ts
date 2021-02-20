@@ -6,6 +6,17 @@ import {areLocationsEqual, Location} from '/src/common/common';
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
 export class RemoteTokenModel {
+  static isValid(input: any): input is RemoteTokenModel {
+    const maybeToken = (input as RemoteTokenModel);
+    const isValid =
+        maybeToken.id !== undefined &&
+        maybeToken.location !== undefined &&
+        maybeToken.name !== undefined &&
+        maybeToken.imageSource !== undefined &&
+        maybeToken.size !== undefined;
+    return isValid;
+  }
+
   constructor(
       readonly id: string,
       readonly location: Location,
@@ -47,6 +58,13 @@ export class RemoteTokenModel {
 
 /** Represents a mutation of RemoteTokenModel. */
 export class RemoteTokenDiff {
+  static isValid(input: any): input is RemoteTokenDiff {
+    const maybeDiff = (input as RemoteTokenDiff);
+    const isValid =
+        maybeDiff.id !== undefined;
+    return isValid;
+  }
+
   static computeBetween(
       newModel: RemoteTokenModel,
       oldModel: RemoteTokenModel): RemoteTokenDiff {
@@ -79,6 +97,25 @@ export class RemoteTokenDiff {
  * This is a subset of BoardModel that is relevant to the shared game state.
  */
 export class RemoteBoardModel {
+  static isValid(input: any): input is RemoteBoardModel {
+    const maybeModel = (input as RemoteBoardModel);
+    const isValid =
+        maybeModel.id !== undefined &&
+        maybeModel.name !== undefined &&
+        maybeModel.imageSource !== undefined &&
+        maybeModel.tileSize != undefined &&
+        maybeModel.tokens !== undefined;
+    if (!isValid) {
+      return false;
+    }
+    for (const maybeToken of maybeModel.tokens) {
+      if (!RemoteTokenModel.isValid(maybeToken)) {
+        return false;
+      }
+    }
+    return isValid;
+  }
+
   static create(model: BoardModel): RemoteBoardModel {
     return new RemoteBoardModel(
         model.id,
@@ -129,6 +166,29 @@ export class RemoteBoardModel {
 
 /** Represents a mutation of RemoteBoardModel. */
 export class RemoteBoardDiff {
+  static isValid(input: any): input is RemoteBoardDiff {
+    const maybeDiff = (input as RemoteBoardDiff);
+    const isValid =
+        maybeDiff.id !== undefined &&
+        maybeDiff.newTokens !== undefined &&
+        maybeDiff.removedTokens !== undefined &&
+        maybeDiff.tokenDiffs != undefined;
+    if (!isValid) {
+      return false;
+    }
+    for (const tokenDiff of maybeDiff.tokenDiffs) {
+      if (!RemoteTokenDiff.isValid(tokenDiff)) {
+        return false;
+      }
+    }
+    for (const newToken of maybeDiff.tokenDiffs) {
+      if (!RemoteTokenDiff.isValid(newToken)) {
+        return false;
+      }
+    }
+    return isValid;
+  }
+
   static computeBetween(
       newModel: RemoteBoardModel,
       oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
