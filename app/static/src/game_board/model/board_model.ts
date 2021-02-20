@@ -1,6 +1,6 @@
 import {Location, Point, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
-import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
+import {copyFogOfWar, RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '/src/utils/image_utils';
 
 /** Data model for a token on the game board. */
@@ -220,6 +220,12 @@ export class BoardModel {
     if (diff.imageSource) {
       newModel.backgroundImage = await loadImage(diff.imageSource);
     }
+    newModel.fogOfWarState = copyFogOfWar(this.fogOfWarState);
+    if (diff.fogOfWarDiffs !== undefined) {
+      for (const d of diff.fogOfWarDiffs) {
+        newModel.fogOfWarState[d.col][d.row] = d.isFogOn;
+      }
+    }
     return BoardModel.Builder.from(newModel).build();
   }
 
@@ -248,7 +254,8 @@ static Builder = class {
         .setName(model.name)
         .setBackgroundImage(loadedImage)
         .setTileSize(model.tileSize)
-        .setTokens(tokens);
+        .setTokens(tokens)
+        .setFogOfWarState(model.fogOfWar);
   }
 
   static forNewBoard(): BoardModel.Builder {
