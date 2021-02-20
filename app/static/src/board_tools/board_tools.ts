@@ -14,6 +14,8 @@ const LOAD_BOARD_BUTTON = 'loadBoard';
 
 const PREVIEW_BOARD_STUB = 'previewBoardStub';
 
+const socketPromise = connectTo('board');
+
 NewBoardForm.createOnClick(
     NEW_BOARD_BUTTON, BOARD_FORM_STUB,
     (model) => {
@@ -24,7 +26,7 @@ NewBoardForm.createOnClick(
     });
 
 async function saveBoard(model: RemoteBoardModel): Promise<void> {
-  const socket = await connectTo('board');
+  const socket = await socketPromise;
   const server = new BoardServer(socket);
   server.createBoard(model);
 }
@@ -37,7 +39,7 @@ function setupLoadButton(): void {
 }
 
 async function loadBoard(boardId: string): Promise<void> {
-  const socket = await connectTo('board');
+  const socket = await socketPromise;
   const server = new BoardServer(socket);
   const remoteModel = await server.requestBoard(boardId);
   const model = await BoardModel.createFromRemote(remoteModel);
@@ -48,4 +50,13 @@ async function loadBoard(boardId: string): Promise<void> {
   saveButton.onclick = () => saveBoard(board.getRemoteModel());
 }
 
+async function getAllBoards(): Promise<string[]> {
+  const socket = await socketPromise;
+  const server = new BoardServer(socket);
+  const boards = await server.requestBoardOptions();
+  console.log(boards);
+  return boards;
+}
+
 setupLoadButton();
+getAllBoards();

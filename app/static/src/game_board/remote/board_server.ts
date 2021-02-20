@@ -3,8 +3,12 @@ import {Socket_} from '/src/server/socket_connection';
 
 const BOARD_UPDATE = 'board-update';
 const BOARD_CREATE_REQUEST = 'board-create-request';
+
 const BOARD_GET_REQUEST = 'board-get-request';
 const BOARD_GET_RESPONSE = 'board-get-response';
+
+const BOARD_GET_ALL_REQUEST = 'board-get-all-request';
+const BOARD_GET_ALL_RESPONSE = 'board-get-all-response';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
@@ -67,6 +71,28 @@ export class BoardServer {
               return;
             }
             reject(new Error('Received invalid board model!'));
+          })
+      ;
+    });
+  }
+
+  async requestBoardOptions(): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      this.socket.emit(BOARD_GET_ALL_REQUEST, 'pls');
+      this.socket.on(
+          BOARD_GET_ALL_RESPONSE,
+          (response) => {
+            if (!Array.isArray(response)) {
+              reject(new Error('GET_ALL Received invalid response!'));
+              return;
+            }
+            for (const item of response) {
+              if (typeof item !== 'string') {
+                reject(new Error('GET_ALL Received invalid response!'));
+                return;
+              }
+            }
+            resolve(response as string[]);
           })
       ;
     });
