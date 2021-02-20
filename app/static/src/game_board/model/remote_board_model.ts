@@ -1,6 +1,8 @@
 import {BoardModel} from './board_model';
 import {areLocationsEqual, Location} from '/src/common/common';
 
+const DEFAULT_SPEED = 6;
+
 /**
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
@@ -13,8 +15,16 @@ export class RemoteTokenModel {
         maybeToken.location !== undefined &&
         maybeToken.name !== undefined &&
         maybeToken.imageSource !== undefined &&
-        maybeToken.size !== undefined;
+        maybeToken.size !== undefined &&
+        maybeToken.speed !== undefined;
     return isValid;
+  }
+
+  static fillDefaults(input: any): any {
+    if (input.speed === undefined) {
+      input.speed = DEFAULT_SPEED;
+    }
+    return input;
   }
 
   constructor(
@@ -22,7 +32,8 @@ export class RemoteTokenModel {
       readonly location: Location,
       readonly name: string,
       readonly imageSource: string,
-      readonly size: number) { }
+      readonly size: number,
+      readonly speed: number) { }
 
   static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
     if (first.name != other.name) {
@@ -35,6 +46,9 @@ export class RemoteTokenModel {
       return false;
     }
     if (!areLocationsEqual(first.location, other.location)) {
+      return false;
+    }
+    if (first.speed != other.speed) {
       return false;
     }
     return true;
@@ -52,6 +66,7 @@ export class RemoteTokenModel {
         diff.name === undefined ? model.name : diff.name,
         diff.imageSource === undefined ? model.imageSource : diff.imageSource,
         diff.size === undefined ? model.size : diff.size,
+        diff.speed === undefined ? model.speed : diff.speed,
     );
   }
 }
@@ -81,6 +96,8 @@ export class RemoteTokenDiff {
             undefined : newModel.imageSource,
         newModel.size === oldModel.size ?
             undefined : newModel.size,
+        newModel.speed === oldModel.speed ?
+            undefined : newModel.speed,
     );
   }
 
@@ -89,7 +106,8 @@ export class RemoteTokenDiff {
     readonly location?: Location,
     readonly name?: string,
     readonly imageSource?: string,
-    readonly size?: number) { }
+    readonly size?: number,
+    readonly speed?: number) { }
 }
 
 /**
@@ -114,6 +132,16 @@ export class RemoteBoardModel {
       }
     }
     return isValid;
+  }
+
+  static fillDefaults(input: any): any {
+    if (input.tokens === undefined) {
+      return;
+    }
+    for (let i = 0; i < input.tokens.length; i++) {
+      input.tokens[i] = RemoteTokenModel.fillDefaults(input.tokens[i]);
+    }
+    return input;
   }
 
   static create(model: BoardModel): RemoteBoardModel {

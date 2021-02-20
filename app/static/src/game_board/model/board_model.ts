@@ -10,10 +10,12 @@ export class TokenModel {
       image: LoadedImage,
       size: number,
       location: Location,
-      isActive: boolean): TokenModel {
+      isActive: boolean,
+      speed: number): TokenModel {
     console.log('Warning - creating new TokenModel!');
     return new TokenModel(
-        getId(), name, image.source, image.image, size, location, isActive);
+        getId(), name, image.source, image.image, size, location, isActive,
+        speed);
   }
 
   static fromRemoteAndMap(
@@ -28,7 +30,7 @@ export class TokenModel {
       model: RemoteTokenModel, loadedImage: LoadedImage): TokenModel {
     return new TokenModel(
         model.id, model.name, loadedImage.source, loadedImage.image,
-        model.size, model.location, false);
+        model.size, model.location, false, model.speed);
   }
 
   static async fromRemote(model: RemoteTokenModel): Promise<TokenModel> {
@@ -43,7 +45,8 @@ export class TokenModel {
       readonly image: CanvasImageSource,
       readonly size: number,
       readonly location: Location,
-      readonly isActive: boolean) {
+      readonly isActive: boolean,
+      readonly speed: number) {
 
   }
 
@@ -67,6 +70,7 @@ export class TokenModel {
         this.size,
         this.location,
         this.isActive,
+        this.speed,
     );
   }
 
@@ -77,13 +81,14 @@ export class TokenModel {
         this.name,
         this.imageSource,
         this.size,
+        this.speed,
     );
   }
 
   mutableCopy(): MutableTokenModel {
     return new MutableTokenModel(
         this.id, this.name, this.imageSource, this.image, this.size,
-        this.location, this.isActive,
+        this.location, this.isActive, this.speed,
     );
   }
 }
@@ -97,12 +102,13 @@ export class MutableTokenModel {
       public image: CanvasImageSource,
       public size: number,
       public location: Location,
-      public isActive: boolean) {}
+      public isActive: boolean,
+      public speed: number) {}
 
   freeze(): TokenModel {
     return new TokenModel(
         this.id, this.name, this.imageSource, this.image, this.size,
-        this.location, this.isActive,
+        this.location, this.isActive, this.speed,
     );
   }
 }

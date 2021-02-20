@@ -24,10 +24,11 @@ export class BoardServer {
     this.socket.on(
         BOARD_UPDATE,
         (update) => {
-          if (!RemoteBoardDiff.isValid(update)) {
-            throw new Error('Received invalid board model!');
+          if (RemoteBoardDiff.isValid(update)) {
+            listener(update);
+            return;
           }
-          listener(update);
+          throw new Error('Received invalid board update!');
         });
   }
 
@@ -38,7 +39,7 @@ export class BoardServer {
         BOARD_UPDATE,
         (update) => {
           if (!RemoteBoardDiff.isValid(update)) {
-            throw new Error('Received invalid board model!');
+            throw new Error('Received invalid board update!');
           }
           if (update.id != id) {
             throw new Error('Received update for incorrect board!');
@@ -54,10 +55,18 @@ export class BoardServer {
       this.socket.on(
           BOARD_GET_RESPONSE,
           (response) => {
-            if (!RemoteBoardModel.isValid(response)) {
-              reject(new Error('Received invalid board model!'));
+            if (RemoteBoardModel.isValid(response)) {
+              resolve(response);
+              return;
             }
-            resolve(response as RemoteBoardModel);
+            console.log('Received invalid board - trying to fill defaults');
+            const updatedResponse = RemoteBoardModel.fillDefaults(response);
+            console.log(updatedResponse);
+            if (RemoteBoardModel.isValid(updatedResponse)) {
+              resolve(updatedResponse);
+              return;
+            }
+            reject(new Error('Received invalid board model!'));
           })
       ;
     });
