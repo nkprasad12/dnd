@@ -3,6 +3,7 @@ import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/bo
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 255, 0, 0.5)';
+const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
 
 function createBoardCanvas(
@@ -201,6 +202,9 @@ export class BoardView {
             tokenModel.location.col * newModel.tileSize,
             tokenModel.location.row * newModel.tileSize,
             tokenSize, tokenSize);
+    if (tokenModel.isActive) {
+      this.getTile(tokenModel.location).activeTokenGrid();
+    }
   }
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
@@ -210,6 +214,11 @@ export class BoardView {
             tokenModel.location.col * newModel.tileSize - 1,
             tokenModel.location.row * newModel.tileSize - 1,
             tokenSize + 2, tokenSize + 2);
+    this.getTile(tokenModel.location).clearGrid();
+  }
+
+  private getTile(tile: Location): Tile {
+    return this.tiles[tile.col][tile.row];
   }
 }
 
@@ -257,6 +266,16 @@ class Tile {
         this.startY,
         this.size,
         selectedGridColor,
+        this.gridCanvas);
+  }
+
+  activeTokenGrid(): void {
+    this.clearGrid();
+    drawCanvasTile(
+        this.startX,
+        this.startY,
+        this.size,
+        activeTokenColor,
         this.gridCanvas);
   }
 
