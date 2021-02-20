@@ -1,6 +1,6 @@
 import {checkDefined, getElementById, Location} from '/src/common/common';
 import {ModelHandler} from '/src/game_board/controller/model_handler';
-import {BoardModel, BoardModelBuilder, TokenModel} from '/src/game_board/model/board_model';
+import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 import {LoadedImage} from '/src/utils/image_utils';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
@@ -312,9 +312,9 @@ export class NewBoardForm extends BaseDialogForm {
           const backgroundImage =
               checkDefined(
                   backgroundImageEntry.getResolved(), 'backgroundImage');
-          console.log(boardName);
           onNewBoard(
-              new BoardModelBuilder()
+              BoardModel.Builder.forNewBoard()
+                  .setName(boardName)
                   .setBackgroundImage(backgroundImage)
                   .setTileSize(tileSize)
                   .build());
