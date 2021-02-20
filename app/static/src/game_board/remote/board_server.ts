@@ -16,7 +16,7 @@ export class BoardServer {
     this.socket.emit(BOARD_UPDATE, diff);
   }
 
-  uploadBoard(model: RemoteBoardModel): void {
+  createBoard(model: RemoteBoardModel): void {
     this.socket.emit(BOARD_CREATE_REQUEST, model);
   }
 
@@ -48,7 +48,7 @@ export class BoardServer {
     return board;
   }
 
-  private async requestBoard(id: string): Promise<RemoteBoardModel> {
+  async requestBoard(id: string): Promise<RemoteBoardModel> {
     return new Promise((resolve, reject) => {
       this.socket.emit(BOARD_GET_REQUEST, id);
       this.socket.on(

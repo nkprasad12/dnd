@@ -1,7 +1,7 @@
 import {Location, Point, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
-import {RemoteBoardDiff, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
-import {LoadedImage, loadImage} from '/src/utils/image_utils';
+import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
+import {LoadedImage, loadImage, loadImages} from '/src/utils/image_utils';
 
 /** Data model for a token on the game board. */
 export class TokenModel {
@@ -11,15 +11,29 @@ export class TokenModel {
       size: number,
       location: Location,
       isActive: boolean): TokenModel {
+    console.log('Warning - creating new TokenModel!');
     return new TokenModel(
         getId(), name, image.source, image.image, size, location, isActive);
   }
 
-  static async fromRemote(model: RemoteTokenModel): Promise<TokenModel> {
-    const loadedImage = await loadImage(model.imageSource);
+  static fromRemoteAndMap(
+      model: RemoteTokenModel,
+      imageMap: Map<string, CanvasImageSource>): TokenModel {
+    const image = getOrThrow(imageMap, model.imageSource);
+    const loadedImage = new LoadedImage(image, model.imageSource);
+    return TokenModel.fromRemoteAndImage(model, loadedImage);
+  }
+
+  static fromRemoteAndImage(
+      model: RemoteTokenModel, loadedImage: LoadedImage): TokenModel {
     return new TokenModel(
         model.id, model.name, loadedImage.source, loadedImage.image,
         model.size, model.location, false);
+  }
+
+  static async fromRemote(model: RemoteTokenModel): Promise<TokenModel> {
+    const loadedImage = await loadImage(model.imageSource);
+    return TokenModel.fromRemoteAndImage(model, loadedImage);
   }
 
   constructor(
@@ -110,6 +124,14 @@ export class ContextMenuModel {
   }
 }
 
+function getOrThrow<K, V>(map: Map<K, V>, key: K): V {
+  const value = map.get(key);
+  if (value == undefined) {
+    throw new Error('No value for key: ' + String(key));
+  }
+  return value;
+}
+
 /** Data model representing the game board. */
 export class BoardModel {
   width: number;
@@ -161,6 +183,14 @@ export class BoardModel {
     return BoardModel.Builder.from(this).build();
   }
 
+  static async createFromRemote(
+      remoteModel: RemoteBoardModel): Promise<BoardModel> {
+    const imageSources = remoteModel.tokens.map((token) => token.imageSource);
+    imageSources.push(remoteModel.imageSource);
+    const imageMap = await loadImages(imageSources);
+    return BoardModel.Builder.fromRemote(remoteModel, imageMap).build();
+  }
+
   async mergedFrom(diff: RemoteBoardDiff): Promise<BoardModel> {
     const newModel = this.deepCopy();
     for (const tokenDiff of diff.tokenDiffs) {
@@ -197,6 +227,22 @@ static Builder = class {
         .setTokens(model.tokens)
         .setContextMenu(model.contextMenuState)
         .setFogOfWarState(model.fogOfWarState);
+  }
+
+  static fromRemote(
+      model: RemoteBoardModel,
+      imageMap: Map<string, CanvasImageSource>): BoardModel.Builder {
+    const image = getOrThrow(imageMap, model.imageSource);
+    const loadedImage = new LoadedImage(image, model.imageSource);
+    const tokens =
+        model.tokens.map(
+            (token) => TokenModel.fromRemoteAndMap(token, imageMap));
+    return new BoardModel.Builder()
+        .setId(model.id)
+        .setName(model.name)
+        .setBackgroundImage(loadedImage)
+        .setTileSize(model.tileSize)
+        .setTokens(tokens);
   }
 
   static forNewBoard(): BoardModel.Builder {
