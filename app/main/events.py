@@ -15,6 +15,11 @@ BOARD_GET_RESPONSE = 'board-get-response'
 BOARD_GET_ALL_REQUEST = 'board-get-all-request'
 BOARD_GET_ALL_RESPONSE = 'board-get-all-response'
 
+BOARD_GET_ACTIVE_REQUEST = 'board-get-active-request'
+BOARD_GET_ACTIVE_RESPONSE = 'board-get-active-response'
+
+BOARD_SET_ACTIVE = 'board-set-active'
+
 visits = 0
 
 
@@ -54,6 +59,35 @@ def board_update(message):
     emit(BOARD_GET_ALL_RESPONSE, board_list)
 
 
+@socketio.on(BOARD_GET_ACTIVE_REQUEST, namespace='/board')
+def board_update(message):
+    print(f'[{BOARD_GET_ACTIVE_REQUEST}] {message}')
+    active_id = _get_active_board()
+    print(f'Sending {BOARD_GET_ACTIVE_RESPONSE}: {active_id}')
+    emit(BOARD_GET_ACTIVE_RESPONSE, active_id)
+
+
+@socketio.on(BOARD_SET_ACTIVE, namespace='/board')
+def board_update(message):
+    print(f'[{BOARD_SET_ACTIVE}] {message}')
+    _set_active_board(message)
+
+
+def _get_active_board() -> str:
+  root = current_app.config['DB_FOLDER']
+  try:
+    with open(os.path.join(root, 'active.db'), 'r') as f:
+      return f.read()
+  except FileNotFoundError:
+    return 'none'
+
+
+def _set_active_board(id: str) -> None:
+  root = current_app.config['DB_FOLDER']
+  with open(os.path.join(root, 'active.db'), 'w') as f:
+    f.write(id)
+
+
 def _retrieve_all_boards() -> List[str]:
   root = current_app.config['DB_FOLDER']
   all_files = os.listdir(root)
@@ -70,7 +104,7 @@ def _retrieve_board(board_id: str) -> dict:
   try:
     with open(_get_board_file(board_id), 'r') as f:
       return json.loads(f.read())
-  except FileNotFoundError | json.JSONDecodeError:
+  except (FileNotFoundError, json.JSONDecodeError):
     return {}
 
 

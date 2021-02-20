@@ -10,6 +10,11 @@ const BOARD_GET_RESPONSE = 'board-get-response';
 const BOARD_GET_ALL_REQUEST = 'board-get-all-request';
 const BOARD_GET_ALL_RESPONSE = 'board-get-all-response';
 
+const BOARD_GET_ACTIVE_REQUEST = 'board-get-active-request';
+const BOARD_GET_ACTIVE_RESPONSE = 'board-get-active-response';
+
+const BOARD_SET_ACTIVE = 'board-set-active';
+
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
 /** Sends and receives game board messages to the server. */
@@ -96,5 +101,21 @@ export class BoardServer {
           })
       ;
     });
+  }
+
+  async requestActiveBoardId(): Promise<string> {
+    return new Promise((resolve, _reject) => {
+      this.socket.emit(BOARD_GET_ACTIVE_REQUEST, 'pls');
+      this.socket.on(
+          BOARD_GET_ACTIVE_RESPONSE,
+          (response) => {
+            resolve(response as string);
+          },
+      );
+    });
+  }
+
+  setActiveBoard(id: string): void {
+    this.socket.emit(BOARD_SET_ACTIVE, id);
   }
 }
