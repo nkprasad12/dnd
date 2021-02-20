@@ -1,10 +1,13 @@
-import {Location, areLocationsEqual} from '/src/common/common';
+import {Location, areLocationsEqual, tileDistance} from '/src/common/common';
 import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 255, 0, 0.5)';
 const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
+const movableToColor: string = 'rgba(200, 0, 00, 0.37)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
+
+const defaultMovementSpeed = 3;
 
 function createBoardCanvas(
     id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
@@ -204,6 +207,8 @@ export class BoardView {
             tokenSize, tokenSize);
     if (tokenModel.isActive) {
       this.getTile(tokenModel.location).activeTokenGrid();
+      this.getMovableTiles(tokenModel, newModel)
+          .map((tile) => tile.activeTokenGrid());
     }
   }
 
@@ -214,7 +219,25 @@ export class BoardView {
             tokenModel.location.col * newModel.tileSize - 1,
             tokenModel.location.row * newModel.tileSize - 1,
             tokenSize + 2, tokenSize + 2);
-    this.getTile(tokenModel.location).clearGrid();
+    this.getTile(tokenModel.location).defaultGrid();
+    if (tokenModel.isActive) {
+      this.getMovableTiles(tokenModel, newModel)
+          .map((tile) => tile.defaultGrid());
+    }
+  }
+
+  private getMovableTiles(
+      tokenModel: TokenModel, newModel: BoardModel): Tile[] {
+    const result: Tile[] = [];
+    for (let i = 0; i < newModel.cols; i++) {
+      for (let j = 0; j < newModel.rows; j++) {
+        const d = tileDistance(tokenModel.location, {col: i, row: j});
+        if (0 < d && d <= defaultMovementSpeed) {
+          result.push(this.tiles[i][j]);
+        }
+      }
+    }
+    return result;
   }
 
   private getTile(tile: Location): Tile {
@@ -246,7 +269,7 @@ class Tile {
     this.hasFog = false;
   }
 
-  clearGrid(): void {
+  private clearGrid(): void {
     getContext(this.gridCanvas)
         .clearRect(
             this.startX - 1, this.startY - 1,
@@ -276,6 +299,18 @@ class Tile {
         this.startY,
         this.size,
         activeTokenColor,
+        this.gridCanvas);
+  }
+
+  movableToGrid(): void {
+    // TODO - rethink this logic. We might overwrite something and then not
+    // bring it back. Might be better to have movable on a different layer.
+    this.clearGrid();
+    drawCanvasTile(
+        this.startX,
+        this.startY,
+        this.size,
+        movableToColor,
         this.gridCanvas);
   }
 

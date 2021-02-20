@@ -26,6 +26,10 @@ export function copyLocation(a: Location): Location {
   return {row: a.row, col: a.col};
 }
 
+export function tileDistance(a: Location, b: Location): number {
+  return Math.max(Math.abs(a.col - b.col), Math.abs(a.row - b.row));
+}
+
 export function deepCopyList<T>(list: T[], copyFunction: (a: T) => T) {
   const newList: T[] = [];
   for (const item of list) {
