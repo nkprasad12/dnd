@@ -37,8 +37,8 @@ export class BoardView {
 
   constructor(parent: HTMLElement) {
     this.backgroundCanvas = createBoardCanvas('backgroundCanvas', '1', parent);
-    this.fogOfWarCanvas = createBoardCanvas('fogOfWarCanvas', '2', parent);
-    this.tokenCanvas = createBoardCanvas('tokenCanvas', '3', parent);
+    this.tokenCanvas = createBoardCanvas('tokenCanvas', '2', parent);
+    this.fogOfWarCanvas = createBoardCanvas('fogOfWarCanvas', '3', parent);
     this.gridCanvas = createBoardCanvas('gridCanvas', '4', parent);
     this.topCanvas = createBoardCanvas('topCanvas', '5', parent);
     this.allCanvases = [

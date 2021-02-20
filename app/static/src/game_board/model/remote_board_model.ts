@@ -122,7 +122,10 @@ export class RemoteBoardModel {
         maybeModel.name !== undefined &&
         maybeModel.imageSource !== undefined &&
         maybeModel.tileSize != undefined &&
-        maybeModel.tokens !== undefined;
+        maybeModel.tokens !== undefined &&
+        maybeModel.fogOfWar !== undefined &&
+        maybeModel.cols !== undefined &&
+        maybeModel.rows !== undefined;
     if (!isValid) {
       return false;
     }
@@ -141,16 +144,36 @@ export class RemoteBoardModel {
     for (let i = 0; i < input.tokens.length; i++) {
       input.tokens[i] = RemoteTokenModel.fillDefaults(input.tokens[i]);
     }
+    if (input.rows === undefined || input.cols === undefined) {
+      console.log('Rows or cols are undefined');
+      return;
+    }
+    if (input.fogOfWar === undefined) {
+      input.fogOfWar = [];
+      for (let i = 0; i < input.cols; i++) {
+        input.fogOfWar.push([]);
+        for (let j = 0; j < input.rows; j++) {
+          input.fogOfWar[i].push(false);
+        }
+      }
+    }
     return input;
   }
 
   static create(model: BoardModel): RemoteBoardModel {
+    const fogOfWar: boolean[][] = [];
+    for (const column of model.fogOfWarState) {
+      fogOfWar.push(column.slice());
+    }
     return new RemoteBoardModel(
         model.id,
         model.name,
         model.backgroundImage.source,
         model.tileSize,
         model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
+        fogOfWar,
+        model.cols,
+        model.rows,
     );
   }
 
@@ -159,7 +182,10 @@ export class RemoteBoardModel {
     readonly name: string,
     readonly imageSource: string,
     readonly tileSize: number,
-    readonly tokens: RemoteTokenModel[]) { }
+    readonly tokens: RemoteTokenModel[],
+    readonly fogOfWar: boolean[][],
+    readonly cols: number,
+    readonly rows: number) { }
 
   static mergedWith(
       model: RemoteBoardModel, diff: RemoteBoardDiff): RemoteBoardModel {
@@ -182,14 +208,37 @@ export class RemoteBoardModel {
       }
       mergedTokens.push(finalToken);
     }
+    const fogOfWarState = copyFogOfWar(model.fogOfWar);
+    if (diff.fogOfWarDiffs !== undefined) {
+      for (const d of diff.fogOfWarDiffs) {
+        fogOfWarState[d.col][d.row] = d.isFogOn;
+      }
+    }
     return new RemoteBoardModel(
         model.id,
         diff.name === undefined ? model.name : diff.name,
         diff.imageSource === undefined ? model.imageSource : diff.imageSource,
         diff.tileSize === undefined ? model.tileSize : diff.tileSize,
         mergedTokens,
+        fogOfWarState,
+        model.cols,
+        model.rows,
     );
   }
+}
+
+export function copyFogOfWar(fogOfWar: boolean[][]): boolean[][] {
+  const result: boolean[][] = [];
+  for (const column of fogOfWar) {
+    result.push(column.slice());
+  }
+  return result;
+}
+
+export interface FogOfWarDiff {
+  readonly row: number;
+  readonly col: number;
+  readonly isFogOn: boolean;
 }
 
 /** Represents a mutation of RemoteBoardModel. */
@@ -258,6 +307,20 @@ export class RemoteBoardDiff {
         removedTokens.push(oldToken.id);
       }
     }
+    const fogOfWarDiffs: FogOfWarDiff[] = [];
+    if (newModel.imageSource === oldModel.imageSource) {
+      for (let i = 0; i < newModel.cols; i++) {
+        for (let j = 0; j < newModel.rows; j++) {
+          if (oldModel.fogOfWar[i][j] === newModel.fogOfWar[i][j]) {
+            continue;
+          }
+          fogOfWarDiffs.push(
+              {col: i, row: j, isFogOn: newModel.fogOfWar[i][j]});
+        }
+      }
+    } else {
+      console.log('Warning - skipping fog of war diff calculation.');
+    }
 
     const diffImageSource =
       newModel.imageSource === oldModel.imageSource ?
@@ -273,7 +336,8 @@ export class RemoteBoardDiff {
       removedTokens.length > 0 ||
       newTokens.length > 0 ||
       diffImageSource != undefined ||
-      diffTileSize != undefined;
+      diffTileSize != undefined ||
+      fogOfWarDiffs.length > 0;
 
     if (!isValidDiff) {
       return undefined;
@@ -287,6 +351,7 @@ export class RemoteBoardDiff {
         newTokens,
         diffImageSource,
         diffTileSize,
+        fogOfWarDiffs,
     );
   }
 
@@ -298,5 +363,6 @@ export class RemoteBoardDiff {
     readonly newTokens: RemoteTokenModel[] = [],
     readonly imageSource?: string,
     readonly tileSize?: number,
+    readonly fogOfWarDiffs?: FogOfWarDiff[],
   ) { }
 }
