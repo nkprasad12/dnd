@@ -7,8 +7,6 @@ const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
 const movableToColor: string = 'rgba(200, 0, 00, 0.37)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
 
-const defaultMovementSpeed = 3;
-
 function createBoardCanvas(
     id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
@@ -232,7 +230,7 @@ export class BoardView {
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
         const d = tileDistance(tokenModel.location, {col: i, row: j});
-        if (0 < d && d <= defaultMovementSpeed) {
+        if (0 < d && d <= tokenModel.speed) {
           result.push(this.tiles[i][j]);
         }
       }
