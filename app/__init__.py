@@ -7,8 +7,8 @@ import flask_login
 from flask_login import LoginManager, UserMixin
 from flask_socketio import SocketIO
 
-UPLOAD_FOLDER = '/home/nitin/Documents/code/dnd/images'
-DB_FOLDER = '/home/nitin/Documents/code/dnd/server_db'
+UPLOAD_FOLDER = 'data/images'
+DB_FOLDER = 'data/server_db'
 
 socketio = SocketIO()
 
@@ -21,9 +21,11 @@ def create_app(test_config=None):
     CORS(app)
     login_manager.init_app(app)
 
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['DB_FOLDER'] = DB_FOLDER
-    app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
+    app.config['DB_FOLDER'] = os.path.join(app.root_path, DB_FOLDER)
+    app.config.from_envvar('FLASK_DND_APPLICATION_SETTINGS')
+    if app.config['SECRET_KEY'] is None:
+      raise RuntimeError('No secret key was found!')
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -45,12 +47,14 @@ def create_app(test_config=None):
 
     @login_manager.user_loader
     def load_user(user_id):
+      print(f'load_user: {user_id}')
       from .main import user
       return user.get(user_id)
 
 
     @login_manager.request_loader
     def request_loader(request):
+      print(f'request_loader: {request}')
       from .main import user
       username = request.form.get('username')
       users = user.get_users()
@@ -59,7 +63,8 @@ def create_app(test_config=None):
 
       current = user.User()
       current.id = username
-      current.is_authenticated = request.form['pw'] == users[username]['pw']
+      if request.form['pw'] == users[username]['pw']:
+        flask_login.login_user(current)
       return current
 
     return app

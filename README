@@ -1,5 +1,8 @@
 Set up server running ./start_server from the root directory.
 
+Ensure that the environment variable FLASK_DND_APPLICATION_SETTINGS points
+to a file that contains a value for SECRET_KEY (see start_server.sh for example)
+
 Run Typescript unit tests by going to the app/static directory and then:
 
 npm run test
