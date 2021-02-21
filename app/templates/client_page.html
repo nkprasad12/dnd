@@ -19,7 +19,7 @@
     <a href="./index">Index</a>
 </div>
 
-<body>
+<body style="background-color:rgb(39, 39, 39);">
     <nav class="navbar navbar-inverse">
         <div class="container">
             <div class="navbar-header">
@@ -40,12 +40,13 @@
         <input type="file" id="fileUpload" />
 
         <div class="row">
-            This is the first dummy comment.
+          <p style="color:rgb(143, 77, 23);">This is the first dummy comment.</p>
         </div>
 
         <div class="row">
+          <p style="color:rgb(143, 77, 23);">
             This is the the second dummy comment. It's no more interesting
-            than the first.
+            than the first.</p>
         </div>
 
         <div class="row">
@@ -57,7 +58,7 @@
 
         {% for comment in comments %}
         <div class="row">
-            {{ comment }}
+           <p style="color:rgb(143, 77, 23);"> {{ comment }} </p>
         </div>
         {% endfor %}
 
