@@ -1,5 +1,5 @@
 import {NewBoardForm} from '/src/board_tools/board_form';
-import {BoardSelector} from '/src/board_tools/board_selector';
+import {BoardSelector, removeChildrenOf} from '/src/board_tools/board_selector';
 import {getElementById} from '/src/common/common';
 import {GameBoard} from '/src/game_board/controller/game_board';
 import {BoardModel} from '/src/game_board/model/board_model';
@@ -11,11 +11,10 @@ const NEW_BOARD_BUTTON = 'createNewBoard';
 const SAVE_BOARD_BUTTON = 'saveNewBoard';
 const BOARD_FORM_STUB = 'createNewBoardFormStub';
 
-const LOAD_BOARD_BUTTON = 'loadBoard';
-
 const PREVIEW_BOARD_STUB = 'previewBoardStub';
 
-const SELECTOR_STUB = 'boardSelectorStub';
+const ACTIVE_SELECTOR_STUB = 'activeSelectorStub';
+const EDIT_SELECTOR_STUB = 'editSelectorStub';
 
 const serverPromise =
     connectTo('board').then((socket) => new BoardServer(socket));
@@ -34,13 +33,6 @@ async function saveBoard(model: RemoteBoardModel): Promise<void> {
   server.createBoard(model);
 }
 
-function setupLoadButton(): void {
-  const boardId = '7078-1613797799655';
-  const loadButton = getElementById(LOAD_BOARD_BUTTON);
-  loadButton.style.display = 'initial';
-  loadButton.onclick = () => loadBoard(boardId);
-}
-
 async function loadBoard(boardId: string): Promise<void> {
   const server = await serverPromise;
   const remoteModel = await server.requestBoard(boardId);
@@ -52,11 +44,16 @@ async function loadBoard(boardId: string): Promise<void> {
   saveButton.onclick = () => saveBoard(board.getRemoteModel());
 }
 
-async function setupSelector(): Promise<void> {
+async function setupSelectors(): Promise<void> {
   const server = await serverPromise;
-  BoardSelector.create(SELECTOR_STUB, server);
+  BoardSelector.createActiveBoardSelector(ACTIVE_SELECTOR_STUB, server);
+  BoardSelector.createEditBoardSelector(
+      EDIT_SELECTOR_STUB,
+      server,
+      (selectedId) => {
+        removeChildrenOf(PREVIEW_BOARD_STUB);
+        loadBoard(selectedId);
+      });
 }
 
-
-setupLoadButton();
-setupSelector();
+setupSelectors();

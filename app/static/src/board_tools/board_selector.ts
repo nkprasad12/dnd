@@ -35,16 +35,17 @@ function addButtonItem(
 
 function addSelectorItem(
     parent: HTMLElement, model: BoardSelectorItem): HTMLElement {
-  const className = model.isActive ? 'btn btn-primary' : 'btn';
+  const className = model.isSelected ? 'btn btn-primary' : 'btn';
   return addButtonItem(parent, className, model.boardId);
 }
 
 class BoardSelectorItem {
-  constructor(public readonly boardId: string, public isActive: boolean) {}
+  constructor(public readonly boardId: string, public isSelected: boolean) {}
 }
 
 export class BoardSelectorModel {
-  static async create(server: BoardServer): Promise<BoardSelectorModel> {
+  static async createForActiveSetting(
+      server: BoardServer): Promise<BoardSelectorModel> {
     const activeBoard = await server.requestActiveBoardId();
     const allBoards = await server.requestBoardOptions();
     const items: BoardSelectorItem[] =
@@ -60,9 +61,10 @@ export class BoardSelectorView {
 
   constructor(
       parent: HTMLElement,
+      label: string,
       private readonly clickListener: (id: string) => any) {
     const root = addDropdown(parent);
-    addDropdownButton(root, 'Set Active Board');
+    addDropdownButton(root, label);
     this.content = addDropdownContent(root);
   }
 
@@ -77,25 +79,55 @@ export class BoardSelectorView {
   }
 }
 
+export function removeChildrenOf(id: string) {
+  const item = getElementById(id);
+  while (item.firstChild) {
+    item.removeChild(item.firstChild);
+  }
+}
+
 export class BoardSelector {
-  static create(parentId: string, server: BoardServer): BoardSelector {
-    return new BoardSelector(server, getElementById(parentId));
+  static createActiveBoardSelector(
+      parentId: string, server: BoardServer): BoardSelector {
+    return new BoardSelector(
+        getElementById(parentId),
+        'Set Active Board',
+        (id) => server.setActiveBoard(id),
+        BoardSelectorModel.createForActiveSetting(server));
+  }
+
+  static createEditBoardSelector(
+      parentId: string,
+      server: BoardServer,
+      onSelection: (id: string) => any): BoardSelector {
+    const initialModel =
+        server.requestBoardOptions()
+            .then((ids) =>
+              new BoardSelectorModel(
+                  ids.map((id) => new BoardSelectorItem(id, false))));
+    return new BoardSelector(
+        getElementById(parentId),
+        'Edit Existing Board',
+        onSelection,
+        initialModel);
   }
 
   private model: BoardSelectorModel = new BoardSelectorModel([]);
 
   private constructor(
-      private readonly server: BoardServer,
-      private readonly parent: HTMLElement) {
+      private readonly parent: HTMLElement,
+      label: string,
+      onSelection: (id: string) => any,
+      initialModel: Promise<BoardSelectorModel>) {
     const listener = (id: string) => {
       for (const item of this.model.items) {
-        item.isActive = id === item.boardId;
+        item.isSelected = id === item.boardId;
       }
       view.bind(this.model);
-      server.setActiveBoard(id);
+      onSelection(id);
     };
-    const view = new BoardSelectorView(this.parent, listener);
-    BoardSelectorModel.create(this.server)
+    const view = new BoardSelectorView(this.parent, label, listener);
+    initialModel
         .then((model) => {
           this.model = model;
           view.bind(this.model);
