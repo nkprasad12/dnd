@@ -35,6 +35,10 @@ def chat_nitin(message):
 def board_update(message):
     print(f'[{BOARD_UPDATE}] {message}')
     emit(BOARD_UPDATE, message, broadcast=True, include_self=False)
+    board_id = message['id']
+    board = _retrieve_board(board_id)
+    # TODO: Cache this in memory and only save on disconnect
+    _save_board(_merge_board_model(board, message))
 
 
 @socketio.on(BOARD_CREATE_REQUEST, namespace='/board')
@@ -44,7 +48,7 @@ def board_create(message):
 
 
 @socketio.on(BOARD_GET_REQUEST, namespace='/board')
-def board_update(message):
+def board_get(message):
     print(f'[{BOARD_GET_REQUEST}] {message}')
     loaded_board = _retrieve_board(message)
     print(f'Sending {BOARD_GET_RESPONSE}: {loaded_board}')
@@ -52,7 +56,7 @@ def board_update(message):
 
 
 @socketio.on(BOARD_GET_ALL_REQUEST, namespace='/board')
-def board_update(message):
+def board_get_all(message):
     print(f'[{BOARD_GET_ALL_REQUEST}] {message}')
     board_list = _retrieve_all_boards()
     print(f'Sending {BOARD_GET_ALL_RESPONSE}: {board_list}')
@@ -60,7 +64,7 @@ def board_update(message):
 
 
 @socketio.on(BOARD_GET_ACTIVE_REQUEST, namespace='/board')
-def board_update(message):
+def board_get_active(message):
     print(f'[{BOARD_GET_ACTIVE_REQUEST}] {message}')
     active_id = _get_active_board()
     print(f'Sending {BOARD_GET_ACTIVE_RESPONSE}: {active_id}')
@@ -68,7 +72,7 @@ def board_update(message):
 
 
 @socketio.on(BOARD_SET_ACTIVE, namespace='/board')
-def board_update(message):
+def board_set_active(message):
     print(f'[{BOARD_SET_ACTIVE}] {message}')
     _set_active_board(message)
 
@@ -114,3 +118,53 @@ def _save_board(board: dict) -> None:
   with open(out_file, 'w') as f:
     f.write(json.dumps(board))
   print(f'Board saved to {out_file}')
+
+
+# TODO: This should be a proto
+def _merge_board_model(model: dict, diff: dict) -> dict:
+  if model['id'] != diff['id']:
+    print('_merge_board_model called with different ids!')   
+
+  mergedTokens = diff['newTokens']
+  for token in model['tokens']:
+    if token['id'] in diff['removedTokens']:
+      continue
+    finalToken = token
+    for tokenDiff in diff['tokenDiffs']:
+      if tokenDiff['id'] == token['id']:
+        finalToken = _merge_token_model(finalToken, tokenDiff)
+        break
+    mergedTokens.append(finalToken)
+
+  fogOfWarState = model['fogOfWar']
+  if 'fogOfWarDiffs' in diff:
+    for d in diff['fogOfWarDiffs']:
+      fogOfWarState[d['col']][d['row']] = d['isFogOn']
+  
+  if 'name' in diff:
+    model['name'] = diff['name']
+  if 'imageSource' in diff:
+    model['imageSource'] = diff['imageSource']
+  if 'tileSize' in diff:
+    model['tileSize'] = diff['tileSize']
+  model['tokens'] = mergedTokens
+  model['fogOfWar'] = fogOfWarState
+
+  return model
+
+
+def _merge_token_model(model: dict, diff: dict) -> dict:
+  if diff['id'] != model['id']:
+    print('[_merge_token_model] Diff ID does not match current ID')
+    return model
+  if 'location' in diff:
+    model['location'] = diff['location']
+  if 'name' in diff:
+    model['name'] = diff['name']
+  if 'imageSource' in diff:
+    model['imageSource'] = diff['imageSource']
+  if 'size' in diff:
+    model['size'] = diff['size']
+  if 'speed' in diff:
+    model['speed'] = diff['speed']
+  return model
