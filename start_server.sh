@@ -23,14 +23,23 @@ echo '---------------------------------------'
 export FLASK_DND_APPLICATION_SETTINGS=/home/nitin/Documents/code/dnd/settings.cfg
 echo $FLASK_DND_APPLICATION_SETTINGS
 
-echo 'Setting up virtualenv'
-echo '---------------------------------------'
-virtualenv venv
-source venv/bin/activate
+if [ "$1" == "full" ]; then
+  echo 'Setting up virtualenv'
+  echo '---------------------------------------'
+  virtualenv venv
+  source venv/bin/activate
 
-echo 'Installing dependencies'
-echo '---------------------------------------'
-venv/bin/pip3 install -r requirements.txt
+  echo 'Installing dependencies'
+  echo '---------------------------------------'
+  venv/bin/pip3 install -r requirements.txt
+
+  echo 'Creating data directories'
+  echo '---------------------------------------'
+  mkdir -p app/data/images
+  mkdir -p app/data/server_db
+else
+  source venv/bin/activate
+fi
 
 echo 'Starting up server'
 echo '---------------------------------------'
