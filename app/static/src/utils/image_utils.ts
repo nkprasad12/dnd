@@ -1,3 +1,5 @@
+import {getOrigin} from '/src/common/common';
+
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
 
@@ -6,10 +8,12 @@ export class LoadedImage {
   }
 }
 
+const SERVER_PREFIX = 'server@';
+
 export function loadImage(source: string): Promise<LoadedImage> {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    image.src = source;
+    image.src = source.replace(SERVER_PREFIX, getOrigin());
     image.onload = (event: Event) => {
       const loadedImage =
           new LoadedImage(<CanvasImageSource>event.currentTarget, source);

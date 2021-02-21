@@ -1,3 +1,5 @@
+import {getOrigin} from '/src/common/common';
+
 /**
  * Represents a SocketIO io object. Must have run the SocketIO script:
  *
@@ -28,7 +30,7 @@ class IO_ {
   }
 }
 
-const baseUrl = 'http://localhost:5000/';
+const baseUrl = getOrigin() + '/';
 
 class SocketConnection extends Socket_ {
   constructor(

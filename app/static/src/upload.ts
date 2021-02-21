@@ -1,4 +1,5 @@
 import {Socket_, connectTo} from './server/socket_connection';
+import {getOrigin} from '/src/common/common';
 
 interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
@@ -14,7 +15,7 @@ const handleImageUpload = (event: HTMLInputEvent) => {
   // @ts-ignore
   formData.append('file', files[0]);
 
-  fetch('http://127.0.0.1:5000/uploadImage', {
+  fetch(getOrigin() + '/uploadImage', {
     method: 'POST',
     body: formData,
   })
