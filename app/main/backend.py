@@ -12,45 +12,53 @@ from flask import request
 from flask import send_file
 from flask import session
 from flask import url_for
+
 from flask_cors import cross_origin
+import flask_login
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-visits = 0
 comments = []
 
 
-@main.route('/game/<input>')
-def game(input: str) -> str:
-    """Print 'DND!' as the response body."""
-    global visits
-    visits += 1
-    return f'Papapapapapapa {input}, visits: {visits}'
+@main.route('/', methods=['GET', 'POST'])
+def login():
+  if request.method == 'POST':
+    username = request.form.get('username')
+    from . import user
+    users = user.get_users()
+    if username not in users: 
+      return render_template('login.html')
+    if request.form.get('pw') == users[username]['pw']:
+      user = user.User()
+      user.id = username
+      flask_login.login_user(user)
+      return redirect(url_for('.game_board'))
+  return render_template('login.html')
 
 
-@main.route('/api/getCanvasSize')
-@cross_origin()
-def getCanvasSize() -> str:
-    return '567x254'
-
-
-@main.route('/', methods=['GET'])
+@main.route('/index', methods=['GET'])
+@login_required
 def index():
     return render_template('index.html')
 
 
 @main.route('/boardTools', methods=['GET'])
+@login_required
 def board_tools():
     return render_template('board_tools.html')
 
 
 @main.route('/gameBoard', methods=['GET'])
-def canvas():
+@login_required
+def game_board():
     return render_template('game_board.html')
 
 
 @main.route('/sandbox', methods=['GET', 'POST'])
+@login_required
 def client():
     global comments
     if request.method == 'GET':
@@ -60,6 +68,7 @@ def client():
 
 
 @main.route('/uploadImage', methods=['POST'])
+@login_required
 def upload_file():
     print('Got uploadImage request')
     # check if the post request has the file part
@@ -85,6 +94,7 @@ def upload_file():
 
 
 @main.route('/retrieve_image/<image_key>')
+@login_required
 def retrieve_image(image_key):
     image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_key)
     return send_file(image_path)
