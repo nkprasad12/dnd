@@ -23,7 +23,9 @@ def create_app(test_config=None):
 
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
     app.config['DB_FOLDER'] = os.path.join(app.root_path, DB_FOLDER)
-    app.config['SECRET_KEY'] = 'gjr39dkjn344_!67#'
+    app.config.from_envvar('FLASK_DND_APPLICATION_SETTINGS')
+    if app.config['SECRET_KEY'] is None:
+      raise RuntimeError('No secret key was found!')
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
