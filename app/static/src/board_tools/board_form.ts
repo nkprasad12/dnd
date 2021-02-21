@@ -58,21 +58,17 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
 
 const SERVER_PREFIX = 'server@';
 
-function saveImageToServer(file: File): Promise<string> {
+export async function saveImageToServer(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
-  return fetch(getOrigin() + '/uploadImage', {
+  const response = await fetch(getOrigin() + '/uploadImage', {
     method: 'POST',
     body: formData,
-  })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        const path = SERVER_PREFIX + '/retrieve_image/' + data.path;
-        return path;
-      });
+  });
+  const data = await response.json();
+  const path = SERVER_PREFIX + '/retrieve_image/' + data.path;
+  return path;
 }
 
 function addModal(parent: HTMLElement): HTMLElement {

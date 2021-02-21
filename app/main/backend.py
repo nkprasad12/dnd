@@ -29,8 +29,10 @@ def login():
     username = request.form.get('username')
     from . import user
     users = user.get_users()
+    print('login: Checking user')
     if username not in users: 
       return render_template('login.html')
+    print('login: Checking password')
     if request.form.get('pw') == users[username]['pw']:
       user = user.User()
       user.id = username

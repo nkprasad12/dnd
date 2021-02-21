@@ -1,5 +1,5 @@
 import {Socket_, connectTo} from './server/socket_connection';
-import {getOrigin} from '/src/common/common';
+import {saveImageToServer} from '/src/board_tools/board_form';
 
 interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
@@ -11,25 +11,11 @@ const handleImageUpload = (event: HTMLInputEvent) => {
     return;
   }
   const files = event.target.files;
-  const formData = new FormData();
-  // @ts-ignore
-  formData.append('file', files[0]);
-
-  fetch(getOrigin() + '/uploadImage', {
-    method: 'POST',
-    body: formData,
-  })
-      .then((response) => {
-        console.log(response);
-        return response.json();
-      })
-      .then((data) => {
-        console.log('Data: ' + data);
-        console.log('Path: ' + data.path);
-      })
-      .catch((error) => {
-        console.error('Error: ' + error);
-      });
+  if (files === null) {
+    console.log('Files object was null');
+    return;
+  }
+  saveImageToServer(files[0]);
 };
 
 listenForFileUpload();

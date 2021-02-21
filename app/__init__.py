@@ -51,20 +51,4 @@ def create_app(test_config=None):
       from .main import user
       return user.get(user_id)
 
-
-    @login_manager.request_loader
-    def request_loader(request):
-      print(f'request_loader: {request}')
-      from .main import user
-      username = request.form.get('username')
-      users = user.get_users()
-      if username not in users:
-        return
-
-      current = user.User()
-      current.id = username
-      if request.form['pw'] == users[username]['pw']:
-        flask_login.login_user(current)
-      return current
-
     return app
