@@ -37,6 +37,12 @@ if [ "$1" == "full" ]; then
   echo '---------------------------------------'
   mkdir -p app/data/images
   mkdir -p app/data/server_db
+  if [[ -f app/data/server_db/users.db ]]; then
+    echo 'User DB already exists'
+  else
+    echo 'Creating empty user DB'
+    touch app/data/server_db/users.db
+    echo '{}' > app/data/server_db/users.db
 else
   source venv/bin/activate
 fi
