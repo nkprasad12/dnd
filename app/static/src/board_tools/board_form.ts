@@ -1,4 +1,4 @@
-import {checkDefined, getElementById, Location} from '/src/common/common';
+import {checkDefined, getElementById, getOrigin, Location} from '/src/common/common';
 import {ModelHandler} from '/src/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 import {LoadedImage} from '/src/utils/image_utils';
@@ -56,11 +56,13 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   });
 }
 
+const SERVER_PREFIX = 'server@';
+
 function saveImageToServer(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
-  return fetch('http://127.0.0.1:5000/uploadImage', {
+  return fetch(getOrigin() + '/uploadImage', {
     method: 'POST',
     body: formData,
   })
@@ -68,7 +70,7 @@ function saveImageToServer(file: File): Promise<string> {
         return response.json();
       })
       .then((data) => {
-        const path = 'http://localhost:5000/retrieve_image/' + data.path;
+        const path = SERVER_PREFIX + '/retrieve_image/' + data.path;
         return path;
       });
 }

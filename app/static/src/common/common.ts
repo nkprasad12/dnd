@@ -52,3 +52,7 @@ export function getElementById(id: string): HTMLElement {
   }
   return element;
 }
+
+export function getOrigin(): string {
+  return location.origin;
+}
