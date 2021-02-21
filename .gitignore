@@ -4,3 +4,4 @@ __pycache__
 *.js
 node_modules/
 app/data/
+venv/
