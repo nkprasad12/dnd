@@ -47,7 +47,7 @@ def board_tools():
 
 @main.route('/gameBoard', methods=['GET'])
 def canvas():
-    return render_template('canvas.html')
+    return render_template('game_board.html')
 
 
 @main.route('/sandbox', methods=['GET', 'POST'])
