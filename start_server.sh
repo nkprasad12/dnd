@@ -1,3 +1,4 @@
+#!/bin/bash
 echo 'Removing old generated javascript files'
 echo '---------------------------------------'
 rm -r ./app/static/js/*
@@ -26,6 +27,7 @@ echo $FLASK_DND_APPLICATION_SETTINGS
 if [ "$1" == "full" ]; then
   echo 'Setting up virtualenv'
   echo '---------------------------------------'
+  pip3 install virtualenv
   virtualenv venv
   source venv/bin/activate
 
