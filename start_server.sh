@@ -52,4 +52,4 @@ fi
 
 echo 'Starting up server'
 echo '---------------------------------------'
-sudo -E venv/bin/python3 ./start_server.py
+venv/bin/python3 ./start_server.py
