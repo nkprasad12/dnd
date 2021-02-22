@@ -25,6 +25,7 @@ comments = []
 
 @main.route('/', methods=['GET', 'POST'])
 def login():
+  print('Got a login request')
   if request.method == 'POST':
     username = request.form.get('username')
     from . import user
