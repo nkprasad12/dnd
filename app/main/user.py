@@ -27,8 +27,5 @@ def get(user_id: str) -> Optional[User]:
 
 
 def get_users():
-  print({ADMIN_USER: ADMIN_PASSWORD})
+  # TODO: Eventually read this with a file on cloud storage
   return {ADMIN_USER: {'pw': ADMIN_PASSWORD}}
-  # root = current_app.config['DB_FOLDER']
-  # with open(os.path.join(root, 'users.db'), 'r') as f:
-  #   return json.loads(f.read())

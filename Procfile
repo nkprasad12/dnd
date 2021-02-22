@@ -1,1 +1,1 @@
-web: ./start_server.sh full
+web: ./start_server.sh heroku

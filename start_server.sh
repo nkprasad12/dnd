@@ -36,7 +36,9 @@ function setup_venv {
   echo 'Installing dependencies'
   echo '---------------------------------------'
   venv/bin/pip3 install -r requirements.txt
+}
 
+function setup_dirs {
   echo 'Creating data directories'
   echo '---------------------------------------'
   mkdir -p app/data/images
@@ -56,6 +58,12 @@ function start_server {
   venv/bin/python3 ./start_server.py
 }
 
+function start_server_deployed {
+  echo 'Starting up server (deployed_'
+  echo '---------------------------------------'
+  python3 ./start_server.py
+}
+
 function default_run {
   echo 'Default run'
   build_js
@@ -67,29 +75,23 @@ function full_run {
   echo 'Full run'
   build_js
   setup_venv
+  setup_dirs
   start_server
 }
 
-function setup_only_run {
-  echo 'Setup only run'
+function heroku_run {
+  echo 'Heroku run'
   build_js
-  setup_venv
-}
-
-function server_only_run {
-  echo 'Server only run'
-  setup_venv
-  start_server
+  setup_dirs
+  start_server_deployed
 }
 
 if [ "$1" == "" ]; then
   default_run
 elif [ "$1" == "full" ]; then
   full_run
-elif [ "$1" == "setup_only" ]; then
-  setup_only_run
-elif [ "$1" == "server_only" ]; then
-  server_only_run
+elif [ "$1" == "heroku" ]; then
+  heroku_run
 else
   echo 'Unrecognized argument'
 fi
