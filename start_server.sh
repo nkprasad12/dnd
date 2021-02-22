@@ -43,6 +43,7 @@ if [ "$1" == "full" ]; then
     echo 'Creating empty user DB'
     touch app/data/server_db/users.db
     echo '{}' > app/data/server_db/users.db
+  fi
 else
   source venv/bin/activate
 fi
