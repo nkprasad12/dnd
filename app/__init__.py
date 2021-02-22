@@ -1,14 +1,18 @@
 import os
 import logging
 
+from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 import flask_login
 from flask_login import LoginManager, UserMixin
 from flask_socketio import SocketIO
 
+load_dotenv()
+
 UPLOAD_FOLDER = 'data/images'
 DB_FOLDER = 'data/server_db'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 socketio = SocketIO()
 
@@ -23,7 +27,7 @@ def create_app(test_config=None):
 
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
     app.config['DB_FOLDER'] = os.path.join(app.root_path, DB_FOLDER)
-    app.config.from_envvar('FLASK_DND_APPLICATION_SETTINGS')
+    app.config['SECRET_KEY'] = SECRET_KEY
     if app.config['SECRET_KEY'] is None:
       raise RuntimeError('No secret key was found!')
 

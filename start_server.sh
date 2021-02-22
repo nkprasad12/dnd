@@ -21,8 +21,6 @@ xargs sed -i -E \
 
 echo 'Setting environment variables'
 echo '---------------------------------------'
-export FLASK_DND_APPLICATION_SETTINGS=/home/nitin/Documents/code/dnd/settings.cfg
-echo $FLASK_DND_APPLICATION_SETTINGS
 
 if [ "$1" == "full" ]; then
   echo 'Setting up virtualenv'
