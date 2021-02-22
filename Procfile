@@ -1,1 +1,1 @@
-web: ./start_server.sh server_only
+web: ./start_server.sh full
