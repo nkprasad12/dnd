@@ -78,6 +78,7 @@ function setup_only_run {
 
 function server_only_run {
   echo 'Server only run'
+  setup_venv
   start_server
 }
 
