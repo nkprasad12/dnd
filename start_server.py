@@ -13,6 +13,6 @@ app = create_app()
 
 if __name__ == '__main__':
     print(f'Listening at {PORT}')
-    socketio.run(app, port=PORT)
+    socketio.run(app, host='0.0.0.0', port=PORT)
     # To run publically:
     # socketio.run(app, host='0.0.0.0', port=80)
