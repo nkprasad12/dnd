@@ -1,15 +1,24 @@
 import {Point} from '/src/common/common';
 
-type DragCallback = (from: Point, to: Point, mouseButton: number) => any;
+type DragCallback =
+    (from: BaseClickData, to: BaseClickData, mouseButton: number) => any;
 
-/** Returns the absolute point of a mouse event. */
-function mousePoint(event: MouseEvent): Point {
-  return {x: event.clientX, y: event.clientY};
+/** Extracts click data from a mouse event */
+function clickData(event: MouseEvent): BaseClickData {
+  return {
+    clientPoint: {x: event.clientX, y: event.clientY},
+    pagePoint: {x: event.pageX, y: event.pageY},
+  };
+}
+
+export interface BaseClickData {
+  readonly clientPoint: Point;
+  readonly pagePoint: Point;
 }
 
 /** Handles inputs from the user. */
 export class InputListener {
-  mouseDownPoint?: Point = undefined;
+  mouseDownPoint?: BaseClickData = undefined;
 
   constructor(
     private readonly element: HTMLElement,
@@ -33,7 +42,7 @@ export class InputListener {
   }
 
   private handleMouseDown(event: MouseEvent): void {
-    this.mouseDownPoint = mousePoint(event);
+    this.mouseDownPoint = clickData(event);
   }
 
   private handleMouseUp(event: MouseEvent): void {
@@ -41,7 +50,7 @@ export class InputListener {
       console.log('Got mouseup event without mousedown - ignoring.');
       return;
     }
-    this.dragCallback(this.mouseDownPoint, mousePoint(event), event.button);
+    this.dragCallback(this.mouseDownPoint, clickData(event), event.button);
     this.mouseDownPoint = undefined;
   }
 }

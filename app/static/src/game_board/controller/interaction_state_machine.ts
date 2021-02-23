@@ -3,10 +3,11 @@ import {BoardModel} from '/src/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';
 import {NewTokenForm} from '/src/board_tools/board_form';
+import {BaseClickData} from '/src/game_board/controller/input_listener';
 
-interface ClickData {
+interface ClickData extends BaseClickData {
   tile: Location;
-  point: Point;
+  // point: Point;
 }
 
 interface ClickResult {
@@ -49,7 +50,9 @@ abstract class InteractionState {
     clickData: ClickData, model: BoardModel): ClickResult;
 
   onDragEvent(
-      fromPoint: Point, toPoint: Point, mouseButton: number): InteractionState {
+      fromPoint: BaseClickData,
+      toPoint: BaseClickData,
+      mouseButton: number): InteractionState {
     if (mouseButton != 0 && mouseButton != 2) {
       return this;
     }
@@ -91,15 +94,11 @@ abstract class InteractionState {
     return result.newState;
   }
 
-  private clickDataForPoint(absolutePoint: Point): ClickData {
+  private clickDataForPoint(point: BaseClickData): ClickData {
     return {
-      point: this.relativePoint(absolutePoint),
-      tile: this.tileForPoint(absolutePoint)};
-  }
-
-  private relativePoint(absolutePoint: Point): Point {
-    const rect = this.modelHandler.view.topCanvas.getBoundingClientRect();
-    return {x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top};
+      clientPoint: point.clientPoint,
+      pagePoint: point.pagePoint,
+      tile: this.tileForPoint(point.clientPoint)};
   }
 
   private tileForPoint(absolutePoint: Point): Location {
@@ -127,7 +126,7 @@ class DefaultState extends InteractionState {
       fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = true;
     model.contextMenuState.selectedTiles = tilesInDrag(fromData, toData);
-    model.contextMenuState.clickPoint = toData.point;
+    model.contextMenuState.clickPoint = toData.pagePoint;
     return {
       model: model,
       newState: new ContextMenuOpenState(this.modelHandler)};
@@ -147,7 +146,7 @@ class DefaultState extends InteractionState {
   onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = true;
     model.contextMenuState.selectedTiles = [clickData.tile];
-    model.contextMenuState.clickPoint = clickData.point;
+    model.contextMenuState.clickPoint = clickData.pagePoint;
     return {
       model: model,
       newState: new ContextMenuOpenState(this.modelHandler)};
@@ -220,7 +219,7 @@ class ContextMenuOpenState extends InteractionState {
   onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = false;
     model.contextMenuState.selectedTiles = [];
-    model.contextMenuState.clickPoint = clickData.point;
+    model.contextMenuState.clickPoint = clickData.pagePoint;
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 
@@ -251,7 +250,10 @@ export class InteractionStateMachine {
     this.currentState = new DefaultState(modelHandler);
   }
 
-  onDragEvent(fromPoint: Point, toPoint: Point, mouseButton: number): void {
+  onDragEvent(
+      fromPoint: BaseClickData,
+      toPoint: BaseClickData,
+      mouseButton: number): void {
     const newState =
         this.currentState.onDragEvent(fromPoint, toPoint, mouseButton);
     this.currentState = newState;
