@@ -55,11 +55,11 @@ function setup_dirs {
 function start_server {
   echo 'Starting up server'
   echo '---------------------------------------'
-  venv/bin/python3 ./start_server.py
+  sudo venv/bin/python3 ./start_server.py
 }
 
 function start_server_deployed {
-  echo 'Starting up server (deployed_'
+  echo 'Starting up server (deployed)'
   echo '---------------------------------------'
   python3 ./start_server.py
 }
