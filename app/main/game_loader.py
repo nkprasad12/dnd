@@ -161,7 +161,7 @@ class GameLoader:
     """Saves the input board, overwriting an existing board with the same ID."""
     # TODO: Use an actual database
     board_id = board['id']
-    if self._all_board_ids is not None:
+    if self._all_board_ids is not None and board_id not in self._all_board_ids:
       self._all_board_ids.append(board_id)
     self._game_cache.update_board(board_id, board)
 
