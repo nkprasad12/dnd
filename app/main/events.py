@@ -57,7 +57,12 @@ def board_get(message):
     global loader
     print(f'[{BOARD_GET_REQUEST}] {message}')
     loaded_board = loader.retrieve_board(message)
-    print(f'Sending {BOARD_GET_RESPONSE}: {loaded_board}')
+    board_str = str(loaded_board)
+    board_str = board_str.replace('False, ', '0')
+    board_str = board_str.replace('False', '0')
+    board_str = board_str.replace('True, ', '1')
+    board_str = board_str.replace('True', '1')
+    print(f'Sending {BOARD_GET_RESPONSE}: {board_str}')
     emit(BOARD_GET_RESPONSE, loaded_board)
 
 
