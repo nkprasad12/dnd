@@ -64,6 +64,7 @@ export class BoardSelectorView {
       parent: HTMLElement,
       label: string,
       private readonly clickListener: (id: string) => any) {
+    parent.style.zIndex = '100';
     const root = addDropdown(parent);
     addDropdownButton(root, label);
     this.content = addDropdownContent(root);
@@ -140,6 +141,11 @@ export class BoardSelector {
   }
 
   add(id: string, isSelected: boolean): void {
+    for (const items of this.model.items) {
+      if (items.boardId === id) {
+        return;
+      }
+    }
     this.model.items.push(new BoardSelectorItem(id, isSelected));
     this.view.bind(this.model);
   }
