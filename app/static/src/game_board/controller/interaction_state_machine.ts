@@ -92,7 +92,14 @@ abstract class InteractionState {
   }
 
   private clickDataForPoint(absolutePoint: Point): ClickData {
-    return {point: absolutePoint, tile: this.tileForPoint(absolutePoint)};
+    return {
+      point: this.relativePoint(absolutePoint),
+      tile: this.tileForPoint(absolutePoint)};
+  }
+
+  private relativePoint(absolutePoint: Point): Point {
+    const rect = this.modelHandler.view.topCanvas.getBoundingClientRect();
+    return {x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top};
   }
 
   private tileForPoint(absolutePoint: Point): Location {
