@@ -15,7 +15,7 @@ function build_js {
   # Replace /src/foo/bar -> /static/js/foo/bar.js in all generated .js files
   find ./app/static/js -type f -name "*.js" | \
   xargs sed -i -E \
-  "s/(import.*\{.+\}.*from.*[\'|\"].*)\/src\/(.*)([\'|\"])/\1\/static\/js\/\2.js\3/" 
+  "s/(import.*\{.+\}.*from.*[\'|\"].*)\/src\/(.*)([\'|\"])/\1\/static\/js\/src\/\2.js\3/" 
 
   # Replace ./foo/bar -> ./foo/bar.js in all generated .js files
   find ./app/static/js -type f -name "*.js" | \

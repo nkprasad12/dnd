@@ -45,9 +45,10 @@ class BoardSelectorItem {
 
 export class BoardSelectorModel {
   static async createForActiveSetting(
-      server: BoardServer): Promise<BoardSelectorModel> {
+      server: BoardServer,
+      boards: Promise<string[]>): Promise<BoardSelectorModel> {
+    const allBoards = await boards;
     const activeBoard = await server.requestActiveBoardId();
-    const allBoards = await server.requestBoardOptions();
     const items: BoardSelectorItem[] =
         allBoards.map((id) => new BoardSelectorItem(id, id === activeBoard));
     return new BoardSelectorModel(items);
@@ -88,21 +89,23 @@ export function removeChildrenOf(id: string) {
 
 export class BoardSelector {
   static createActiveBoardSelector(
-      parentId: string, server: BoardServer): BoardSelector {
+      parentId: string,
+      server: BoardServer,
+      boards: Promise<string[]>): BoardSelector {
     return new BoardSelector(
         getElementById(parentId),
         'Set Active Board',
         (id) => server.setActiveBoard(id),
-        BoardSelectorModel.createForActiveSetting(server));
+        BoardSelectorModel.createForActiveSetting(server, boards));
   }
 
   static createEditBoardSelector(
       parentId: string,
-      server: BoardServer,
-      onSelection: (id: string) => any): BoardSelector {
+      onSelection: (id: string) => any,
+      boards: Promise<string[]>): BoardSelector {
     const initialModel =
-        server.requestBoardOptions()
-            .then((ids) =>
+        boards.then(
+            (ids) =>
               new BoardSelectorModel(
                   ids.map((id) => new BoardSelectorItem(id, false))));
     return new BoardSelector(
@@ -113,6 +116,7 @@ export class BoardSelector {
   }
 
   private model: BoardSelectorModel = new BoardSelectorModel([]);
+  private view: BoardSelectorView;
 
   private constructor(
       private readonly parent: HTMLElement,
@@ -132,5 +136,11 @@ export class BoardSelector {
           this.model = model;
           view.bind(this.model);
         });
+    this.view = view;
+  }
+
+  add(id: string, isSelected: boolean): void {
+    this.model.items.push(new BoardSelectorItem(id, isSelected));
+    this.view.bind(this.model);
   }
 }
