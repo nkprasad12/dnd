@@ -3,10 +3,15 @@ from __future__ import annotations
 import json
 import os
 import time
+import threading
 
 from typing import Optional, List
 
 from flask import current_app
+
+_Timer = threading.Timer
+
+CACHE_SAVE_INTERVAL_SEC = 60
 
 
 def _get_board_file(board_id: str) -> str:
@@ -67,6 +72,7 @@ class _GameCache:
   
   def __init__(self):
     self._cache: dict[str, _CachedGame] = {}
+    _Timer(CACHE_SAVE_INTERVAL_SEC, self.save).start()
 
   def update_board(self, id: str, board: dict) -> bool:
     """Updates the cache with the board with the given ID and data.
@@ -100,12 +106,13 @@ class _GameCache:
     return self._cache[id].game_data
 
   def save(self) -> None:
-    print('Saving the cache to disk')
+    print('Saving cache items to disk')
     for id in self._cache:
       item = self._cache[id]
       if item.save_time < item.update_time:
         item.save_time = item.update_time
         _save_board(item.save_path, item.game_data)
+    _Timer(CACHE_SAVE_INTERVAL_SEC, self.save).start()
 
 
 class GameLoader:
@@ -157,7 +164,6 @@ class GameLoader:
     if self._all_board_ids is not None:
       self._all_board_ids.append(board_id)
     self._game_cache.update_board(board_id, board)
-    self._game_cache.save()
 
   def retrieve_board(self, board_id: str) -> dict:
     """Retrieves the gived board."""
