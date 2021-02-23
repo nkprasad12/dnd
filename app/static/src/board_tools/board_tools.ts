@@ -70,6 +70,7 @@ const selectorsPromise = setupSelectors();
 NewBoardForm.createOnClick(
     NEW_BOARD_BUTTON, BOARD_FORM_STUB,
     (model) => {
+      removeChildrenOf(PREVIEW_BOARD_STUB);
       const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
       const saveButton = getElementById(SAVE_BOARD_BUTTON);
       saveButton.style.display = 'initial';
