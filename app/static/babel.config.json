@@ -2,5 +2,18 @@
     "presets": [
         "@babel/preset-env",
         "@babel/preset-typescript"
+    ],
+    "plugins": [
+      ["module-resolver", {
+        "root": ["./"],
+        "alias": {
+          "/test": "./test",
+          "/src": "./src",
+          "underscore": "lodash"
+        }
+      }]
+    ],
+    "ignore": [
+      "node_modules"
     ]
 }

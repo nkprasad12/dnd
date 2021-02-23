@@ -8,6 +8,7 @@ function build_js {
   echo 'Compiling typescript'
   echo '---------------------------------------'
   tsc -p ./app/static
+  rm -r ./app/static/js/test/*
 
   echo 'Replacing imports in generated files'
   echo '---------------------------------------'
