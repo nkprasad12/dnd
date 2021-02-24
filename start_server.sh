@@ -56,12 +56,14 @@ function setup_dirs {
 function start_server {
   echo 'Starting up server'
   echo '---------------------------------------'
+  sudo venv/bin/python3 ./write_google_credentials.py
   sudo venv/bin/python3 ./start_server.py
 }
 
 function start_server_deployed {
   echo 'Starting up server (deployed)'
   echo '---------------------------------------'
+  python3 ./write_google_credentials.py
   python3 ./start_server.py
 }
 

@@ -6,3 +6,4 @@ node_modules/
 app/data/
 venv/
 .env
+google-credentials.json
