@@ -1,6 +1,7 @@
 import os
 
 from . import main
+from . import file_util
 
 from flask import current_app
 from flask import Blueprint
@@ -90,17 +91,15 @@ def upload_file():
         # TODO: Append UUID to the file name to prevent duplicates.
         #       also record the simple name.
         filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        file_util.save_image(file, filename)
         print(filename)
         return {'path': filename}
-    print('We here')
 
 
 @main.route('/retrieve_image/<image_key>')
 @login_required
 def retrieve_image(image_key):
-    image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_key)
-    return send_file(image_path)
+    return send_file(file_util.get_image_path(image_key))
 
 
 def _allowed_file(filename):
