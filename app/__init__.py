@@ -10,8 +10,6 @@ from flask_socketio import SocketIO
 
 load_dotenv()
 
-UPLOAD_FOLDER = 'data/images'
-DB_FOLDER = 'data/server_db'
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 socketio = SocketIO()
@@ -25,8 +23,6 @@ def create_app(test_config=None):
     CORS(app)
     login_manager.init_app(app)
 
-    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
-    app.config['DB_FOLDER'] = os.path.join(app.root_path, DB_FOLDER)
     app.config['SECRET_KEY'] = SECRET_KEY
     if app.config['SECRET_KEY'] is None:
       raise RuntimeError('No secret key was found!')

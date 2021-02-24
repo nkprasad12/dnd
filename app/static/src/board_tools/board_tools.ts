@@ -16,17 +16,21 @@ const PREVIEW_BOARD_STUB = 'previewBoardStub';
 const ACTIVE_SELECTOR_STUB = 'activeSelectorStub';
 const EDIT_SELECTOR_STUB = 'editSelectorStub';
 
+class BoardSelectors {
+  constructor(
+      private readonly activeSelector: BoardSelector,
+      private readonly editSelector: BoardSelector) {
+  }
+
+  add(id: string): void {
+    this.activeSelector.add(id, false);
+    this.editSelector.add(id, true);
+  }
+}
+
+
 const serverPromise =
     connectTo('board').then((socket) => new BoardServer(socket));
-
-NewBoardForm.createOnClick(
-    NEW_BOARD_BUTTON, BOARD_FORM_STUB,
-    (model) => {
-      const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
-      const saveButton = getElementById(SAVE_BOARD_BUTTON);
-      saveButton.style.display = 'initial';
-      saveButton.onclick = () => saveBoard(board.getRemoteModel());
-    });
 
 async function saveBoard(model: RemoteBoardModel): Promise<void> {
   const server = await serverPromise;
@@ -44,16 +48,36 @@ async function loadBoard(boardId: string): Promise<void> {
   saveButton.onclick = () => saveBoard(board.getRemoteModel());
 }
 
-async function setupSelectors(): Promise<void> {
+async function setupSelectors(): Promise<BoardSelectors> {
   const server = await serverPromise;
-  BoardSelector.createActiveBoardSelector(ACTIVE_SELECTOR_STUB, server);
-  BoardSelector.createEditBoardSelector(
-      EDIT_SELECTOR_STUB,
-      server,
-      (selectedId) => {
-        removeChildrenOf(PREVIEW_BOARD_STUB);
-        loadBoard(selectedId);
-      });
+  const boards = server.requestBoardOptions();
+  const activeSelector =
+      BoardSelector.createActiveBoardSelector(
+          ACTIVE_SELECTOR_STUB, server, boards);
+  const editSelector =
+      BoardSelector.createEditBoardSelector(
+          EDIT_SELECTOR_STUB,
+          (selectedId) => {
+            removeChildrenOf(PREVIEW_BOARD_STUB);
+            loadBoard(selectedId);
+          },
+          boards);
+  return new BoardSelectors(activeSelector, editSelector);
 }
 
-setupSelectors();
+const selectorsPromise = setupSelectors();
+
+NewBoardForm.createOnClick(
+    NEW_BOARD_BUTTON, BOARD_FORM_STUB,
+    (model) => {
+      removeChildrenOf(PREVIEW_BOARD_STUB);
+      const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
+      const saveButton = getElementById(SAVE_BOARD_BUTTON);
+      saveButton.style.display = 'initial';
+      saveButton.onclick = () => {
+        const remoteModel = board.getRemoteModel();
+        saveBoard(remoteModel);
+        selectorsPromise.then(
+            (selectors) => selectors.add(remoteModel.id));
+      };
+    });

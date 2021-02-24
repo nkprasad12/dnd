@@ -1,7 +1,6 @@
-// @ts-ignore
-import {test_, expect_} from '../test_util.ts';
+import {test_, expect_} from '/test/test_util';
 
-import {Maybe} from '../../src/utils/maybe';
+import {Maybe} from '/src/utils/maybe';
 
 class TestObject {
   foo: number;

@@ -339,6 +339,7 @@ class ContextMenu {
   constructor() {
     this.tiles = [];
     this.menu.style.display = 'none';
+    // this.menu.style.position = 'relative';
     this.clearFogButton.style.display = 'initial';
     this.applyFogButton.style.display = 'initial';
     this.addTokenButton.style.display = 'initial';

@@ -8,6 +8,8 @@ from flask import session
 from flask_socketio import emit, join_room, leave_room
 from .. import socketio
 
+from . import game_loader
+
 BOARD_UPDATE = 'board-update'
 BOARD_CREATE_REQUEST = 'board-create-request'
 BOARD_GET_REQUEST = 'board-get-request'
@@ -21,6 +23,7 @@ BOARD_GET_ACTIVE_RESPONSE = 'board-get-active-response'
 BOARD_SET_ACTIVE = 'board-set-active'
 
 visits = 0
+loader = game_loader.GameLoader()
 
 
 @socketio.on('nitin', namespace='/chat')
@@ -33,91 +36,61 @@ def chat_nitin(message):
 
 @socketio.on(BOARD_UPDATE, namespace='/board')
 def board_update(message):
+    global loader
     print(f'[{BOARD_UPDATE}] {message}')
     emit(BOARD_UPDATE, message, broadcast=True, include_self=False)
     board_id = message['id']
-    board = _retrieve_board(board_id)
-    # TODO: Cache this in memory and only save on disconnect
-    _save_board(_merge_board_model(board, message))
+    board = loader.retrieve_board(board_id)
+    # TODO: Save when we see no updates for long enough
+    loader.save_board(_merge_board_model(board, message))
 
 
 @socketio.on(BOARD_CREATE_REQUEST, namespace='/board')
 def board_create(message):
-  print(f'[{BOARD_CREATE_REQUEST}] {message}')
-  _save_board(message) 
+    global loader
+    print(f'[{BOARD_CREATE_REQUEST}] {message}')
+    loader.save_board(message) 
 
 
 @socketio.on(BOARD_GET_REQUEST, namespace='/board')
 def board_get(message):
+    global loader
     print(f'[{BOARD_GET_REQUEST}] {message}')
-    loaded_board = _retrieve_board(message)
-    print(f'Sending {BOARD_GET_RESPONSE}: {loaded_board}')
+    loaded_board = loader.retrieve_board(message)
+    board_str = str(loaded_board)
+    board_str = board_str.replace('False, ', '0')
+    board_str = board_str.replace('False', '0')
+    board_str = board_str.replace('True, ', '1')
+    board_str = board_str.replace('True', '1')
+    print(f'Sending {BOARD_GET_RESPONSE}: {board_str}')
     emit(BOARD_GET_RESPONSE, loaded_board)
 
 
 @socketio.on(BOARD_GET_ALL_REQUEST, namespace='/board')
 def board_get_all(message):
+    global loader
     print(f'[{BOARD_GET_ALL_REQUEST}] {message}')
-    board_list = _retrieve_all_boards()
+    board_list = loader.retrieve_all_board_ids()
     print(f'Sending {BOARD_GET_ALL_RESPONSE}: {board_list}')
     emit(BOARD_GET_ALL_RESPONSE, board_list)
 
 
 @socketio.on(BOARD_GET_ACTIVE_REQUEST, namespace='/board')
 def board_get_active(message):
+    global loader
     print(f'[{BOARD_GET_ACTIVE_REQUEST}] {message}')
-    active_id = _get_active_board()
+    active_id = loader.get_active_board()
+    if active_id is None:
+      active_id = 'ERROR'
     print(f'Sending {BOARD_GET_ACTIVE_RESPONSE}: {active_id}')
     emit(BOARD_GET_ACTIVE_RESPONSE, active_id)
 
 
 @socketio.on(BOARD_SET_ACTIVE, namespace='/board')
 def board_set_active(message):
+    global loader
     print(f'[{BOARD_SET_ACTIVE}] {message}')
-    _set_active_board(message)
-
-
-def _get_active_board() -> str:
-  root = current_app.config['DB_FOLDER']
-  try:
-    with open(os.path.join(root, 'active.db'), 'r') as f:
-      return f.read()
-  except FileNotFoundError:
-    return 'none'
-
-
-def _set_active_board(id: str) -> None:
-  root = current_app.config['DB_FOLDER']
-  with open(os.path.join(root, 'active.db'), 'w') as f:
-    f.write(id)
-
-
-def _retrieve_all_boards() -> List[str]:
-  root = current_app.config['DB_FOLDER']
-  all_files = os.listdir(root)
-  board_files = [board for board in all_files if board.endswith('.txt')]
-  return [board.split('.')[0] for board in board_files]
-
-
-def _get_board_file(board_id: str) -> None:
-  root = current_app.config['DB_FOLDER']
-  return os.path.join(root, f'{board_id}.txt')
-
-
-def _retrieve_board(board_id: str) -> dict:
-  try:
-    with open(_get_board_file(board_id), 'r') as f:
-      return json.loads(f.read())
-  except (FileNotFoundError, json.JSONDecodeError):
-    return {}
-
-
-def _save_board(board: dict) -> None:
-  # TODO: Use an actual database
-  out_file = _get_board_file(board['id'])
-  with open(out_file, 'w') as f:
-    f.write(json.dumps(board))
-  print(f'Board saved to {out_file}')
+    loader.set_active_board(message)
 
 
 # TODO: This should be a proto
