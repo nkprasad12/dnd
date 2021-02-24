@@ -121,7 +121,7 @@ class GameLoader:
     self._all_board_ids: Optional[List[str]] = None
     self._game_cache: _GameCache = _GameCache()
 
-  def get_active_board(self) -> str:
+  def get_active_board(self) -> Optional[str]:
     """Returns the ID of the active board."""
     if self._active_board is not None:
       print(f'Got active board from cache')
@@ -129,7 +129,7 @@ class GameLoader:
     print(f'Getting active board from disk')
     active_board = file_util.load_from_file('active.db')
     if active_board is None:
-      return 'none'
+      return None
     return active_board
 
   def set_active_board(self, id: str) -> None:

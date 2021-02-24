@@ -80,6 +80,8 @@ def board_get_active(message):
     global loader
     print(f'[{BOARD_GET_ACTIVE_REQUEST}] {message}')
     active_id = loader.get_active_board()
+    if active_id is None:
+      active_id = 'ERROR'
     print(f'Sending {BOARD_GET_ACTIVE_RESPONSE}: {active_id}')
     emit(BOARD_GET_ACTIVE_RESPONSE, active_id)
 

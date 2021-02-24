@@ -99,7 +99,10 @@ def upload_file():
 @main.route('/retrieve_image/<image_key>')
 @login_required
 def retrieve_image(image_key):
-    return send_file(file_util.get_image_path(image_key))
+    path = file_util.get_image_path(image_key)
+    if path is not None:
+      return send_file(path)
+    return 'Image not found', 400
 
 
 def _allowed_file(filename):

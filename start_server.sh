@@ -44,13 +44,6 @@ function setup_dirs {
   echo '---------------------------------------'
   mkdir -p app/data/images
   mkdir -p app/data/server_db
-  if [[ -f app/data/server_db/users.db ]]; then
-    echo 'User DB already exists'
-  else
-    echo 'Creating empty user DB'
-    touch app/data/server_db/users.db
-    echo '{}' > app/data/server_db/users.db
-  fi
 }
 
 function start_server {
@@ -71,6 +64,7 @@ function default_run {
   echo 'Default run'
   build_js
   switch_to_venv
+  setup_dirs
   start_server
 }
 

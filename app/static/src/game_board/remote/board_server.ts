@@ -104,11 +104,14 @@ export class BoardServer {
   }
 
   async requestActiveBoardId(): Promise<string> {
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve, reject) => {
       this.socket.emit(BOARD_GET_ACTIVE_REQUEST, 'pls');
       this.socket.on(
           BOARD_GET_ACTIVE_RESPONSE,
           (response) => {
+            if (response === 'ERROR') {
+              reject(new Error('Server error on requestActiveBoardId'));
+            }
             resolve(response as string);
           },
       );
