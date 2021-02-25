@@ -125,7 +125,7 @@ class DefaultState extends InteractionState {
   onRightDrag(
       fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = true;
-    model.contextMenuState.selectedTiles = tilesInDrag(fromData, toData);
+    model.localSelection = tilesInDrag(fromData, toData);
     model.contextMenuState.clickPoint = toData.pagePoint;
     return {
       model: model,
@@ -145,7 +145,7 @@ class DefaultState extends InteractionState {
 
   onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = true;
-    model.contextMenuState.selectedTiles = [clickData.tile];
+    model.localSelection = [clickData.tile];
     model.contextMenuState.clickPoint = clickData.pagePoint;
     return {
       model: model,
@@ -218,7 +218,7 @@ class ContextMenuOpenState extends InteractionState {
 
   onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
     model.contextMenuState.isVisible = false;
-    model.contextMenuState.selectedTiles = [];
+    model.localSelection = [];
     model.contextMenuState.clickPoint = clickData.pagePoint;
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
@@ -226,19 +226,45 @@ class ContextMenuOpenState extends InteractionState {
   onContextMenuClickInternal(action: number, model: BoardModel): ClickResult {
     // TODO: Refactor how the context menu interaction works.
     if (action == 1) {
-      for (const tile of model.contextMenuState.selectedTiles) {
-        model.fogOfWarState[tile.col][tile.row] = false;
+      for (const tile of model.localSelection) {
+        model.fogOfWarState[tile.col][tile.row] = '0';
       }
     } else if (action == 2) {
-      for (const tile of model.contextMenuState.selectedTiles) {
-        model.fogOfWarState[tile.col][tile.row] = true;
+      for (const tile of model.localSelection) {
+        model.fogOfWarState[tile.col][tile.row] = '1';
+      }
+    } else if (action == 6) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '0';
+      }
+    } else if (action == 7) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '1';
+      }
+    } else if (action == 8) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '2';
+      }
+    } else if (action == 4) {
+      for (const tile of model.localSelection) {
+        const current = model.fogOfWarState[tile.col][tile.row];
+        if (current === '1') {
+          model.fogOfWarState[tile.col][tile.row] = '2';
+        }
+      }
+    } else if (action == 5) {
+      for (const tile of model.localSelection) {
+        const current = model.fogOfWarState[tile.col][tile.row];
+        if (current === '2') {
+          model.fogOfWarState[tile.col][tile.row] = '1';
+        }
       }
     } else {
       NewTokenForm.create(
-          model.contextMenuState.selectedTiles[0], this.modelHandler);
+          model.localSelection[0], this.modelHandler);
     }
     model.contextMenuState.isVisible = false;
-    model.contextMenuState.selectedTiles = [];
+    model.localSelection = [];
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 }

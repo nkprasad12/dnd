@@ -126,6 +126,9 @@ export class RemoteBoardModel {
         maybeModel.fogOfWar !== undefined &&
         maybeModel.cols !== undefined &&
         maybeModel.rows !== undefined;
+    if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
+      return false;
+    }
     if (!isValid) {
       return false;
     }
@@ -153,7 +156,21 @@ export class RemoteBoardModel {
       for (let i = 0; i < input.cols; i++) {
         input.fogOfWar.push([]);
         for (let j = 0; j < input.rows; j++) {
-          input.fogOfWar[i].push(false);
+          input.fogOfWar[i].push('0');
+        }
+      }
+    } else {
+      for (let i = 0; i < input.fogOfWar.length; i++) {
+        for (let j = 0; j < input.fogOfWar[0].length; j++) {
+          const current = input.fogOfWar[i][j];
+          if (['0', '1', '2'].includes(current)) {
+            continue;
+          }
+          if (current === 'True') {
+            input.fogOfWar[i][j] = '1';
+          } else {
+            input.fogOfWar[i][j] = '0';
+          }
         }
       }
     }
@@ -161,9 +178,9 @@ export class RemoteBoardModel {
   }
 
   static create(model: BoardModel): RemoteBoardModel {
-    const fogOfWar: boolean[][] = [];
+    const fogOfWar: string[][] = [];
     for (const column of model.fogOfWarState) {
-      fogOfWar.push(column.slice());
+      fogOfWar.push(column.map((item) => item === '2' ? '1' : item));
     }
     return new RemoteBoardModel(
         model.id,
@@ -183,7 +200,7 @@ export class RemoteBoardModel {
     readonly imageSource: string,
     readonly tileSize: number,
     readonly tokens: RemoteTokenModel[],
-    readonly fogOfWar: boolean[][],
+    readonly fogOfWar: string[][],
     readonly cols: number,
     readonly rows: number) { }
 
@@ -208,10 +225,10 @@ export class RemoteBoardModel {
       }
       mergedTokens.push(finalToken);
     }
-    const fogOfWarState = copyFogOfWar(model.fogOfWar);
+    const fogOfWarState = model.fogOfWar.map((row) => row.slice());
     if (diff.fogOfWarDiffs !== undefined) {
       for (const d of diff.fogOfWarDiffs) {
-        fogOfWarState[d.col][d.row] = d.isFogOn;
+        fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
       }
     }
     return new RemoteBoardModel(
@@ -225,14 +242,6 @@ export class RemoteBoardModel {
         model.rows,
     );
   }
-}
-
-export function copyFogOfWar(fogOfWar: boolean[][]): boolean[][] {
-  const result: boolean[][] = [];
-  for (const column of fogOfWar) {
-    result.push(column.slice());
-  }
-  return result;
 }
 
 export interface FogOfWarDiff {
@@ -315,7 +324,7 @@ export class RemoteBoardDiff {
             continue;
           }
           fogOfWarDiffs.push(
-              {col: i, row: j, isFogOn: newModel.fogOfWar[i][j]});
+              {col: i, row: j, isFogOn: newModel.fogOfWar[i][j] !== '0'});
         }
       }
     } else {

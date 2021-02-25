@@ -1,6 +1,6 @@
-import {Location, Point, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
+import {Location, Point, copyPoint} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
-import {copyFogOfWar, RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '/src/utils/image_utils';
 
 /** Data model for a token on the game board. */
@@ -115,16 +115,13 @@ export class MutableTokenModel {
 
 /** Data model for a context menu on the game board. */
 export class ContextMenuModel {
-  // TODO: Separate tile selection from the context menu.
   constructor(
       public clickPoint: Point,
-      public selectedTiles: Location[],
       public isVisible: boolean) { }
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(
         copyPoint(this.clickPoint),
-        deepCopyList(this.selectedTiles, copyLocation),
         this.isVisible,
     );
   }
@@ -152,7 +149,9 @@ export class BoardModel {
       public tileSize: number,
       public tokens: TokenModel[],
       public contextMenuState: ContextMenuModel,
-      public fogOfWarState: boolean[][]) {
+      public publicSelection: string[][],
+      public localSelection: Location[],
+      public fogOfWarState: string[][]) {
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize);
     if (this.tileSize != tileSize) {
@@ -164,24 +163,30 @@ export class BoardModel {
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
-    this.tokens = deepCopyList(tokens, (token) => token.deepCopy());
-
+    this.tokens = tokens.map((token) => token.deepCopy());
+    this.localSelection = localSelection.slice();
     this.contextMenuState = contextMenuState.deepCopy();
-    // TODO: Figure out how to do this more efficiently
+    const usePublicSelection =
+      publicSelection.length == this.cols &&
+      publicSelection[0].length == this.rows;
+    this.publicSelection = Array(this.cols);
+    for (let i = 0; i < this.cols; i++) {
+      if (usePublicSelection) {
+        this.publicSelection[i] = publicSelection[i].slice();
+      } else {
+        this.publicSelection[i] = Array(this.rows).fill('0');
+      }
+    }
     const useFowState =
       fogOfWarState.length == this.cols &&
       fogOfWarState[0].length == this.rows;
-    this.fogOfWarState = [];
+    this.fogOfWarState = Array(this.cols);
     for (let i = 0; i < this.cols; i++) {
-      const colState: Array<boolean> = [];
-      for (let j = 0; j < this.rows; j++) {
-        let value = false;
-        if (useFowState) {
-          value = fogOfWarState[i][j];
-        }
-        colState.push(value);
+      if (useFowState) {
+        this.fogOfWarState[i] = fogOfWarState[i].slice();
+      } else {
+        this.fogOfWarState[i] = Array(this.rows).fill('0');
       }
-      this.fogOfWarState.push(colState);
     }
   }
 
@@ -220,10 +225,10 @@ export class BoardModel {
     if (diff.imageSource) {
       newModel.backgroundImage = await loadImage(diff.imageSource);
     }
-    newModel.fogOfWarState = copyFogOfWar(this.fogOfWarState);
+    newModel.fogOfWarState = this.fogOfWarState.map((row) => row.slice());
     if (diff.fogOfWarDiffs !== undefined) {
       for (const d of diff.fogOfWarDiffs) {
-        newModel.fogOfWarState[d.col][d.row] = d.isFogOn;
+        newModel.fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
       }
     }
     return BoardModel.Builder.from(newModel).build();
@@ -238,6 +243,8 @@ static Builder = class {
         .setTileSize(model.tileSize)
         .setTokens(model.tokens)
         .setContextMenu(model.contextMenuState)
+        .setLocalSelection(model.localSelection)
+        .setPublicSelection(model.publicSelection)
         .setFogOfWarState(model.fogOfWarState);
   }
 
@@ -272,8 +279,10 @@ static Builder = class {
   private tileSize = -1;
   private tokens: TokenModel[] = [];
   private contextMenu: ContextMenuModel =
-      new ContextMenuModel({x: 0, y: 0}, [], false);
-  private fogOfWarState: boolean[][] = [];
+      new ContextMenuModel({x: 0, y: 0}, false);
+  private localSelection: Location[] = [];
+  private fogOfWarState: string[][] = []
+  private publicSelection: string[][] = [];
 
   private setId(id: string): BoardModel.Builder {
     this.id = id;
@@ -305,8 +314,18 @@ static Builder = class {
     return this;
   }
 
-  setFogOfWarState(state: boolean[][]): BoardModel.Builder {
+  setFogOfWarState(state: string[][]): BoardModel.Builder {
     this.fogOfWarState = state;
+    return this;
+  }
+
+  setLocalSelection(selection: Location[]): BoardModel.Builder {
+    this.localSelection = selection;
+    return this;
+  }
+
+  setPublicSelection(selection: string[][]): BoardModel.Builder {
+    this.publicSelection = selection;
     return this;
   }
 
@@ -333,7 +352,8 @@ static Builder = class {
     }
     return new BoardModel(
         this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
-        this.contextMenu, this.fogOfWarState);
+        this.contextMenu, this.publicSelection, this.localSelection,
+        this.fogOfWarState);
   }
 }
 }

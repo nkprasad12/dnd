@@ -41,9 +41,7 @@ export class GameBoard {
 
   // TODO: Refactor how this is done.
   private listenForContextMenuClicks(): void {
-    // @ts-ignore
-    // eslint-disable-next-line no-unused-vars
-    const clearFogListener = new InputListener(
+    new InputListener(
         this.view.menu.clearFogButton,
         (_from, _to, button) => {
           if (button != 0) {
@@ -51,9 +49,8 @@ export class GameBoard {
           }
           this.inputHandler.onContextMenuClick(1);
         });
-    // @ts-ignore
-    // eslint-disable-next-line no-unused-vars
-    const addFogListener = new InputListener(
+
+    new InputListener(
         this.view.menu.applyFogButton,
         (_from, _to, button) => {
           if (button != 0) {
@@ -62,15 +59,57 @@ export class GameBoard {
           this.inputHandler.onContextMenuClick(2);
         });
 
-    // @ts-ignore
-    // eslint-disable-next-line no-unused-vars
-    const addTokenListener = new InputListener(
+    new InputListener(
         this.view.menu.addTokenButton,
         (_from, _to, button) => {
           if (button != 0) {
             console.log('Ignoring non-left click on addToken');
           }
           this.inputHandler.onContextMenuClick(3);
+        });
+
+    new InputListener(
+        this.view.menu.peekFogButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(4);
+        });
+
+    new InputListener(
+        this.view.menu.unpeekFogButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(5);
+        });
+
+    new InputListener(
+        this.view.menu.clearHighlightButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(6);
+        });
+
+    new InputListener(
+        this.view.menu.blueHighlightButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(7);
+        });
+    new InputListener(
+        this.view.menu.orangeHighlightButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(8);
         });
   }
 
