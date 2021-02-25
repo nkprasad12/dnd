@@ -9,12 +9,13 @@ const movableToTileColor: string = 'rgba(255, 220, 220, 0.15)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
 const peekFogColor: string = 'rgba(0, 0, 0, 0.5)';
 const selectedTileColor: string = 'rgba(200, 255, 200, 0.25)';
+const publicSelectionBlue: string = 'rgba(0, 0, 204, 0.20)';
+const publicSelectionOrange: string = 'rgba(255, 128, 0, 0.20)';
 
 function createBoardCanvas(
-    id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
+    zIndex: string, parent: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
 
-  canvas.id = id;
   canvas.style.zIndex = zIndex;
   canvas.style.position = 'absolute';
   canvas.style.left = '0px';
@@ -30,6 +31,7 @@ export class BoardView {
   private readonly fogOfWarCanvas: HTMLCanvasElement;
   private readonly tokenCanvas: HTMLCanvasElement;
   private readonly localSelectionCanvas: HTMLCanvasElement;
+  private readonly publicSelectionCanvas: HTMLCanvasElement;
   private readonly gridCanvas: HTMLCanvasElement;
   private readonly allCanvases: Array<HTMLCanvasElement>;
   readonly topCanvas: HTMLCanvasElement;
@@ -40,16 +42,18 @@ export class BoardView {
   private model?: BoardModel = undefined;
 
   constructor(parent: HTMLElement) {
-    this.backgroundCanvas = createBoardCanvas('backgroundCanvas', '1', parent);
-    this.tokenCanvas = createBoardCanvas('tokenCanvas', '2', parent);
-    this.fogOfWarCanvas = createBoardCanvas('fogOfWarCanvas', '3', parent);
+    this.backgroundCanvas = createBoardCanvas('1', parent);
+    this.tokenCanvas = createBoardCanvas('2', parent);
+    this.fogOfWarCanvas = createBoardCanvas('3', parent);
+    this.publicSelectionCanvas = createBoardCanvas('4', parent);
     this.localSelectionCanvas =
-        createBoardCanvas('localSelectionCanvas', '4', parent);
-    this.gridCanvas = createBoardCanvas('gridCanvas', '5', parent);
-    this.topCanvas = createBoardCanvas('topCanvas', '6', parent);
+        createBoardCanvas('5', parent);
+    this.gridCanvas = createBoardCanvas('6', parent);
+    this.topCanvas = createBoardCanvas('7', parent);
     this.allCanvases = [
       this.backgroundCanvas,
       this.fogOfWarCanvas,
+      this.publicSelectionCanvas,
       this.tokenCanvas,
       this.localSelectionCanvas,
       this.gridCanvas,
@@ -63,6 +67,7 @@ export class BoardView {
     this.bindTokens(newModel);
     this.bindFogOfWarState(newModel);
     this.bindLocalSelection(newModel);
+    this.bindPublicSelection(newModel);
     this.bindContextMenu(newModel);
 
     this.model = newModel;
@@ -187,6 +192,15 @@ export class BoardView {
     }
   }
 
+  private bindPublicSelection(newModel: BoardModel): void {
+    for (let i = 0; i < newModel.cols; i++) {
+      for (let j = 0; j < newModel.rows; j++) {
+        const tile = this.tiles[i][j];
+        tile.bindPublicSelection(newModel.publicSelection[i][j]);
+      }
+    }
+  }
+
   private bindContextMenu(newModel: BoardModel): void {
     this.menu.bind(newModel.contextMenuState);
   }
@@ -202,6 +216,7 @@ export class BoardView {
                 {col: i, row: j},
                 this.fogOfWarCanvas,
                 this.localSelectionCanvas,
+                this.publicSelectionCanvas,
                 this.gridCanvas));
       }
     }
@@ -264,12 +279,14 @@ class Tile {
   startY: number;
 
   fogState = '0';
+  publicSelectionState = '0';
 
   constructor(
       private size: number,
       location: Location,
       private fogOfWarCanvas: HTMLCanvasElement,
       private localSelectionCanvas: HTMLCanvasElement,
+      private publicSelectionCanvas: HTMLCanvasElement,
       private gridCanvas: HTMLCanvasElement) {
     this.size = size;
     this.startX = location.col * size;
@@ -340,6 +357,23 @@ class Tile {
         this.gridCanvas);
   }
 
+  bindPublicSelection(selection: string): void {
+    if (selection === this.publicSelectionState) {
+      return;
+    }
+    this.publicSelectionState = selection;
+    getContext(this.publicSelectionCanvas)
+        .clearRect(this.startX, this.startY, this.size, this.size);
+    if (selection === '0') {
+      // 0 is for no selection, so we're done.
+      return;
+    }
+    const color =
+        selection === '1' ? publicSelectionBlue : publicSelectionOrange;
+    fillCanvasTile(
+        this.startX, this.startY, this.size, color, this.publicSelectionCanvas);
+  }
+
   bindFogOfWar(fogState: string): void {
     if (fogState === this.fogState) {
       return;
@@ -373,6 +407,9 @@ class ContextMenu {
   addTokenButton = <HTMLElement>document.getElementById('add-token');
   peekFogButton: HTMLElement;
   unpeekFogButton: HTMLElement;
+  clearHighlightButton: HTMLElement;
+  orangeHighlightButton: HTMLElement;
+  blueHighlightButton: HTMLElement;
 
   constructor() {
     this.menu.style.display = 'none';
@@ -382,6 +419,9 @@ class ContextMenu {
     this.addTokenButton.style.display = 'initial';
     this.peekFogButton = addButton(this.menu, 'Peek Fog');
     this.unpeekFogButton = addButton(this.menu, 'Un-peek Fog');
+    this.clearHighlightButton = addButton(this.menu, 'Clear Highlight');
+    this.orangeHighlightButton = addButton(this.menu, 'Highlight Orange');
+    this.blueHighlightButton = addButton(this.menu, 'Highlight Blue');
   }
 
   bind(model: ContextMenuModel): void {

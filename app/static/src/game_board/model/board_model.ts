@@ -149,6 +149,7 @@ export class BoardModel {
       public tileSize: number,
       public tokens: TokenModel[],
       public contextMenuState: ContextMenuModel,
+      public publicSelection: string[][],
       public localSelection: Location[],
       public fogOfWarState: string[][]) {
     this.backgroundImage = backgroundImage.deepCopy();
@@ -164,9 +165,18 @@ export class BoardModel {
 
     this.tokens = tokens.map((token) => token.deepCopy());
     this.localSelection = localSelection.slice();
-
     this.contextMenuState = contextMenuState.deepCopy();
-    // TODO: Figure out how to do this more efficiently
+    const usePublicSelection =
+      publicSelection.length == this.cols &&
+      publicSelection[0].length == this.rows;
+    this.publicSelection = Array(this.cols);
+    for (let i = 0; i < this.cols; i++) {
+      if (usePublicSelection) {
+        this.publicSelection[i] = publicSelection[i].slice();
+      } else {
+        this.publicSelection[i] = Array(this.rows).fill('0');
+      }
+    }
     const useFowState =
       fogOfWarState.length == this.cols &&
       fogOfWarState[0].length == this.rows;
@@ -234,6 +244,7 @@ static Builder = class {
         .setTokens(model.tokens)
         .setContextMenu(model.contextMenuState)
         .setLocalSelection(model.localSelection)
+        .setPublicSelection(model.publicSelection)
         .setFogOfWarState(model.fogOfWarState);
   }
 
@@ -270,7 +281,8 @@ static Builder = class {
   private contextMenu: ContextMenuModel =
       new ContextMenuModel({x: 0, y: 0}, false);
   private localSelection: Location[] = [];
-  private fogOfWarState: string[][] = [];
+  private fogOfWarState: string[][] = []
+  private publicSelection: string[][] = [];
 
   private setId(id: string): BoardModel.Builder {
     this.id = id;
@@ -312,6 +324,11 @@ static Builder = class {
     return this;
   }
 
+  setPublicSelection(selection: string[][]): BoardModel.Builder {
+    this.publicSelection = selection;
+    return this;
+  }
+
   setName(name: string): BoardModel.Builder {
     if (name.length === 0) {
       throw new Error('Board name can not be empty!');
@@ -335,7 +352,8 @@ static Builder = class {
     }
     return new BoardModel(
         this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
-        this.contextMenu, this.localSelection, this.fogOfWarState);
+        this.contextMenu, this.publicSelection, this.localSelection,
+        this.fogOfWarState);
   }
 }
 }

@@ -233,6 +233,18 @@ class ContextMenuOpenState extends InteractionState {
       for (const tile of model.localSelection) {
         model.fogOfWarState[tile.col][tile.row] = '1';
       }
+    } else if (action == 6) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '0';
+      }
+    } else if (action == 7) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '1';
+      }
+    } else if (action == 8) {
+      for (const tile of model.localSelection) {
+        model.publicSelection[tile.col][tile.row] = '2';
+      }
     } else if (action == 4) {
       for (const tile of model.localSelection) {
         const current = model.fogOfWarState[tile.col][tile.row];
