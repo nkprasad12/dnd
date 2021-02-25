@@ -23,6 +23,15 @@ function build_js {
   "s/(import.*\{.+\}.*from.*[\'|\"]\.\/.*)([\'|\"])/\1.js\2/" 
 }
 
+function build_webpack {
+  pwd
+  echo 'Building Webpack '
+  echo '---------------------------------------'
+  cd app/static && npx webpack
+  cd ../..
+  pwd
+}
+
 function switch_to_venv {
   source venv/bin/activate
 }
@@ -62,7 +71,7 @@ function start_server_deployed {
 
 function default_run {
   echo 'Default run'
-  build_js
+  build_webpack
   switch_to_venv
   setup_dirs
   start_server
@@ -70,7 +79,7 @@ function default_run {
 
 function full_run {
   echo 'Full run'
-  build_js
+  build_webpack
   setup_venv
   setup_dirs
   start_server
@@ -78,7 +87,7 @@ function full_run {
 
 function heroku_run {
   echo 'Heroku run'
-  build_js
+  build_webpack
   setup_dirs
   start_server_deployed
 }

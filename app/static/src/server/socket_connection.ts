@@ -1,3 +1,5 @@
+import io from 'socket.io-client';
+
 import {getOrigin} from '/src/common/common';
 
 /**
@@ -25,8 +27,8 @@ class IO_ {
    * @param {
    */
   connect(address: string): Socket_ {
-    // @ts-ignore
-    return io.connect(address);
+    console.log('About to try to make a socket');
+    return io.io(address);
   }
 }
 
