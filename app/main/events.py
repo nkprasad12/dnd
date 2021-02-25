@@ -112,7 +112,7 @@ def _merge_board_model(model: dict, diff: dict) -> dict:
   fogOfWarState = model['fogOfWar']
   if 'fogOfWarDiffs' in diff:
     for d in diff['fogOfWarDiffs']:
-      fogOfWarState[d['col']][d['row']] = d['isFogOn']
+      fogOfWarState[d['col']][d['row']] = '1' if d['isFogOn'] else '0'
   
   if 'name' in diff:
     model['name'] = diff['name']

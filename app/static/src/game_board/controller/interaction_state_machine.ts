@@ -227,11 +227,25 @@ class ContextMenuOpenState extends InteractionState {
     // TODO: Refactor how the context menu interaction works.
     if (action == 1) {
       for (const tile of model.contextMenuState.selectedTiles) {
-        model.fogOfWarState[tile.col][tile.row] = false;
+        model.fogOfWarState[tile.col][tile.row] = '0';
       }
     } else if (action == 2) {
       for (const tile of model.contextMenuState.selectedTiles) {
-        model.fogOfWarState[tile.col][tile.row] = true;
+        model.fogOfWarState[tile.col][tile.row] = '1';
+      }
+    } else if (action == 4) {
+      for (const tile of model.contextMenuState.selectedTiles) {
+        const current = model.fogOfWarState[tile.col][tile.row];
+        if (current === '1') {
+          model.fogOfWarState[tile.col][tile.row] = '2';
+        }
+      }
+    } else if (action == 5) {
+      for (const tile of model.contextMenuState.selectedTiles) {
+        const current = model.fogOfWarState[tile.col][tile.row];
+        if (current === '2') {
+          model.fogOfWarState[tile.col][tile.row] = '1';
+        }
       }
     } else {
       NewTokenForm.create(

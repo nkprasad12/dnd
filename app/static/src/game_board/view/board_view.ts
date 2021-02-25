@@ -4,8 +4,9 @@ import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/bo
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 255, 0, 0.5)';
 const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
-const movableToColor: string = 'rgba(200, 0, 00, 0.37)';
+const movableToColor: string = 'rgba(200, 0, 0, 0.37)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
+const peekFogColor: string = 'rgba(0, 0, 0, 0.5)';
 
 function createBoardCanvas(
     id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
@@ -252,7 +253,7 @@ class Tile {
   fogOfWarCanvas: HTMLCanvasElement;
   gridCanvas: HTMLCanvasElement;
 
-  hasFog: boolean;
+  fogState = '0';
 
   constructor(
       size: number,
@@ -264,7 +265,6 @@ class Tile {
     this.startY = location.row * size;
     this.fogOfWarCanvas = fogOfWarCanvas;
     this.gridCanvas = gridCanvas;
-    this.hasFog = false;
   }
 
   private clearGrid(): void {
@@ -312,20 +312,30 @@ class Tile {
         this.gridCanvas);
   }
 
-  bindFogOfWar(showFog: boolean): void {
-    if (showFog == this.hasFog) {
+  bindFogOfWar(fogState: string): void {
+    if (fogState === this.fogState) {
       return;
     }
-    if (showFog) {
-      fillCanvasTile(
-          this.startX, this.startY, this.size, fogColor, this.fogOfWarCanvas);
-      this.hasFog = true;
-    } else {
-      getContext(this.fogOfWarCanvas)
-          .clearRect(this.startX, this.startY, this.size, this.size);
-      this.hasFog = false;
+    this.fogState = fogState;
+    getContext(this.fogOfWarCanvas)
+        .clearRect(this.startX, this.startY, this.size, this.size);
+    if (fogState === '0') {
+      // 0 is for no fog, so we're done.
+      return;
     }
+    const color = fogState === '1' ? fogColor : peekFogColor;
+    fillCanvasTile(
+        this.startX, this.startY, this.size, color, this.fogOfWarCanvas);
   }
+}
+
+function addButton(
+    parent: HTMLElement, label: string): HTMLElement {
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.innerHTML = label;
+  parent.appendChild(item);
+  return item;
 }
 
 class ContextMenu {
@@ -333,6 +343,8 @@ class ContextMenu {
   clearFogButton = <HTMLElement>document.getElementById('clear-fow');
   applyFogButton = <HTMLElement>document.getElementById('apply-fow');
   addTokenButton = <HTMLElement>document.getElementById('add-token');
+  peekFogButton: HTMLElement;
+  unpeekFogButton: HTMLElement;
 
   tiles: Array<Tile>;
 
@@ -343,6 +355,8 @@ class ContextMenu {
     this.clearFogButton.style.display = 'initial';
     this.applyFogButton.style.display = 'initial';
     this.addTokenButton.style.display = 'initial';
+    this.peekFogButton = addButton(this.menu, 'Peek Fog');
+    this.unpeekFogButton = addButton(this.menu, 'Un-peek Fog');
   }
 
   bind(model: ContextMenuModel): void {
