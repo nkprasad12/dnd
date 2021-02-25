@@ -1,4 +1,4 @@
-import {Location, Point, copyPoint, copyLocation, deepCopyList} from '/src/common/common';
+import {Location, Point, copyPoint} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
 import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '/src/utils/image_utils';
@@ -115,16 +115,13 @@ export class MutableTokenModel {
 
 /** Data model for a context menu on the game board. */
 export class ContextMenuModel {
-  // TODO: Separate tile selection from the context menu.
   constructor(
       public clickPoint: Point,
-      public selectedTiles: Location[],
       public isVisible: boolean) { }
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(
         copyPoint(this.clickPoint),
-        deepCopyList(this.selectedTiles, copyLocation),
         this.isVisible,
     );
   }
@@ -152,6 +149,7 @@ export class BoardModel {
       public tileSize: number,
       public tokens: TokenModel[],
       public contextMenuState: ContextMenuModel,
+      public localSelection: Location[],
       public fogOfWarState: string[][]) {
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize);
@@ -164,7 +162,8 @@ export class BoardModel {
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
-    this.tokens = deepCopyList(tokens, (token) => token.deepCopy());
+    this.tokens = tokens.map((token) => token.deepCopy());
+    this.localSelection = localSelection.slice();
 
     this.contextMenuState = contextMenuState.deepCopy();
     // TODO: Figure out how to do this more efficiently
@@ -234,6 +233,7 @@ static Builder = class {
         .setTileSize(model.tileSize)
         .setTokens(model.tokens)
         .setContextMenu(model.contextMenuState)
+        .setLocalSelection(model.localSelection)
         .setFogOfWarState(model.fogOfWarState);
   }
 
@@ -268,7 +268,8 @@ static Builder = class {
   private tileSize = -1;
   private tokens: TokenModel[] = [];
   private contextMenu: ContextMenuModel =
-      new ContextMenuModel({x: 0, y: 0}, [], false);
+      new ContextMenuModel({x: 0, y: 0}, false);
+  private localSelection: Location[] = [];
   private fogOfWarState: string[][] = [];
 
   private setId(id: string): BoardModel.Builder {
@@ -306,6 +307,11 @@ static Builder = class {
     return this;
   }
 
+  setLocalSelection(selection: Location[]): BoardModel.Builder {
+    this.localSelection = selection;
+    return this;
+  }
+
   setName(name: string): BoardModel.Builder {
     if (name.length === 0) {
       throw new Error('Board name can not be empty!');
@@ -329,7 +335,7 @@ static Builder = class {
     }
     return new BoardModel(
         this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
-        this.contextMenu, this.fogOfWarState);
+        this.contextMenu, this.localSelection, this.fogOfWarState);
   }
 }
 }

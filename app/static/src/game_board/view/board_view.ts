@@ -4,9 +4,11 @@ import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/bo
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
 const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
-const movableToColor: string = 'rgba(200, 0, 0, 0.37)';
+const movableToGridColor: string = 'rgba(100, 0, 0, 0.3)';
+const movableToTileColor: string = 'rgba(255, 220, 220, 0.15)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
 const peekFogColor: string = 'rgba(0, 0, 0, 0.5)';
+const selectedTileColor: string = 'rgba(200, 255, 200, 0.25)';
 
 function createBoardCanvas(
     id: string, zIndex: string, parent: HTMLElement): HTMLCanvasElement {
@@ -27,6 +29,7 @@ export class BoardView {
   private readonly backgroundCanvas: HTMLCanvasElement;
   private readonly fogOfWarCanvas: HTMLCanvasElement;
   private readonly tokenCanvas: HTMLCanvasElement;
+  private readonly localSelectionCanvas: HTMLCanvasElement;
   private readonly gridCanvas: HTMLCanvasElement;
   private readonly allCanvases: Array<HTMLCanvasElement>;
   readonly topCanvas: HTMLCanvasElement;
@@ -40,12 +43,15 @@ export class BoardView {
     this.backgroundCanvas = createBoardCanvas('backgroundCanvas', '1', parent);
     this.tokenCanvas = createBoardCanvas('tokenCanvas', '2', parent);
     this.fogOfWarCanvas = createBoardCanvas('fogOfWarCanvas', '3', parent);
-    this.gridCanvas = createBoardCanvas('gridCanvas', '4', parent);
-    this.topCanvas = createBoardCanvas('topCanvas', '5', parent);
+    this.localSelectionCanvas =
+        createBoardCanvas('localSelectionCanvas', '4', parent);
+    this.gridCanvas = createBoardCanvas('gridCanvas', '5', parent);
+    this.topCanvas = createBoardCanvas('topCanvas', '6', parent);
     this.allCanvases = [
       this.backgroundCanvas,
       this.fogOfWarCanvas,
       this.tokenCanvas,
+      this.localSelectionCanvas,
       this.gridCanvas,
       this.topCanvas,
     ];
@@ -56,6 +62,7 @@ export class BoardView {
     this.bindGrid(newModel);
     this.bindTokens(newModel);
     this.bindFogOfWarState(newModel);
+    this.bindLocalSelection(newModel);
     this.bindContextMenu(newModel);
 
     this.model = newModel;
@@ -144,16 +151,12 @@ export class BoardView {
     }
   }
 
-  private bindContextMenu(newModel: BoardModel): void {
-    this.menu.bind(newModel.contextMenuState);
-    let oldSelection: Array<Location> = [];
+  private bindLocalSelection(newModel: BoardModel): void {
+    let oldSelection: Location[] = [];
     if (this.model != undefined) {
-      oldSelection = this.model.contextMenuState.selectedTiles;
+      oldSelection = this.model.localSelection;
     }
-    let newSelection: Array<Location> = [];
-    if (newModel.contextMenuState.isVisible) {
-      newSelection = newModel.contextMenuState.selectedTiles;
-    }
+    const newSelection = newModel.localSelection;
 
     for (const oldTile of oldSelection) {
       let hasMatch = false;
@@ -165,6 +168,7 @@ export class BoardView {
       }
       if (!hasMatch) {
         this.tiles[oldTile.col][oldTile.row].defaultGrid();
+        this.tiles[oldTile.col][oldTile.row].selectionOff();
       }
     }
 
@@ -178,8 +182,13 @@ export class BoardView {
       }
       if (!hasMatch) {
         this.tiles[newTile.col][newTile.row].selectedGrid();
+        this.tiles[newTile.col][newTile.row].localSelectionOn();
       }
     }
+  }
+
+  private bindContextMenu(newModel: BoardModel): void {
+    this.menu.bind(newModel.contextMenuState);
   }
 
   private initializeTileGrid(model: BoardModel): void {
@@ -192,6 +201,7 @@ export class BoardView {
                 model.tileSize,
                 {col: i, row: j},
                 this.fogOfWarCanvas,
+                this.localSelectionCanvas,
                 this.gridCanvas));
       }
     }
@@ -206,8 +216,10 @@ export class BoardView {
             tokenSize, tokenSize);
     if (tokenModel.isActive) {
       this.getTile(tokenModel.location).activeTokenGrid();
-      this.getMovableTiles(tokenModel, newModel)
-          .map((tile) => tile.activeTokenGrid());
+      for (const tile of this.getMovableTiles(tokenModel, newModel)) {
+        tile.activeTokenGrid();
+        tile.movableToSelectionOn();
+      }
     }
   }
 
@@ -220,8 +232,10 @@ export class BoardView {
             tokenSize + 2, tokenSize + 2);
     this.getTile(tokenModel.location).defaultGrid();
     if (tokenModel.isActive) {
-      this.getMovableTiles(tokenModel, newModel)
-          .map((tile) => tile.defaultGrid());
+      for (const tile of this.getMovableTiles(tokenModel, newModel)) {
+        tile.defaultGrid();
+        tile.selectionOff();
+      }
     }
   }
 
@@ -246,20 +260,17 @@ export class BoardView {
 
 /** Represents a tile in the game board. */
 class Tile {
-  size: number;
   startX: number;
   startY: number;
-
-  fogOfWarCanvas: HTMLCanvasElement;
-  gridCanvas: HTMLCanvasElement;
 
   fogState = '0';
 
   constructor(
-      size: number,
+      private size: number,
       location: Location,
-      fogOfWarCanvas: HTMLCanvasElement,
-      gridCanvas: HTMLCanvasElement) {
+      private fogOfWarCanvas: HTMLCanvasElement,
+      private localSelectionCanvas: HTMLCanvasElement,
+      private gridCanvas: HTMLCanvasElement) {
     this.size = size;
     this.startX = location.col * size;
     this.startY = location.row * size;
@@ -278,6 +289,23 @@ class Tile {
     this.clearGrid();
     drawCanvasTile(
         this.startX, this.startY, this.size, defaultGridColor, this.gridCanvas);
+  }
+
+  localSelectionOn(): void {
+    fillCanvasTile(
+        this.startX, this.startY, this.size, selectedTileColor,
+        this.localSelectionCanvas);
+  }
+
+  selectionOff(): void {
+    getContext(this.localSelectionCanvas)
+        .clearRect(this.startX, this.startY, this.size, this.size);
+  }
+
+  movableToSelectionOn(): void {
+    fillCanvasTile(
+        this.startX, this.startY, this.size, movableToGridColor,
+        this.localSelectionCanvas);
   }
 
   selectedGrid(): void {
@@ -308,7 +336,7 @@ class Tile {
         this.startX,
         this.startY,
         this.size,
-        movableToColor,
+        movableToTileColor,
         this.gridCanvas);
   }
 
@@ -346,10 +374,7 @@ class ContextMenu {
   peekFogButton: HTMLElement;
   unpeekFogButton: HTMLElement;
 
-  tiles: Array<Tile>;
-
   constructor() {
-    this.tiles = [];
     this.menu.style.display = 'none';
     // this.menu.style.position = 'relative';
     this.clearFogButton.style.display = 'initial';
