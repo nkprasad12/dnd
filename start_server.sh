@@ -84,7 +84,7 @@ function full_run {
 
 function heroku_run {
   echo 'Heroku run'
-  build_webpack
+  # build_webpack
   setup_dirs
   start_server_deployed
 }
