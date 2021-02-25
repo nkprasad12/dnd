@@ -24,12 +24,9 @@ function build_js {
 }
 
 function build_webpack {
-  pwd
   echo 'Building Webpack '
   echo '---------------------------------------'
-  cd app/static && npx webpack
-  cd ../..
-  pwd
+  npx webpack
 }
 
 function switch_to_venv {
