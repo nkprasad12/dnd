@@ -2,7 +2,7 @@ import {Location, areLocationsEqual, tileDistance} from '/src/common/common';
 import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
-const selectedGridColor: string = 'rgba(0, 255, 0, 0.5)';
+const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
 const activeTokenColor: string = 'rgba(200, 0, 200, 0.5)';
 const movableToColor: string = 'rgba(200, 0, 0, 0.37)';
 const fogColor: string = 'rgba(0, 0, 0, 1.0)';
