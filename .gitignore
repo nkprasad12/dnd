@@ -7,3 +7,4 @@ venv/
 .env
 google-credentials.json
 dist/
+app/templates/genfiles

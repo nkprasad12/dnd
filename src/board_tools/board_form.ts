@@ -1,10 +1,11 @@
-import {checkDefined, getElementById, getOrigin, Location} from '/src/common/common';
+import {checkDefined, getElementById, getOrigin, Location, Point} from '/src/common/common';
 import {ModelHandler} from '/src/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 import {LoadedImage} from '/src/utils/image_utils';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
 
+const TEXT_COLOR = 'rgb(143, 77, 23)';
 
 interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
@@ -71,6 +72,12 @@ export async function saveImageToServer(file: File): Promise<string> {
   return path;
 }
 
+function addDiv(parent: HTMLElement): HTMLElement {
+  const element = document.createElement('div');
+  parent.appendChild(element);
+  return element;
+}
+
 function addModal(parent: HTMLElement): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -100,14 +107,18 @@ function addParagraph(parent: HTMLElement, content: string): HTMLElement {
   return paragraph;
 }
 
-function addLabel(parent: HTMLElement, content: string): HTMLElement {
+function addLabel(
+    parent: HTMLElement, content: string, color?: string): HTMLElement {
   const item = document.createElement('label');
+  if (color !== undefined) {
+    item.style.color = color;
+  }
   item.innerHTML = content;
   parent.appendChild(item);
   return item;
 }
 
-function addInput(parent: HTMLElement, inputType: InputType): HTMLElement {
+function addInput(parent: HTMLElement, inputType: InputType): HTMLInputElement {
   const item = document.createElement('input');
   item.type = inputType;
   if (inputType === InputType.IMAGE_INPUT) {
@@ -123,7 +134,8 @@ function addBreak(parent: HTMLElement, numBreaks: number): void {
   }
 }
 
-function addSubmitButton(parent: HTMLElement, label: string): HTMLElement {
+function addSubmitButton(
+    parent: HTMLElement, label: string): HTMLButtonElement {
   const item = document.createElement('button');
   item.className = 'btn-success';
   item.innerHTML = label;
@@ -132,13 +144,28 @@ function addSubmitButton(parent: HTMLElement, label: string): HTMLElement {
 }
 
 function addInputSection(
-    parent: HTMLElement, label: string, inputType: InputType): HTMLElement {
-  addLabel(parent, label);
+    parent: HTMLElement, label: string, inputType: InputType,
+    color?: string): HTMLInputElement {
+  addLabel(parent, label, color);
   addBreak(parent, 1);
   const inputField = addInput(parent, inputType);
   addBreak(parent, 2);
   return inputField;
 }
+
+function addNumberInputSection(
+    parent: HTMLElement, label: string,
+    options?: NumberInputEntryOptions): HTMLElement {
+  const inputField =
+      addInputSection(
+          parent, label, InputType.NUMBER_INPUT, options?.textColor);
+  if (options?.min !== undefined) {
+    inputField.min = String(options.min);
+    inputField.max = String(options.max);
+  }
+  return inputField;
+}
+
 
 type ResolvedListener = (resolved: boolean) => any;
 
@@ -170,18 +197,24 @@ export class TextInputEntry extends FormInputEntry<string> {
   }
 }
 
+export interface NumberInputEntryOptions {
+  textColor?: string;
+  min?: number;
+  max?: number;
+}
+
 export class NumberInputEntry extends FormInputEntry<number> {
   private result?: number;
 
-  constructor(private readonly label: string) {
+  constructor(
+      private readonly label: string,
+      private readonly options?: NumberInputEntryOptions) {
     super();
   }
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField =
-        addInputSection(parent, this.label, InputType.NUMBER_INPUT);
+    const inputField = addNumberInputSection(parent, this.label, this.options);
     inputField.oninput = (event) => {
-      // @ts-ignore
       const target = (event.target as HTMLTextAreaElement);
       this.result =
           target.value.length === 0 ? undefined : parseInt(target.value);
@@ -237,7 +270,87 @@ function addAllInputFields(
   }
 }
 
+/** Class for a generic simple form requesting information. */
+abstract class BaseSimpleForm {
+  private readonly root: HTMLElement;
+  private readonly submitButton: HTMLButtonElement;
+
+  protected constructor(
+      parent: HTMLElement,
+      inputFields: FormInputEntry<any>[],
+      onSubmit: () => any) {
+    this.root = addDiv(parent);
+    addAllInputFields(
+        this.root,
+        inputFields,
+        (allReady) => {
+          this.submitButton.disabled = allReady ? false : true;
+        });
+    this.submitButton = addSubmitButton(this.root, 'Update');
+    this.submitButton.disabled = true;
+    this.submitButton.style.display = 'block';
+    this.submitButton.onclick = () => {
+      onSubmit();
+    };
+  }
+
+  protected show(): void {
+    this.root.style.display = 'block';
+  }
+
+  protected hide(): void {
+    this.root.style.display = 'none';
+  }
+}
+
+export interface BoardUpdateData {
+  tileSize: number;
+  offset: Point;
+}
+
 /** Class for a form requesting information to make a game board. */
+export class BoardUpdateForm extends BaseSimpleForm {
+  static create(
+      parentId: string,
+      onUpdate: (data: BoardUpdateData) => any): void {
+    new BoardUpdateForm(getElementById(parentId), onUpdate);
+  }
+
+  private constructor(
+      parent: HTMLElement,
+      onUpdate: (data: BoardUpdateData) => any) {
+    const tileSizeEntry: NumberInputEntry =
+        new NumberInputEntry(
+            'Tile Size (in pixels)', {textColor: TEXT_COLOR, min: 10});
+    const offsetXEntry: NumberInputEntry =
+        new NumberInputEntry(
+            'Grid Offset X (in pixels, 0 <= offset < tileSize)',
+            {textColor: TEXT_COLOR, min: 0});
+    const offsetYEntry: NumberInputEntry =
+        new NumberInputEntry(
+            'Grid Offset Y (in pixel, 0 <= offset < tileSize)',
+            {textColor: TEXT_COLOR, min: 0});
+    super(
+        parent, [tileSizeEntry, offsetXEntry, offsetYEntry],
+        () => {
+          const tileSize =
+              checkDefined(tileSizeEntry.getResolved(), 'tileSize');
+          const offsetX =
+              checkDefined(offsetXEntry.getResolved(), 'offsetX');
+          const offsetY =
+              checkDefined(offsetYEntry.getResolved(), 'offsetY');
+          if (tileSize < 1 || offsetX < 0 ||
+             offsetX >= tileSize || offsetY < 0 || offsetY >= tileSize) {
+            console.log('Invalid input! ignoring');
+            return;
+          }
+          onUpdate({tileSize: tileSize, offset: {x: offsetX, y: offsetY}});
+        },
+    );
+  }
+}
+
+/** Class for a generic dialog form requesting information. */
 abstract class BaseDialogForm {
   private readonly modal: HTMLElement;
   private readonly modalContent: HTMLElement;

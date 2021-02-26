@@ -1,5 +1,5 @@
 import {BoardModel} from './board_model';
-import {areLocationsEqual, Location} from '/src/common/common';
+import {areLocationsEqual, arePointsEqual, Location, Point} from '/src/common/common';
 
 const DEFAULT_SPEED = 6;
 
@@ -126,6 +126,7 @@ export class RemoteBoardModel {
         maybeModel.fogOfWar !== undefined &&
         maybeModel.publicSelection !== undefined &&
         maybeModel.cols !== undefined &&
+        maybeModel.gridOffset !== undefined &&
         maybeModel.rows !== undefined;
     if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
       return false;
@@ -151,6 +152,9 @@ export class RemoteBoardModel {
     if (input.rows === undefined || input.cols === undefined) {
       console.log('Rows or cols are undefined');
       return;
+    }
+    if (input.gridOffset === undefined) {
+      input.gridOffset = {x: 0, y: 0};
     }
     if (input.fogOfWar === undefined) {
       input.fogOfWar = [];
@@ -200,6 +204,7 @@ export class RemoteBoardModel {
         model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
         fogOfWar,
         model.publicSelection.map((col) => col.slice()),
+        model.gridOffset,
         model.cols,
         model.rows,
     );
@@ -213,6 +218,7 @@ export class RemoteBoardModel {
     readonly tokens: RemoteTokenModel[],
     readonly fogOfWar: string[][],
     readonly publicSelection: string[][],
+    readonly gridOffset: Point,
     readonly cols: number,
     readonly rows: number) { }
 
@@ -244,16 +250,11 @@ export class RemoteBoardModel {
       }
     }
     const publicSelection = model.publicSelection.map((row) => row.slice());
-    console.log('publicSelection')
-    console.log(publicSelection)
     if (diff.publicSelectionDiffs !== undefined) {
-      console.log('found diffs')
       for (const d of diff.publicSelectionDiffs) {
         publicSelection[d.col][d.row] = d.value;
       }
     }
-    console.log('new publicSelection')
-    console.log(publicSelection)
     return new RemoteBoardModel(
         model.id,
         diff.name === undefined ? model.name : diff.name,
@@ -262,6 +263,7 @@ export class RemoteBoardModel {
         mergedTokens,
         fogOfWarState,
         publicSelection,
+        model.gridOffset,
         model.cols,
         model.rows,
     );
@@ -353,11 +355,11 @@ export class RemoteBoardDiff {
         for (let j = 0; j < newModel.rows; j++) {
           if (oldModel.fogOfWar[i][j] !== newModel.fogOfWar[i][j]) {
             fogOfWarDiffs.push(
-              {col: i, row: j, isFogOn: newModel.fogOfWar[i][j] !== '0'});
+                {col: i, row: j, isFogOn: newModel.fogOfWar[i][j] !== '0'});
           }
-          const newSelection = newModel.publicSelection[i][j]
+          const newSelection = newModel.publicSelection[i][j];
           if (oldModel.publicSelection[i][j] !== newSelection) {
-            publicSelectionDiffs.push({col: i, row: j, value: newSelection})
+            publicSelectionDiffs.push({col: i, row: j, value: newSelection});
           }
         }
       }
@@ -372,6 +374,9 @@ export class RemoteBoardDiff {
       newModel.tileSize === oldModel.tileSize ? undefined : newModel.tileSize;
     const diffName =
       newModel.name === oldModel.name ? undefined : newModel.name;
+    const diffGridOffset =
+        arePointsEqual(newModel.gridOffset, oldModel.gridOffset) ?
+            undefined : newModel.gridOffset;
 
     const isValidDiff =
       diffName != undefined ||
@@ -380,6 +385,7 @@ export class RemoteBoardDiff {
       newTokens.length > 0 ||
       diffImageSource != undefined ||
       diffTileSize != undefined ||
+      diffGridOffset != undefined ||
       fogOfWarDiffs.length > 0 ||
       publicSelectionDiffs.length > 0;
 
@@ -396,6 +402,7 @@ export class RemoteBoardDiff {
         publicSelectionDiffs,
         diffImageSource,
         diffTileSize,
+        diffGridOffset,
         fogOfWarDiffs,
     );
   }
@@ -409,6 +416,7 @@ export class RemoteBoardDiff {
     readonly publicSelectionDiffs: PublicSelectionDiff[] = [],
     readonly imageSource?: string,
     readonly tileSize?: number,
+    readonly gridOffset?: Point,
     readonly fogOfWarDiffs?: FogOfWarDiff[],
   ) { }
 }

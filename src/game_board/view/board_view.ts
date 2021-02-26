@@ -1,4 +1,4 @@
-import {Location, areLocationsEqual, tileDistance} from '/src/common/common';
+import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '/src/common/common';
 import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
@@ -63,6 +63,7 @@ export class BoardView {
 
   bind(newModel: BoardModel): void {
     this.bindBackgroundImage(newModel);
+    this.handleGridParameterChange(newModel);
     this.bindGrid(newModel);
     this.bindTokens(newModel);
     this.bindFogOfWarState(newModel);
@@ -71,6 +72,23 @@ export class BoardView {
     this.bindContextMenu(newModel);
 
     this.model = newModel;
+  }
+
+  private handleGridParameterChange(newModel: BoardModel): void {
+    if (this.model !== undefined &&
+        newModel.tileSize === this.model.tileSize &&
+        arePointsEqual(newModel.gridOffset, this.model.gridOffset)) {
+      return;
+    }
+    this.model = undefined;
+    for (const canvas of this.allCanvases) {
+      if (canvas === this.backgroundCanvas) {
+        continue;
+      }
+      getContext(canvas).clearRect(0, 0, canvas.width, canvas.height);
+    }
+    // TODO: We need to handle moving the tokens here if they're
+    //       of bounds. But this needs to be propagated back up...
   }
 
   private bindBackgroundImage(newModel: BoardModel): void {
@@ -210,10 +228,13 @@ export class BoardView {
     for (let i = 0; i < model.cols; i++) {
       this.tiles.push([]);
       for (let j = 0; j < model.rows; j++) {
+        const startPoint =
+            getStartPoint({col: i, row: j}, model.gridOffset, model.tileSize);
         this.tiles[i].push(
             new Tile(
                 model.tileSize,
-                {col: i, row: j},
+                startPoint.x,
+                startPoint.y,
                 this.fogOfWarCanvas,
                 this.localSelectionCanvas,
                 this.publicSelectionCanvas,
@@ -224,10 +245,13 @@ export class BoardView {
 
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
     const tokenSize = tokenModel.size * newModel.tileSize;
+    const startPoint =
+        getStartPoint(
+            tokenModel.location, newModel.gridOffset, newModel.tileSize);
     getContext(this.tokenCanvas)
         .drawImage(tokenModel.image,
-            tokenModel.location.col * newModel.tileSize,
-            tokenModel.location.row * newModel.tileSize,
+            startPoint.x,
+            startPoint.y,
             tokenSize, tokenSize);
     if (tokenModel.isActive) {
       this.getTile(tokenModel.location).activeTokenGrid();
@@ -240,10 +264,13 @@ export class BoardView {
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
     const tokenSize = tokenModel.size * newModel.tileSize;
+    const startPoint =
+        getStartPoint(
+            tokenModel.location, newModel.gridOffset, newModel.tileSize);
     getContext(this.tokenCanvas)
         .clearRect(
-            tokenModel.location.col * newModel.tileSize - 1,
-            tokenModel.location.row * newModel.tileSize - 1,
+            startPoint.x - 1,
+            startPoint.y - 1,
             tokenSize + 2, tokenSize + 2);
     this.getTile(tokenModel.location).defaultGrid();
     if (tokenModel.isActive) {
@@ -273,24 +300,35 @@ export class BoardView {
   }
 }
 
+function getStartPoint(
+    tile: Location,
+    offset: Point,
+    tileSize: number): Point {
+  let startX = tile.col * tileSize;
+  let startY = tile.row * tileSize;
+  if (offset.x > 0) {
+    startX = startX - tileSize + offset.x;
+  }
+  if (offset.y > 0) {
+    startY = startY - tileSize + offset.y;
+  }
+  return {x: startX, y: startY};
+}
+
 /** Represents a tile in the game board. */
 class Tile {
-  startX: number;
-  startY: number;
-
   fogState = '0';
   publicSelectionState = '0';
 
   constructor(
       private size: number,
-      location: Location,
+      private startX: number,
+      private startY: number,
       private fogOfWarCanvas: HTMLCanvasElement,
       private localSelectionCanvas: HTMLCanvasElement,
       private publicSelectionCanvas: HTMLCanvasElement,
       private gridCanvas: HTMLCanvasElement) {
     this.size = size;
-    this.startX = location.col * size;
-    this.startY = location.row * size;
     this.fogOfWarCanvas = fogOfWarCanvas;
     this.gridCanvas = gridCanvas;
   }

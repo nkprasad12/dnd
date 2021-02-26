@@ -9,11 +9,12 @@ import {RemoteBoardModel} from '/src/game_board/model/remote_board_model';
 import {getElementById} from '/src/common/common';
 import {BoardServer} from '/src/game_board/remote/board_server';
 import {LocalConnection} from '/src/server/local_connection';
+import {BoardUpdateData} from '/src/board_tools/board_form';
 
 export class GameBoard {
   static createLocal(parentId: string, model: BoardModel): GameBoard {
     return new GameBoard(
-        parentId, model, new BoardServer(new LocalConnection()));
+        parentId, model, new BoardServer(new LocalConnection()), true);
   }
 
   private readonly view: BoardView;
@@ -22,7 +23,11 @@ export class GameBoard {
   private readonly inputHandler: InteractionStateMachine;
   private readonly remoteBoard: RemoteBoard
 
-  constructor(parentId: string, model: BoardModel, server: BoardServer) {
+  constructor(
+      parentId: string,
+      model: BoardModel,
+      server: BoardServer,
+      private readonly local: boolean = false) {
     this.view = new BoardView(getElementById(parentId));
     this.remoteBoard =
       new RemoteBoard(
@@ -31,12 +36,23 @@ export class GameBoard {
           (remoteDiff) => {
             this.modelHandler.applyRemoteDiff(remoteDiff);
           });
-    this.modelHandler = new ModelHandler(this.view, model, this.remoteBoard);
+    this.modelHandler =
+        new ModelHandler(this.view, model, this.remoteBoard, this.local);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
         this.view.topCanvas,
         (from, to, button) => this.inputHandler.onDragEvent(from, to, button));
     this.listenForContextMenuClicks();
+  }
+
+  updateForEditor(options: BoardUpdateData): void {
+    if (!this.local) {
+      console.log('Attempting updateForEditor in non-local board, ignoring');
+    }
+    const model = this.modelHandler.copyModel();
+    model.tileSize = options.tileSize;
+    model.gridOffset = options.offset;
+    this.modelHandler.update(model);
   }
 
   // TODO: Refactor how this is done.
@@ -114,6 +130,6 @@ export class GameBoard {
   }
 
   getRemoteModel(): RemoteBoardModel {
-    return this.remoteBoard.getRemoteModel();
+    return RemoteBoardModel.create(this.modelHandler.copyModel());
   }
 }

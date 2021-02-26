@@ -173,6 +173,12 @@ class GameLoader:
   def retrieve_board(self, board_id: str) -> dict:
     """Retrieves the gived board."""
     board = self._game_cache.get_board(board_id)
+    if self._add_defaults(board):
+      self.save_board(board)
     if board is None:
       return {}
     return board
+
+  def _add_defaults(self, board: dict) -> bool:
+    if board.get('gridOffset') is None:
+      board['gridOffset'] = {'x': 0, 'y': 0}

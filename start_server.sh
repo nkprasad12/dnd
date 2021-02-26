@@ -27,6 +27,14 @@ function setup_dirs {
   echo '---------------------------------------'
   mkdir -p app/data/images
   mkdir -p app/data/server_db
+  echo 'Preparing templates'
+  echo '---------------------------------------'
+  rm app/templates/genfiles/*
+  cp app/static/dist/*.html app/templates/genfiles/
+  # Replace Foo.bundle.js -> /static/dist/Foo.bundle.js in all generated .js files
+  find ./app/templates/genfiles -type f -name "*.html" | \
+  xargs sed -i -E -e \
+  "s:\"([a-zA-Z0-9]+\.[a-zA-Z0-9]+\.bundle\.js\"):\"\/static\/dist\/\1:g" 
 }
 
 function start_server {
