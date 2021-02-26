@@ -10,14 +10,17 @@ export class ModelHandler {
   constructor(
     readonly view: BoardView,
     private model: BoardModel,
-    private readonly remoteBoard: RemoteBoard) {
+    private readonly remoteBoard: RemoteBoard,
+    private readonly local: boolean) {
     this.view.bind(this.model);
   }
 
   update(newModel: BoardModel): void {
     this.model = newModel;
     this.view.bind(this.copyModel());
-    this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
+    if (!this.local) {
+      this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
+    }
   }
 
   async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {

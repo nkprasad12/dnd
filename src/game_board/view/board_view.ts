@@ -63,6 +63,7 @@ export class BoardView {
 
   bind(newModel: BoardModel): void {
     this.bindBackgroundImage(newModel);
+    this.handleTileSizeChange(newModel);
     this.bindGrid(newModel);
     this.bindTokens(newModel);
     this.bindFogOfWarState(newModel);
@@ -71,6 +72,21 @@ export class BoardView {
     this.bindContextMenu(newModel);
 
     this.model = newModel;
+  }
+
+  private handleTileSizeChange(newModel: BoardModel): void {
+    if (newModel.tileSize === this.model?.tileSize) {
+      return;
+    }
+    this.model = undefined;
+    for (const canvas of this.allCanvases) {
+      if (canvas === this.backgroundCanvas) {
+        continue;
+      }
+      getContext(canvas).clearRect(0, 0, canvas.width, canvas.height);
+    }
+    // TODO: We need to handle moving the tokens here if they're
+    //       of bounds. But this needs to be propagated back up...
   }
 
   private bindBackgroundImage(newModel: BoardModel): void {

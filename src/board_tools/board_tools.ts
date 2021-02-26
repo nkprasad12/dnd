@@ -1,4 +1,4 @@
-import {NewBoardForm} from '/src/board_tools/board_form';
+import {BoardUpdateForm, NewBoardForm} from '/src/board_tools/board_form';
 import {BoardSelector, removeChildrenOf} from '/src/board_tools/board_selector';
 import {getElementById} from '/src/common/common';
 import {GameBoard} from '/src/game_board/controller/game_board';
@@ -15,6 +15,7 @@ const PREVIEW_BOARD_STUB = 'previewBoardStub';
 
 const ACTIVE_SELECTOR_STUB = 'activeSelectorStub';
 const EDIT_SELECTOR_STUB = 'editSelectorStub';
+const EDITING_AREA_STUB = 'editingAreaStub';
 
 class BoardSelectors {
   constructor(
@@ -53,7 +54,7 @@ async function setupSelectors(): Promise<BoardSelectors> {
       BoardSelector.createEditBoardSelector(
           EDIT_SELECTOR_STUB,
           (selectedId) => {
-            loadBoard(selectedId).then((board) => setupEditing(board))
+            loadBoard(selectedId).then((board) => setupEditing(board));
           },
           boards);
   return new BoardSelectors(activeSelector, editSelector);
@@ -64,7 +65,7 @@ const selectorsPromise = setupSelectors();
 NewBoardForm.createOnClick(
     NEW_BOARD_BUTTON, BOARD_FORM_STUB,
     (model) => {
-        setupEditing(model);
+      setupEditing(model);
     });
 
 function setupEditing(model: BoardModel): void {
@@ -78,4 +79,7 @@ function setupEditing(model: BoardModel): void {
     selectorsPromise.then(
         (selectors) => selectors.add(remoteModel.id));
   };
+  BoardUpdateForm.create(EDITING_AREA_STUB, (data) => {
+    board.updateForEditor(data);
+  });
 }
