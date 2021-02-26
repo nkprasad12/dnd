@@ -225,12 +225,19 @@ export class BoardModel {
     if (diff.imageSource) {
       newModel.backgroundImage = await loadImage(diff.imageSource);
     }
-    newModel.fogOfWarState = this.fogOfWarState.map((row) => row.slice());
+    newModel.fogOfWarState = this.fogOfWarState.map((col) => col.slice());
     if (diff.fogOfWarDiffs !== undefined) {
       for (const d of diff.fogOfWarDiffs) {
         newModel.fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
       }
     }
+    newModel.publicSelection = this.publicSelection;
+    if (diff.publicSelectionDiffs !== undefined) {
+      for (const d of diff.publicSelectionDiffs) {
+        newModel.publicSelection[d.col][d.row] = d.value;
+      }
+    }
+
     return BoardModel.Builder.from(newModel).build();
   }
 
@@ -262,6 +269,7 @@ static Builder = class {
         .setBackgroundImage(loadedImage)
         .setTileSize(model.tileSize)
         .setTokens(tokens)
+        .setPublicSelection(model.publicSelection)
         .setFogOfWarState(model.fogOfWar);
   }
 

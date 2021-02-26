@@ -113,6 +113,17 @@ def _merge_board_model(model: dict, diff: dict) -> dict:
   if 'fogOfWarDiffs' in diff:
     for d in diff['fogOfWarDiffs']:
       fogOfWarState[d['col']][d['row']] = '1' if d['isFogOn'] else '0'
+  if 'publicSelectionDiffs' in diff:
+    if model.get('publicSelection') is None:
+      publicSelection = []
+      cols = len(fogOfWarState)
+      rows = len(fogOfWarState[0])
+      for col in range(cols):
+        publicSelection.append(['0'] * rows)
+    else:
+      publicSelection = model['publicSelection']
+    for d in diff['publicSelectionDiffs']:
+      publicSelection[d['col']][d['row']] = d['value']
   
   if 'name' in diff:
     model['name'] = diff['name']
@@ -122,6 +133,7 @@ def _merge_board_model(model: dict, diff: dict) -> dict:
     model['tileSize'] = diff['tileSize']
   model['tokens'] = mergedTokens
   model['fogOfWar'] = fogOfWarState
+  model['publicSelection'] = publicSelection
 
   return model
 
