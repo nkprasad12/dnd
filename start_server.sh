@@ -29,6 +29,7 @@ function setup_dirs {
   mkdir -p app/data/server_db
   echo 'Preparing templates'
   echo '---------------------------------------'
+  mkdir -p app/templates/genfiles
   rm app/templates/genfiles/*
   cp app/static/dist/*.html app/templates/genfiles/
   # Replace Foo.bundle.js -> /static/dist/Foo.bundle.js in all generated .js files
