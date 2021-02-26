@@ -79,6 +79,7 @@ function setupEditing(model: BoardModel): void {
     selectorsPromise.then(
         (selectors) => selectors.add(remoteModel.id));
   };
+  removeChildrenOf(EDITING_AREA_STUB);
   BoardUpdateForm.create(EDITING_AREA_STUB, (data) => {
     board.updateForEditor(data);
   });
