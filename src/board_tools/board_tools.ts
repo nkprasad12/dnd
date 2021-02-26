@@ -37,15 +37,10 @@ async function saveBoard(model: RemoteBoardModel): Promise<void> {
   server.createBoard(model);
 }
 
-async function loadBoard(boardId: string): Promise<void> {
+async function loadBoard(boardId: string): Promise<BoardModel> {
   const server = await serverPromise;
   const remoteModel = await server.requestBoard(boardId);
-  const model = await BoardModel.createFromRemote(remoteModel);
-
-  const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
-  const saveButton = getElementById(SAVE_BOARD_BUTTON);
-  saveButton.style.display = 'initial';
-  saveButton.onclick = () => saveBoard(board.getRemoteModel());
+  return BoardModel.createFromRemote(remoteModel);
 }
 
 async function setupSelectors(): Promise<BoardSelectors> {
@@ -58,8 +53,7 @@ async function setupSelectors(): Promise<BoardSelectors> {
       BoardSelector.createEditBoardSelector(
           EDIT_SELECTOR_STUB,
           (selectedId) => {
-            removeChildrenOf(PREVIEW_BOARD_STUB);
-            loadBoard(selectedId);
+            loadBoard(selectedId).then((board) => setupEditing(board))
           },
           boards);
   return new BoardSelectors(activeSelector, editSelector);
@@ -70,14 +64,18 @@ const selectorsPromise = setupSelectors();
 NewBoardForm.createOnClick(
     NEW_BOARD_BUTTON, BOARD_FORM_STUB,
     (model) => {
-      removeChildrenOf(PREVIEW_BOARD_STUB);
-      const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
-      const saveButton = getElementById(SAVE_BOARD_BUTTON);
-      saveButton.style.display = 'initial';
-      saveButton.onclick = () => {
-        const remoteModel = board.getRemoteModel();
-        saveBoard(remoteModel);
-        selectorsPromise.then(
-            (selectors) => selectors.add(remoteModel.id));
-      };
+        setupEditing(model);
     });
+
+function setupEditing(model: BoardModel): void {
+  removeChildrenOf(PREVIEW_BOARD_STUB);
+  const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
+  const saveButton = getElementById(SAVE_BOARD_BUTTON);
+  saveButton.style.display = 'initial';
+  saveButton.onclick = () => {
+    const remoteModel = board.getRemoteModel();
+    saveBoard(remoteModel);
+    selectorsPromise.then(
+        (selectors) => selectors.add(remoteModel.id));
+  };
+}
