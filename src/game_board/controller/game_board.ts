@@ -51,6 +51,7 @@ export class GameBoard {
     }
     const model = this.modelHandler.copyModel();
     model.tileSize = options.tileSize;
+    model.gridOffset = options.offset;
     this.modelHandler.update(model);
   }
 

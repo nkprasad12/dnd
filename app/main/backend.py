@@ -46,7 +46,7 @@ def login():
 @main.route('/index', methods=['GET'])
 @login_required
 def index():
-    return render_template('genfiles/index.html')
+    return render_template('templates/index.html')
 
 
 @main.route('/boardTools', methods=['GET'])

@@ -1,4 +1,4 @@
-import {checkDefined, getElementById, getOrigin, Location} from '/src/common/common';
+import {checkDefined, getElementById, getOrigin, Location, Point} from '/src/common/common';
 import {ModelHandler} from '/src/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 import {LoadedImage} from '/src/utils/image_utils';
@@ -305,6 +305,7 @@ abstract class BaseSimpleForm {
 
 export interface BoardUpdateData {
   tileSize: number;
+  offset: Point;
 }
 
 /** Class for a form requesting information to make a game board. */
@@ -320,13 +321,30 @@ export class BoardUpdateForm extends BaseSimpleForm {
       onUpdate: (data: BoardUpdateData) => any) {
     const tileSizeEntry: NumberInputEntry =
         new NumberInputEntry(
-            'Tile Size (pixels)', {textColor: TEXT_COLOR, min: 10});
+            'Tile Size (in pixels)', {textColor: TEXT_COLOR, min: 10});
+    const offsetXEntry: NumberInputEntry =
+        new NumberInputEntry(
+            'Grid Offset X (in pixels, 0 <= offset < tileSize)',
+            {textColor: TEXT_COLOR, min: 0});
+    const offsetYEntry: NumberInputEntry =
+        new NumberInputEntry(
+            'Grid Offset Y (in pixel, 0 <= offset < tileSize)',
+            {textColor: TEXT_COLOR, min: 0});
     super(
-        parent, [tileSizeEntry],
+        parent, [tileSizeEntry, offsetXEntry, offsetYEntry],
         () => {
           const tileSize =
               checkDefined(tileSizeEntry.getResolved(), 'tileSize');
-          onUpdate({tileSize: tileSize});
+          const offsetX =
+              checkDefined(offsetXEntry.getResolved(), 'offsetX');
+          const offsetY =
+              checkDefined(offsetYEntry.getResolved(), 'offsetY');
+          if (tileSize < 1 || offsetX < 0 ||
+             offsetX >= tileSize || offsetY < 0 || offsetY >= tileSize) {
+            console.log('Invalid input! ignoring');
+            return;
+          }
+          onUpdate({tileSize: tileSize, offset: {x: offsetX, y: offsetY}});
         },
     );
   }
