@@ -1,4 +1,7 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
 
 module.exports = {
   entry: {
@@ -16,8 +19,32 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      chunks: ['GameBoard'],
+      filename: 'game_board.html',
+      template: 'app/templates/templates/game_board.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: ['BoardTools'],
+      filename: 'board_tools.html',
+      template: 'app/templates/templates/board_tools.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: ['Sandbox'],
+      filename: 'client_page.html',
+      template: 'app/templates/templates/client_page.html',
+      minify: false,
+    }),
+  ],
   optimization: {
     minimize: false,
+    splitChunks: {
+      chunks: 'all',
+    },
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],

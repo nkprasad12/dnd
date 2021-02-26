@@ -40,25 +40,25 @@ def login():
       user.id = username
       flask_login.login_user(user)
       return redirect(url_for('.game_board'))
-  return render_template('login.html')
+  return render_template('templates/login.html')
 
 
 @main.route('/index', methods=['GET'])
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('genfiles/index.html')
 
 
 @main.route('/boardTools', methods=['GET'])
 @login_required
 def board_tools():
-    return render_template('board_tools.html')
+    return render_template('genfiles/board_tools.html')
 
 
 @main.route('/gameBoard', methods=['GET'])
 @login_required
 def game_board():
-    return render_template('game_board.html')
+    return render_template('genfiles/game_board.html')
 
 
 @main.route('/sandbox', methods=['GET', 'POST'])
@@ -66,7 +66,7 @@ def game_board():
 def client():
     global comments
     if request.method == 'GET':
-        return render_template('client_page.html', comments=comments)
+        return render_template('genfiles/client_page.html', comments=comments)
     comments.append(request.form['contents'])
     return redirect(url_for('.client'))
 
