@@ -1,4 +1,4 @@
-import {Point, Location, areLocationsEqual} from '/src/common/common';
+import {Location, areLocationsEqual} from '/src/common/common';
 import {BoardModel} from '/src/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';
@@ -98,17 +98,7 @@ abstract class InteractionState {
     return {
       clientPoint: point.clientPoint,
       pagePoint: point.pagePoint,
-      tile: this.tileForPoint(point.clientPoint)};
-  }
-
-  private tileForPoint(absolutePoint: Point): Location {
-    const rect = this.modelHandler.view.topCanvas.getBoundingClientRect();
-    const relativePoint =
-      {x: absolutePoint.x - rect.left, y: absolutePoint.y - rect.top};
-    const tileSize = this.modelHandler.tileSize();
-    const col = Math.floor(relativePoint.x / tileSize);
-    const row = Math.floor(relativePoint.y / tileSize);
-    return {col: col, row: row};
+      tile: this.modelHandler.tileForPoint(point.clientPoint)};
   }
 }
 

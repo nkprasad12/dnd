@@ -151,6 +151,7 @@ export class BoardModel {
       public contextMenuState: ContextMenuModel,
       public publicSelection: string[][],
       public localSelection: Location[],
+      public gridOffset: Point,
       public fogOfWarState: string[][]) {
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize);
@@ -163,6 +164,11 @@ export class BoardModel {
     this.cols = Math.ceil(this.width / this.tileSize);
     this.rows = Math.ceil(this.height / this.tileSize);
 
+    if (gridOffset.x < 0 || gridOffset.x >= tileSize ||
+        gridOffset.y < 0 || gridOffset.y >= tileSize) {
+      console.log('Grid offset is invalid! Ignoring.');
+      this.gridOffset = {x: 0, y: 0};
+    }
     this.tokens = tokens.map((token) => token.deepCopy());
     this.localSelection = localSelection.slice();
     this.contextMenuState = contextMenuState.deepCopy();
@@ -222,6 +228,9 @@ export class BoardModel {
     if (diff.tileSize) {
       newModel.tileSize = diff.tileSize;
     }
+    if (diff.gridOffset) {
+      newModel.gridOffset = diff.gridOffset;
+    }
     if (diff.imageSource) {
       newModel.backgroundImage = await loadImage(diff.imageSource);
     }
@@ -252,6 +261,7 @@ static Builder = class {
         .setContextMenu(model.contextMenuState)
         .setLocalSelection(model.localSelection)
         .setPublicSelection(model.publicSelection)
+        .setGridOffset(model.gridOffset)
         .setFogOfWarState(model.fogOfWarState);
   }
 
@@ -270,6 +280,7 @@ static Builder = class {
         .setTileSize(model.tileSize)
         .setTokens(tokens)
         .setPublicSelection(model.publicSelection)
+        .setGridOffset(model.gridOffset)
         .setFogOfWarState(model.fogOfWar);
   }
 
@@ -290,6 +301,7 @@ static Builder = class {
       new ContextMenuModel({x: 0, y: 0}, false);
   private localSelection: Location[] = [];
   private fogOfWarState: string[][] = []
+  private gridOffset: Point = {x: 0, y: 0};
   private publicSelection: string[][] = [];
 
   private setId(id: string): BoardModel.Builder {
@@ -337,6 +349,11 @@ static Builder = class {
     return this;
   }
 
+  setGridOffset(gridOffset: Point): BoardModel.Builder {
+    this.gridOffset = gridOffset;
+    return this;
+  }
+
   setName(name: string): BoardModel.Builder {
     if (name.length === 0) {
       throw new Error('Board name can not be empty!');
@@ -361,7 +378,7 @@ static Builder = class {
     return new BoardModel(
         this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
         this.contextMenu, this.publicSelection, this.localSelection,
-        this.fogOfWarState);
+        this.gridOffset, this.fogOfWarState);
   }
 }
 }
