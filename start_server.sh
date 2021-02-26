@@ -34,7 +34,7 @@ function setup_dirs {
   # Replace Foo.bundle.js -> /static/dist/Foo.bundle.js in all generated .js files
   find ./app/templates/genfiles -type f -name "*.html" | \
   xargs sed -i -E -e \
-  "s:\"([a-zA-Z0-9]+\.bundle\.js\"):\"\/static\/dist\/\1:g" 
+  "s:\"([a-zA-Z0-9]+\.[a-zA-Z0-9]+\.bundle\.js\"):\"\/static\/dist\/\1:g" 
 }
 
 function start_server {
