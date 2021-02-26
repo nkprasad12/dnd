@@ -1,28 +1,5 @@
 #!/bin/bash
 
-function build_js {
-  echo 'Removing old generated javascript files';
-  echo '---------------------------------------';
-  rm -r ./app/static/js/*
-
-  echo 'Compiling typescript'
-  echo '---------------------------------------'
-  tsc -p ./app/static
-  rm -r ./app/static/js/test/*
-
-  echo 'Replacing imports in generated files'
-  echo '---------------------------------------'
-  # Replace /src/foo/bar -> /static/js/foo/bar.js in all generated .js files
-  find ./app/static/js -type f -name "*.js" | \
-  xargs sed -i -E \
-  "s/(import.*\{.+\}.*from.*[\'|\"].*)\/src\/(.*)([\'|\"])/\1\/static\/js\/src\/\2.js\3/" 
-
-  # Replace ./foo/bar -> ./foo/bar.js in all generated .js files
-  find ./app/static/js -type f -name "*.js" | \
-  xargs sed -i -E \
-  "s/(import.*\{.+\}.*from.*[\'|\"]\.\/.*)([\'|\"])/\1.js\2/" 
-}
-
 function build_webpack {
   echo 'Building Webpack '
   echo '---------------------------------------'
@@ -76,6 +53,7 @@ function default_run {
 
 function full_run {
   echo 'Full run'
+  npm ci
   build_webpack
   setup_venv
   setup_dirs
@@ -84,7 +62,6 @@ function full_run {
 
 function heroku_run {
   echo 'Heroku run'
-  # build_webpack
   setup_dirs
   start_server_deployed
 }

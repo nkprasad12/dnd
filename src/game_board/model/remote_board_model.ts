@@ -124,6 +124,7 @@ export class RemoteBoardModel {
         maybeModel.tileSize != undefined &&
         maybeModel.tokens !== undefined &&
         maybeModel.fogOfWar !== undefined &&
+        maybeModel.publicSelection !== undefined &&
         maybeModel.cols !== undefined &&
         maybeModel.rows !== undefined;
     if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
@@ -174,6 +175,15 @@ export class RemoteBoardModel {
         }
       }
     }
+    if (input.publicSelection === undefined) {
+      input.publicSelection = [];
+      for (let i = 0; i < input.cols; i++) {
+        input.publicSelection.push([]);
+        for (let j = 0; j < input.rows; j++) {
+          input.publicSelection[i].push('0');
+        }
+      }
+    }
     return input;
   }
 
@@ -189,6 +199,7 @@ export class RemoteBoardModel {
         model.tileSize,
         model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
         fogOfWar,
+        model.publicSelection.map((col) => col.slice()),
         model.cols,
         model.rows,
     );
@@ -201,6 +212,7 @@ export class RemoteBoardModel {
     readonly tileSize: number,
     readonly tokens: RemoteTokenModel[],
     readonly fogOfWar: string[][],
+    readonly publicSelection: string[][],
     readonly cols: number,
     readonly rows: number) { }
 
@@ -231,6 +243,17 @@ export class RemoteBoardModel {
         fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
       }
     }
+    const publicSelection = model.publicSelection.map((row) => row.slice());
+    console.log('publicSelection')
+    console.log(publicSelection)
+    if (diff.publicSelectionDiffs !== undefined) {
+      console.log('found diffs')
+      for (const d of diff.publicSelectionDiffs) {
+        publicSelection[d.col][d.row] = d.value;
+      }
+    }
+    console.log('new publicSelection')
+    console.log(publicSelection)
     return new RemoteBoardModel(
         model.id,
         diff.name === undefined ? model.name : diff.name,
@@ -238,6 +261,7 @@ export class RemoteBoardModel {
         diff.tileSize === undefined ? model.tileSize : diff.tileSize,
         mergedTokens,
         fogOfWarState,
+        publicSelection,
         model.cols,
         model.rows,
     );
@@ -248,6 +272,12 @@ export interface FogOfWarDiff {
   readonly row: number;
   readonly col: number;
   readonly isFogOn: boolean;
+}
+
+export interface PublicSelectionDiff {
+  readonly row: number;
+  readonly col: number;
+  readonly value: string;
 }
 
 /** Represents a mutation of RemoteBoardModel. */
@@ -317,14 +347,18 @@ export class RemoteBoardDiff {
       }
     }
     const fogOfWarDiffs: FogOfWarDiff[] = [];
+    const publicSelectionDiffs: PublicSelectionDiff[] = [];
     if (newModel.imageSource === oldModel.imageSource) {
       for (let i = 0; i < newModel.cols; i++) {
         for (let j = 0; j < newModel.rows; j++) {
-          if (oldModel.fogOfWar[i][j] === newModel.fogOfWar[i][j]) {
-            continue;
-          }
-          fogOfWarDiffs.push(
+          if (oldModel.fogOfWar[i][j] !== newModel.fogOfWar[i][j]) {
+            fogOfWarDiffs.push(
               {col: i, row: j, isFogOn: newModel.fogOfWar[i][j] !== '0'});
+          }
+          const newSelection = newModel.publicSelection[i][j]
+          if (oldModel.publicSelection[i][j] !== newSelection) {
+            publicSelectionDiffs.push({col: i, row: j, value: newSelection})
+          }
         }
       }
     } else {
@@ -346,7 +380,8 @@ export class RemoteBoardDiff {
       newTokens.length > 0 ||
       diffImageSource != undefined ||
       diffTileSize != undefined ||
-      fogOfWarDiffs.length > 0;
+      fogOfWarDiffs.length > 0 ||
+      publicSelectionDiffs.length > 0;
 
     if (!isValidDiff) {
       return undefined;
@@ -358,6 +393,7 @@ export class RemoteBoardDiff {
         modifiedTokens,
         removedTokens,
         newTokens,
+        publicSelectionDiffs,
         diffImageSource,
         diffTileSize,
         fogOfWarDiffs,
@@ -370,6 +406,7 @@ export class RemoteBoardDiff {
     readonly tokenDiffs: RemoteTokenDiff[] = [],
     readonly removedTokens: string[] = [],
     readonly newTokens: RemoteTokenModel[] = [],
+    readonly publicSelectionDiffs: PublicSelectionDiff[] = [],
     readonly imageSource?: string,
     readonly tileSize?: number,
     readonly fogOfWarDiffs?: FogOfWarDiff[],
