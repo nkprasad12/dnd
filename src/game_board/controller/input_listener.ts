@@ -29,7 +29,8 @@ export class InputListener {
           this.handleMouseDown(e);
           e.preventDefault();
           console.log('Got mousedown');
-          console.log(e.button);
+          console.log(e);
+          return false;
         });
 
     this.element.addEventListener(
@@ -38,12 +39,16 @@ export class InputListener {
           this.handleMouseUp(e);
           e.preventDefault();
           console.log('Got mouseup');
-          console.log(e.button);
+          console.log(e);
+          return false;
         });
 
     this.element.addEventListener(
         'contextmenu', (event) => {
           event.preventDefault();
+          console.log('Got contextmenu');
+          console.log(event);
+          return false;
         });
   }
 
