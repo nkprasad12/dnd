@@ -69,7 +69,7 @@ function addMenu(parent: HTMLElement): HTMLElement {
 export class ContextMenuView {
   private readonly menu: HTMLElement;
   // private readonly submenu: HTMLElement;
-  private readonly categories: Map<String, HTMLElement>;
+  private readonly categories: Map<string, HTMLElement>;
   private readonly buttons: Map<ContextMenuItem, HTMLElement>;
 
   constructor(
@@ -90,7 +90,7 @@ export class ContextMenuView {
         submenu.style.display = 'initial';
       };
       categoryMenu.onmouseleave = () => submenu.style.display = 'none';
-      this.categories.set(category, submenu);
+      this.categories.set(category, categoryMenu);
       for (const item of items) {
         const button = addButton(submenu, item);
         button.onclick = (mouseEvent) => {
@@ -103,27 +103,6 @@ export class ContextMenuView {
         this.buttons.set(item, button);
       }
     });
-
-
-    // for (const item of SUPPORTED_MENU_ITEMS) {
-    //   const button = addButton(this.menu, item);
-    //   button.onclick = (mouseEvent) => {
-    //     if (mouseEvent.button != 0) {
-    //       console.log('Ignoring non-left button click on ' + item);
-    //       return;
-    //     }
-    //     clickListener(item);
-    //   };
-    //   const submenu = addMenu(button);
-    //   addButton(submenu, item);
-    //   button.onmouseenter = () => {
-    //     submenu.style.top =
-    //         (button.getBoundingClientRect().top - this.menu.getBoundingClientRect().top) + 'px';
-    //     submenu.style.left = this.menu.getBoundingClientRect().width + 'px';
-    //     submenu.style.display = 'initial';
-    //   };
-    //   button.onmouseleave = () => submenu.style.display = 'none';
-    // }
   }
 
   bind(model: ContextMenuModel, invalidItems: ContextMenuItem[]): void {
@@ -135,6 +114,16 @@ export class ContextMenuView {
         checkDefined(this.buttons.get(item), item).style.display =
             invalidItems.includes(item) ? 'none' : 'initial';
       }
+      this.categories.forEach((button, label) => {
+        const items = CATEGORY_ITEM_MAP.get(label);
+        if (items === undefined) {
+          console.log('Category item map does not have label: ' + label);
+          return;
+        }
+        const itemsToShow =
+            items.filter((item) => !invalidItems.includes(item));
+        button.style.display = itemsToShow.length > 0 ? 'initial' : 'none';
+      });
       this.menu.style.display = 'initial';
     } else {
       this.menu.style.display = 'none';
