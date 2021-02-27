@@ -5,7 +5,7 @@ import {LoadedImage} from '/src/utils/image_utils';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
 
-const TEXT_COLOR = 'rgb(143, 77, 23)';
+export const TEXT_COLOR = 'rgb(143, 77, 23)';
 
 interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
@@ -113,7 +113,7 @@ function addParagraph(parent: HTMLElement, content: string): HTMLElement {
   return paragraph;
 }
 
-function addLabel(
+export function addLabel(
     parent: HTMLElement, content: string, color?: string): HTMLElement {
   const item = document.createElement('label');
   if (color !== undefined) {
