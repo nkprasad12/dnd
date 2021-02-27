@@ -223,6 +223,14 @@ class ContextMenuOpenState extends InteractionState {
 
   onContextMenuClickInternal(
       action: ContextMenuItem, model: BoardModel): ClickResult {
+    this.handleContextMenuAction(action, model);
+    model.contextMenuState.isVisible = false;
+    model.localSelection = [];
+    return {model: model, newState: new DefaultState(this.modelHandler)};
+  }
+
+  private handleContextMenuAction(
+      action: ContextMenuItem, model: BoardModel): void {
     switch (action) {
       case ContextMenuItem.AddFog:
         for (const tile of model.localSelection) {
@@ -270,31 +278,36 @@ class ContextMenuOpenState extends InteractionState {
             model.localSelection[0], this.modelHandler);
         break;
       case ContextMenuItem.EditToken:
-        if (model.localSelection.length !== 1) {
-          console.log('Requires exactly one tile selected, ignoring');
-        } else {
-          // TODO: Find the token here
-          // TODO: create a version of this form that takes a token for editing
-          NewTokenForm.create(
-              model.localSelection[0], this.modelHandler);
-        }
+        this.handleEditToken(model);
         break;
       case ContextMenuItem.CopyToken:
-        if (model.localSelection.length !== 1) {
-          console.log('Requires exactly one tile selected, ignoring');
-        } else {
-          // TODO: List all the neighboring locations
-          // TODO: Create a new token there
-          NewTokenForm.create(
-              model.localSelection[0], this.modelHandler);
-        }
+        this.handleCopyToken(model);
         break;
       default:
         throw new Error('Unsupported context menu action: ' + action);
     }
-    model.contextMenuState.isVisible = false;
-    model.localSelection = [];
-    return {model: model, newState: new DefaultState(this.modelHandler)};
+  }
+
+  private handleEditToken(model: BoardModel): void {
+    if (model.localSelection.length !== 1) {
+      console.log('Requires exactly one tile selected, ignoring');
+    } else {
+      // TODO: Find the token here
+      // TODO: create a version of this form that takes a token for editing
+      NewTokenForm.create(
+          model.localSelection[0], this.modelHandler);
+    }
+  }
+
+  private handleCopyToken(model: BoardModel): void {
+    if (model.localSelection.length !== 1) {
+      console.log('Requires exactly one tile selected, ignoring');
+    } else {
+      // TODO: List all the neighboring locations
+      // TODO: Create a new token there
+      NewTokenForm.create(
+          model.localSelection[0], this.modelHandler);
+    }
   }
 }
 
