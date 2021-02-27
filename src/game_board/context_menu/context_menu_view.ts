@@ -13,6 +13,8 @@ const SUPPORTED_MENU_ITEMS = [
   ContextMenuItem.UnpeekFog,
   ContextMenuItem.ClearFog,
   ContextMenuItem.AddFog,
+  ContextMenuItem.ZoomIn,
+  ContextMenuItem.ZoomOut,
 ];
 
 export class ContextMenuView {

@@ -60,19 +60,21 @@ export class BoardView {
   }
 
   bind(newModel: BoardModel): void {
-    this.bindBackgroundImage(newModel);
-    this.handleGridParameterChange(newModel);
-    this.bindGrid(newModel);
-    this.bindTokens(newModel);
-    this.bindFogOfWarState(newModel);
-    this.bindLocalSelection(newModel);
-    this.bindPublicSelection(newModel);
+    const backgroundChange = this.bindBackgroundImage(newModel);
+    this.handleGridParameterChange(newModel, backgroundChange);
+    this.bindGrid(newModel, backgroundChange);
+    this.bindTokens(newModel, backgroundChange);
+    this.bindFogOfWarState(newModel, backgroundChange);
+    this.bindLocalSelection(newModel, backgroundChange);
+    this.bindPublicSelection(newModel, backgroundChange);
 
     this.model = newModel;
   }
 
-  private handleGridParameterChange(newModel: BoardModel): void {
+  private handleGridParameterChange(
+      newModel: BoardModel, backgroundChange: boolean): void {
     if (this.model !== undefined &&
+        !backgroundChange &&
         newModel.tileSize === this.model.tileSize &&
         arePointsEqual(newModel.gridOffset, this.model.gridOffset)) {
       return;
@@ -88,26 +90,32 @@ export class BoardView {
     //       of bounds. But this needs to be propagated back up...
   }
 
-  private bindBackgroundImage(newModel: BoardModel): void {
+  private bindBackgroundImage(newModel: BoardModel): boolean {
+    const scaleChange = this.model?.scale !== newModel.scale;
+    const backgroundChange =
+        this.model?.backgroundImage !== newModel.backgroundImage;
     const needsUpdate =
-      this.model == undefined ||
-      (this.model.backgroundImage.source != newModel.backgroundImage.source);
+      this.model === undefined || scaleChange || backgroundChange;
 
     if (!needsUpdate) {
-      return;
+      return false;
     }
 
     for (const canvas of this.allCanvases) {
-      canvas.width = newModel.width;
-      canvas.height = newModel.height;
-      getContext(canvas).clearRect(0, 0, newModel.width, newModel.height);
+      if (this.model !== undefined) {
+        getContext(canvas).clearRect(0, 0, this.model.width, this.model.height);
+      }
+      canvas.width = newModel.width * newModel.scale;
+      canvas.height = newModel.height * newModel.scale;
+      getContext(canvas).scale(newModel.scale, newModel.scale);
     }
     getContext(this.backgroundCanvas)
         .drawImage(newModel.backgroundImage.image, 0, 0);
+    return true;
   }
 
-  private bindGrid(newModel: BoardModel): void {
-    let needsUpdate = false;
+  private bindGrid(newModel: BoardModel, backgroundChange: boolean): void {
+    let needsUpdate = backgroundChange;
     if (this.model != undefined) {
       const model = this.model;
       needsUpdate = needsUpdate || (model.cols != newModel.cols);
@@ -129,7 +137,7 @@ export class BoardView {
     }
   }
 
-  private bindTokens(newModel: BoardModel): void {
+  private bindTokens(newModel: BoardModel, backgroundChange: boolean): void {
     let oldTokens: TokenModel[] = [];
     if (this.model != undefined) {
       oldTokens = this.model.tokens;
@@ -143,7 +151,7 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch) {
+      if (!hasMatch || backgroundChange) {
         this.clearToken(oldToken, newModel);
       }
     }
@@ -156,22 +164,24 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch) {
+      if (!hasMatch || backgroundChange) {
         this.drawToken(newToken, newModel);
       }
     }
   }
 
-  private bindFogOfWarState(newModel: BoardModel): void {
+  private bindFogOfWarState(
+      newModel: BoardModel, backgroundChange: boolean): void {
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
         const tile = this.tiles[i][j];
-        tile.bindFogOfWar(newModel.fogOfWarState[i][j]);
+        tile.bindFogOfWar(newModel.fogOfWarState[i][j], backgroundChange);
       }
     }
   }
 
-  private bindLocalSelection(newModel: BoardModel): void {
+  private bindLocalSelection(
+      newModel: BoardModel, backgroundChange: boolean): void {
     let oldSelection: Location[] = [];
     if (this.model != undefined) {
       oldSelection = this.model.localSelection;
@@ -200,18 +210,20 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch) {
+      if (!hasMatch || backgroundChange) {
         this.tiles[newTile.col][newTile.row].selectedGrid();
         this.tiles[newTile.col][newTile.row].localSelectionOn();
       }
     }
   }
 
-  private bindPublicSelection(newModel: BoardModel): void {
+  private bindPublicSelection(
+      newModel: BoardModel, backgroundChange: boolean): void {
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
         const tile = this.tiles[i][j];
-        tile.bindPublicSelection(newModel.publicSelection[i][j]);
+        tile.bindPublicSelection(
+            newModel.publicSelection[i][j], backgroundChange);
       }
     }
   }
@@ -388,8 +400,8 @@ class Tile {
         this.gridCanvas);
   }
 
-  bindPublicSelection(selection: string): void {
-    if (selection === this.publicSelectionState) {
+  bindPublicSelection(selection: string, backgroundChange: boolean): void {
+    if (selection === this.publicSelectionState && !backgroundChange) {
       return;
     }
     this.publicSelectionState = selection;
@@ -405,8 +417,8 @@ class Tile {
         this.startX, this.startY, this.size, color, this.publicSelectionCanvas);
   }
 
-  bindFogOfWar(fogState: string): void {
-    if (fogState === this.fogState) {
+  bindFogOfWar(fogState: string, backgroundChange: boolean): void {
+    if (fogState === this.fogState && !backgroundChange) {
       return;
     }
     this.fogState = fogState;

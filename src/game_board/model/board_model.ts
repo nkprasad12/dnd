@@ -140,6 +140,7 @@ export class BoardModel {
       public publicSelection: string[][],
       public localSelection: Location[],
       public gridOffset: Point,
+      public scale: number,
       public fogOfWarState: string[][]) {
     this.backgroundImage = backgroundImage.deepCopy();
     this.tileSize = Math.round(tileSize);
@@ -250,6 +251,7 @@ static Builder = class {
         .setLocalSelection(model.localSelection)
         .setPublicSelection(model.publicSelection)
         .setGridOffset(model.gridOffset)
+        .setScale(model.scale)
         .setFogOfWarState(model.fogOfWarState);
   }
 
@@ -291,6 +293,7 @@ static Builder = class {
   private fogOfWarState: string[][] = []
   private gridOffset: Point = {x: 0, y: 0};
   private publicSelection: string[][] = [];
+  private scale = 1;
 
   private setId(id: string): BoardModel.Builder {
     this.id = id;
@@ -337,6 +340,11 @@ static Builder = class {
     return this;
   }
 
+  setScale(scale: number): BoardModel.Builder {
+    this.scale = scale;
+    return this;
+  }
+
   setGridOffset(gridOffset: Point): BoardModel.Builder {
     this.gridOffset = gridOffset;
     return this;
@@ -366,9 +374,9 @@ static Builder = class {
     return new BoardModel(
         this.id, this.name, this.backgroundImage, this.tileSize, this.tokens,
         this.contextMenu, this.publicSelection, this.localSelection,
-        this.gridOffset, this.fogOfWarState);
+        this.gridOffset, this.scale, this.fogOfWarState);
   }
-}
+} // Builder
 }
 
 export namespace BoardModel {
