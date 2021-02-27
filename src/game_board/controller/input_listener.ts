@@ -27,12 +27,18 @@ export class InputListener {
         'mousedown',
         (e) => {
           this.handleMouseDown(e);
+          e.preventDefault();
+          console.log('Got mousedown');
+          console.log(e.button);
         });
 
     this.element.addEventListener(
         'mouseup',
         (e) => {
           this.handleMouseUp(e);
+          e.preventDefault();
+          console.log('Got mouseup');
+          console.log(e.button);
         });
 
     this.element.addEventListener(
