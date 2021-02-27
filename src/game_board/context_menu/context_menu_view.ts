@@ -62,6 +62,14 @@ function addMenu(parent: HTMLElement): HTMLElement {
   menu.id = 'rightClickMenu';
   menu.style.zIndex = '20';
   menu.style.display = 'none';
+  menu.onclick = (event) => {
+    event.preventDefault();
+    return false;
+  };
+  menu.oncontextmenu = (event) => {
+    event.preventDefault();
+    return false;
+  };
   parent.appendChild(menu);
   return menu;
 }
@@ -81,6 +89,14 @@ export class ContextMenuView {
 
     CATEGORY_ITEM_MAP.forEach((items, category) => {
       const categoryMenu = addButton(this.menu, category);
+      categoryMenu.onclick = (event) => {
+        event.preventDefault();
+        return false;
+      };
+      categoryMenu.oncontextmenu = (event) => {
+        event.preventDefault();
+        return false;
+      };
       const submenu = addMenu(categoryMenu);
       categoryMenu.onmouseenter = () => {
         submenu.style.top =
