@@ -10,7 +10,9 @@ export enum ContextMenuItem {
   BlueHighlight = 'Highlight Blue',
   AddToken = 'Add Token',
   EditToken = 'Edit Token',
-  CopyToken = 'Copy Token'
+  CopyToken = 'Copy Token',
+  ZoomIn = 'Zoom In',
+  ZoomOut = 'Zoom Out'
 }
 
 /** Data model for a context menu on the game board. */

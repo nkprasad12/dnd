@@ -49,8 +49,8 @@ export class ModelHandler {
     const relativePoint =
       {x: clientPoint.x - rect.left, y: clientPoint.y - rect.top};
     const tileSize = this.model.tileSize;
-    let baseX = relativePoint.x;
-    let baseY = relativePoint.y;
+    let baseX = relativePoint.x / this.model.scale;
+    let baseY = relativePoint.y / this.model.scale;
     if (this.model.gridOffset.x > 0) {
       baseX = baseX + tileSize - this.model.gridOffset.x;
     }

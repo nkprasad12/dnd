@@ -284,6 +284,12 @@ class ContextMenuOpenState extends InteractionState {
       case ContextMenuItem.CopyToken:
         this.handleCopyToken(model);
         break;
+      case ContextMenuItem.ZoomIn:
+        model.scale = model.scale * 2;
+        break;
+      case ContextMenuItem.ZoomOut:
+        model.scale = model.scale / 2;
+        break;
       default:
         throw new Error('Unsupported context menu action: ' + action);
     }
