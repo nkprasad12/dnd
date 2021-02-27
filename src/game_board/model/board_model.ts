@@ -51,7 +51,8 @@ export class TokenModel {
 
   }
 
-  mergedWith(_diff: RemoteTokenDiff): RemoteTokenModel {
+  mergedWith(diff: RemoteTokenDiff): RemoteTokenModel {
+    console.log('Unexpectedly got diffId: ' + diff.id);
     throw new Error('We should not be here!');
   }
 

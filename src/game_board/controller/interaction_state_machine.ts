@@ -5,6 +5,7 @@ import {ModelHandler, INVALID_INDEX} from './model_handler';
 import {NewTokenForm} from '/src/board_tools/board_form';
 import {BaseClickData} from '/src/game_board/controller/input_listener';
 import {ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
+import {getId} from '/src/common/id_generator';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -127,7 +128,7 @@ class DefaultState extends InteractionState {
   onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
     const collisions = this.modelHandler.wouldCollide(clickData.tile, 1);
     if (collisions.length > 1) {
-      console.log('Got multiple collisions! Taking the first one.');
+      console.log('Unexpected multiple collisions! Taking the first one.');
     }
     if (collisions.length === 0) {
       return this.onRightClick(clickData, model);
@@ -288,25 +289,78 @@ class ContextMenuOpenState extends InteractionState {
     }
   }
 
+  private findTokenOnTile(tile: Location): number|undefined {
+    const collisions = this.modelHandler.wouldCollide(tile, 1);
+    if (collisions.length === 0) {
+      return undefined;
+    }
+    if (collisions.length > 1) {
+      console.log('Unexpected multiple collisions! Taking the first one.');
+    }
+    return collisions[0];
+  }
+
   private handleEditToken(model: BoardModel): void {
     if (model.localSelection.length !== 1) {
       console.log('Requires exactly one tile selected, ignoring');
-    } else {
-      // TODO: Find the token here
-      // TODO: create a version of this form that takes a token for editing
-      NewTokenForm.create(
-          model.localSelection[0], this.modelHandler);
+      return;
     }
+    // const tile = model.localSelection[0];
+    // const tokenIndex = this.findTokenOnTile(tile);
+    // TODO: create a version of this form that takes a token for editing
+    NewTokenForm.create(
+        model.localSelection[0], this.modelHandler);
   }
 
   private handleCopyToken(model: BoardModel): void {
     if (model.localSelection.length !== 1) {
       console.log('Requires exactly one tile selected, ignoring');
-    } else {
-      // TODO: List all the neighboring locations
-      // TODO: Create a new token there
-      NewTokenForm.create(
-          model.localSelection[0], this.modelHandler);
+      return;
+    }
+
+    const tile = model.localSelection[0];
+    const tokenIndex = this.findTokenOnTile(tile);
+    if (tokenIndex === undefined) {
+      console.log('No token in selection, ignoring');
+      return;
+    }
+    const selectedToken = model.tokens[tokenIndex];
+
+    const rowDir = tile.row < (model.rows / 2) ? 1 : -1;
+    const colDir = tile.col < (model.cols / 2) ? 1 : -1;
+    let i = 1;
+    while (true) {
+      const newRow = tile.row + rowDir * i;
+      const newCol = tile.col + colDir * i;
+      const rowInBounds = 0 < newRow && newRow < model.rows - 1;
+      const colInBounds = 0 < newCol && newCol < model.cols - 1;
+      if (!rowInBounds && !colInBounds) {
+        console.log('Found no target tile for copy, ignoring');
+        return;
+      }
+      const candidates: Location[] = [];
+      if (rowInBounds) {
+        const target = {col: tile.col, row: tile.row + rowDir * i};
+        candidates.push(target);
+      }
+      if (colInBounds) {
+        const target = {col: tile.col + colDir * i, row: tile.row};
+        candidates.push(target);
+      }
+      for (const target of candidates) {
+        const collisions =
+            this.modelHandler.wouldCollide(target, selectedToken.size);
+        if (collisions.length > 0) {
+          continue;
+        }
+        const copy = selectedToken.mutableCopy();
+        copy.id = getId();
+        copy.location = target;
+        model.tokens.push(copy.freeze());
+        return;
+      }
+
+      i += 1;
     }
   }
 }
