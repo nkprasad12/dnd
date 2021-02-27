@@ -1,17 +1,18 @@
+import {checkDefined} from '/src/common/common';
 import {ContextMenuModel, ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
 import {addButton} from '/src/game_board/view/board_view';
 
 const SUPPORTED_MENU_ITEMS = [
-  ContextMenuItem.ClearFog,
-  ContextMenuItem.AddFog,
-  ContextMenuItem.PeekFog,
-  ContextMenuItem.UnpeekFog,
-  ContextMenuItem.ClearHighlight,
-  ContextMenuItem.OrangeHighlight,
-  ContextMenuItem.BlueHighlight,
   ContextMenuItem.AddToken,
   ContextMenuItem.EditToken,
   ContextMenuItem.CopyToken,
+  ContextMenuItem.ClearHighlight,
+  ContextMenuItem.OrangeHighlight,
+  ContextMenuItem.BlueHighlight,
+  ContextMenuItem.PeekFog,
+  ContextMenuItem.UnpeekFog,
+  ContextMenuItem.ClearFog,
+  ContextMenuItem.AddFog,
 ];
 
 export class ContextMenuView {
@@ -41,15 +42,18 @@ export class ContextMenuView {
     }
   }
 
-  bind(model: ContextMenuModel): void {
+  bind(model: ContextMenuModel, invalidItems: ContextMenuItem[]): void {
     if (model.isVisible) {
       const point = model.clickPoint;
       this.menu.style.top = point.y + 'px';
       this.menu.style.left = point.x + 'px';
+      for (const item of SUPPORTED_MENU_ITEMS) {
+        checkDefined(this.buttons.get(item), item).style.display =
+            invalidItems.includes(item) ? 'none' : 'initial';
+      }
       this.menu.style.display = 'initial';
     } else {
       this.menu.style.display = 'none';
     }
-    // TODO: Remove irrelevant menu options.
   }
 }

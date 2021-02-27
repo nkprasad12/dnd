@@ -527,7 +527,7 @@ export class NewTokenForm extends BaseDialogForm {
       onNewToken: (model: TokenModel) => any,
       defaults: TokenFormDefaults,
       label: string = 'Create a new token') {
-    const nameEntry: TextInputEntry = new TextInputEntry('Token Name', 'Name');
+    const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
     const sizeEntry: NumberInputEntry =
         new NumberInputEntry('Size (tiles)', {defaultValue: defaults.size});
     const speedEntry: NumberInputEntry =
