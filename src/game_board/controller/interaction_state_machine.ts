@@ -123,10 +123,14 @@ class DefaultState extends InteractionState {
   }
 
   onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
-    const tokenIndex = this.modelHandler.tokenIndexOfTile(clickData.tile);
-    if (tokenIndex == INVALID_INDEX) {
+    const collisions = this.modelHandler.wouldCollide(clickData.tile, 1);
+    if (collisions.length > 1) {
+      console.log('Got multiple collisions! Taking the first one.');
+    }
+    if (collisions.length === 0) {
       return this.onRightClick(clickData, model);
     }
+    const tokenIndex = collisions[0];
     const mutableToken = model.tokens[tokenIndex].mutableCopy();
     mutableToken.isActive = true;
     model.tokens[tokenIndex] = mutableToken.freeze();
@@ -159,14 +163,16 @@ class PickedUpTokenState extends InteractionState {
   }
 
   onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
-    const isTileOpen =
-        this.modelHandler.tokenIndexOfTile(clickData.tile) == INVALID_INDEX;
-    if (!isTileOpen) {
-      return this.onRightClick(clickData, model);
-    }
     const activeTokenIndex = this.modelHandler.activeTokenIndex();
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
+    }
+    const activeTokenSize = model.tokens[activeTokenIndex].size;
+    const collisions =
+        this.modelHandler.wouldCollide(clickData.tile, activeTokenSize);
+    if (collisions.length > 1 ||
+        (collisions.length === 1 && activeTokenIndex !== collisions[0])) {
+      return this.onRightClick(clickData, model);
     }
     const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
     mutableToken.isActive = false;

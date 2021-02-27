@@ -469,17 +469,20 @@ export class NewTokenForm extends BaseDialogForm {
       tile: Location,
       onNewToken: (model: TokenModel) => any) {
     const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
+    const sizeEntry: NumberInputEntry =
+        new NumberInputEntry('Size (tiles)');
     const speedEntry: NumberInputEntry =
         new NumberInputEntry('Speed (tiles / move)');
     const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
     super(
         parent, 'Create a new token',
-        [nameEntry, speedEntry, iconEntry],
+        [nameEntry, sizeEntry, speedEntry, iconEntry],
         () => {
           const name = checkDefined(nameEntry.getResolved(), 'name');
           const icon = checkDefined(iconEntry.getResolved(), 'icon');
           const speed = checkDefined(speedEntry.getResolved(), 'speed');
-          const token = TokenModel.create(name, icon, 1, tile, false, speed);
+          const size = checkDefined(speedEntry.getResolved(), 'size');
+          const token = TokenModel.create(name, icon, size, tile, false, speed);
           console.log(token);
           onNewToken(token);
         },
