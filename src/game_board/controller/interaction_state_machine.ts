@@ -241,6 +241,24 @@ class ContextMenuOpenState extends InteractionState {
       for (const tile of model.localSelection) {
         model.publicSelection[tile.col][tile.row] = '2';
       }
+    } else if (action == 9) {
+      if (model.localSelection.length !== 1) {
+        console.log('Requires exactly one tile selected, ignoring');
+      } else {
+        // TODO: Find the token here
+        // TODO: create a version of this form that takes a token for editing
+      }
+      NewTokenForm.create(
+          model.localSelection[0], this.modelHandler);
+    } else if (action == 10) {
+      if (model.localSelection.length !== 1) {
+        console.log('Requires exactly one tile selected, ignoring');
+      } else {
+        // TODO: List all the neighboring locations
+      // TODO: Create a new token there
+      }
+      NewTokenForm.create(
+          model.localSelection[0], this.modelHandler);
     } else if (action == 4) {
       for (const tile of model.localSelection) {
         const current = model.fogOfWarState[tile.col][tile.row];

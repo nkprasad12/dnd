@@ -127,6 +127,22 @@ export class GameBoard {
           }
           this.inputHandler.onContextMenuClick(8);
         });
+    new InputListener(
+        this.view.menu.editTokenButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(9);
+        });
+    new InputListener(
+        this.view.menu.copyTokenButton,
+        (_from, _to, button) => {
+          if (button != 0) {
+            console.log('Ignoring non-left click on addToken');
+          }
+          this.inputHandler.onContextMenuClick(10);
+        });
   }
 
   getRemoteModel(): RemoteBoardModel {

@@ -1,4 +1,5 @@
-import {Location, Point, copyPoint} from '/src/common/common';
+import {ContextMenuModel} from '/src/game_board/context_menu/context_menu_model';
+import {Location, Point} from '/src/common/common';
 import {getId} from '/src/common/id_generator';
 import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '/src/game_board/model/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '/src/utils/image_utils';
@@ -109,20 +110,6 @@ export class MutableTokenModel {
     return new TokenModel(
         this.id, this.name, this.imageSource, this.image, this.size,
         this.location, this.isActive, this.speed,
-    );
-  }
-}
-
-/** Data model for a context menu on the game board. */
-export class ContextMenuModel {
-  constructor(
-      public clickPoint: Point,
-      public isVisible: boolean) { }
-
-  deepCopy(): ContextMenuModel {
-    return new ContextMenuModel(
-        copyPoint(this.clickPoint),
-        this.isVisible,
     );
   }
 }

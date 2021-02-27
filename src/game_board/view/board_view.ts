@@ -1,5 +1,6 @@
-import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '/src/common/common';
-import {BoardModel, TokenModel, ContextMenuModel} from '/src/game_board/model/board_model';
+import {ContextMenu} from '../context_menu/context_menu_view';
+import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point, getElementById} from '/src/common/common';
+import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
@@ -36,12 +37,13 @@ export class BoardView {
   private readonly allCanvases: Array<HTMLCanvasElement>;
   readonly topCanvas: HTMLCanvasElement;
 
-  readonly menu: ContextMenu = new ContextMenu();
+  readonly menu: ContextMenu;
 
   private tiles: Tile[][] = [];
   private model?: BoardModel = undefined;
 
   constructor(parent: HTMLElement) {
+    this.menu = new ContextMenu(getElementById('rightClickMenuStub'));
     this.backgroundCanvas = createBoardCanvas('1', parent);
     this.tokenCanvas = createBoardCanvas('2', parent);
     this.fogOfWarCanvas = createBoardCanvas('3', parent);
@@ -429,50 +431,13 @@ class Tile {
   }
 }
 
-function addButton(
+export function addButton(
     parent: HTMLElement, label: string): HTMLElement {
   const item = document.createElement('button');
   item.type = 'button';
   item.innerHTML = label;
   parent.appendChild(item);
   return item;
-}
-
-class ContextMenu {
-  menu = <HTMLElement>document.getElementById('rightClickMenu');
-  clearFogButton = <HTMLElement>document.getElementById('clear-fow');
-  applyFogButton = <HTMLElement>document.getElementById('apply-fow');
-  addTokenButton = <HTMLElement>document.getElementById('add-token');
-  peekFogButton: HTMLElement;
-  unpeekFogButton: HTMLElement;
-  clearHighlightButton: HTMLElement;
-  orangeHighlightButton: HTMLElement;
-  blueHighlightButton: HTMLElement;
-
-  constructor() {
-    this.menu.style.display = 'none';
-    // this.menu.style.position = 'relative';
-    this.clearFogButton.style.display = 'initial';
-    this.applyFogButton.style.display = 'initial';
-    this.addTokenButton.style.display = 'initial';
-    this.peekFogButton = addButton(this.menu, 'Peek Fog');
-    this.unpeekFogButton = addButton(this.menu, 'Un-peek Fog');
-    this.clearHighlightButton = addButton(this.menu, 'Clear Highlight');
-    this.orangeHighlightButton = addButton(this.menu, 'Highlight Orange');
-    this.blueHighlightButton = addButton(this.menu, 'Highlight Blue');
-  }
-
-  bind(model: ContextMenuModel): void {
-    if (model.isVisible) {
-      const point = model.clickPoint;
-      this.menu.style.top = point.y + 'px';
-      this.menu.style.left = point.x + 'px';
-      this.menu.style.display = 'initial';
-    } else {
-      this.menu.style.display = 'none';
-    }
-    // TODO: Remove irrelevant menu options.
-  }
 }
 
 function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
