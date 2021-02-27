@@ -2,7 +2,7 @@ import {Location, areLocationsEqual} from '/src/common/common';
 import {BoardModel} from '/src/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';
-import {NewTokenForm} from '/src/board_tools/board_form';
+import {EditTokenForm, NewTokenForm} from '/src/board_tools/board_form';
 import {BaseClickData} from '/src/game_board/controller/input_listener';
 import {ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
 import {getId} from '/src/common/id_generator';
@@ -305,11 +305,14 @@ class ContextMenuOpenState extends InteractionState {
       console.log('Requires exactly one tile selected, ignoring');
       return;
     }
-    // const tile = model.localSelection[0];
-    // const tokenIndex = this.findTokenOnTile(tile);
-    // TODO: create a version of this form that takes a token for editing
-    NewTokenForm.create(
-        model.localSelection[0], this.modelHandler);
+    const tile = model.localSelection[0];
+    const tokenIndex = this.findTokenOnTile(tile);
+    if (tokenIndex === undefined) {
+      console.log('No token in selection, ignoring');
+      return;
+    }
+    const selectedToken = model.tokens[tokenIndex];
+    EditTokenForm.create(selectedToken, this.modelHandler);
   }
 
   private handleCopyToken(model: BoardModel): void {

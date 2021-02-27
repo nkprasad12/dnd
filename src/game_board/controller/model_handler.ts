@@ -96,4 +96,29 @@ export class ModelHandler {
     }
     return results;
   }
+
+  /**
+   * If an item of given size placed on the target tile would
+   * collide with an existing token, returns the ids of the
+   * tokens that would collide with the item.
+   */
+  collisionIds(target: Location, size: number): string[] {
+    const results: string[] = [];
+    for (let i = 0; i < this.model.tokens.length; i++) {
+      const token = this.model.tokens[i];
+      const minCol = token.location.col;
+      const maxCol = minCol + token.size;
+      const minRow = token.location.row;
+      const maxRow = minRow + token.size;
+
+      const colsDisjoint =
+          (target.col >= maxCol) || (target.col + size <= minCol);
+      const rowsDisjoint =
+          (target.row >= maxRow) || (target.row + size <= minRow);
+      if (!colsDisjoint && !rowsDisjoint) {
+        results.push(token.id);
+      }
+    }
+    return results;
+  }
 }
