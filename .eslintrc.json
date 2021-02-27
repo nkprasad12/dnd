@@ -18,6 +18,8 @@
     "require-jsdoc" : 0,
     "valid-jsdoc" : 0,
     "ignoreUrls": 0,
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
     "max-len": [1, 80, 2, {
       "ignorePattern": "^import\\s.+\\sfrom\\s.+;$",
       "ignoreUrls": true

@@ -1,5 +1,4 @@
-import {ContextMenu} from '../context_menu/context_menu_view';
-import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point, getElementById} from '/src/common/common';
+import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '/src/common/common';
 import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
@@ -37,13 +36,10 @@ export class BoardView {
   private readonly allCanvases: Array<HTMLCanvasElement>;
   readonly topCanvas: HTMLCanvasElement;
 
-  readonly menu: ContextMenu;
-
   private tiles: Tile[][] = [];
   private model?: BoardModel = undefined;
 
   constructor(parent: HTMLElement) {
-    this.menu = new ContextMenu(getElementById('rightClickMenuStub'));
     this.backgroundCanvas = createBoardCanvas('1', parent);
     this.tokenCanvas = createBoardCanvas('2', parent);
     this.fogOfWarCanvas = createBoardCanvas('3', parent);
@@ -71,7 +67,6 @@ export class BoardView {
     this.bindFogOfWarState(newModel);
     this.bindLocalSelection(newModel);
     this.bindPublicSelection(newModel);
-    this.bindContextMenu(newModel);
 
     this.model = newModel;
   }
@@ -219,10 +214,6 @@ export class BoardView {
         tile.bindPublicSelection(newModel.publicSelection[i][j]);
       }
     }
-  }
-
-  private bindContextMenu(newModel: BoardModel): void {
-    this.menu.bind(newModel.contextMenuState);
   }
 
   private initializeTileGrid(model: BoardModel): void {

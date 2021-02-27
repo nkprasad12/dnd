@@ -4,6 +4,7 @@ import {BoardModel} from '/src/game_board/model/board_model';
 import {ModelHandler, INVALID_INDEX} from './model_handler';
 import {NewTokenForm} from '/src/board_tools/board_form';
 import {BaseClickData} from '/src/game_board/controller/input_listener';
+import {ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -82,11 +83,12 @@ abstract class InteractionState {
   }
 
   protected onContextMenuClickInternal(
-      _action: number, _model: BoardModel): ClickResult {
+      action: ContextMenuItem, model: BoardModel): ClickResult {
+    console.log('Got click on board: ' + model.id + ', action: ' + action);
     throw new Error('Invalid state for onContextMenuClickInternal');
   }
 
-  onContextMenuClick(action: number): InteractionState {
+  onContextMenuClick(action: ContextMenuItem): InteractionState {
     console.log('Handling context menu click');
     const newModel = this.modelHandler.copyModel();
     const result = this.onContextMenuClickInternal(action, newModel);
@@ -219,63 +221,76 @@ class ContextMenuOpenState extends InteractionState {
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 
-  onContextMenuClickInternal(action: number, model: BoardModel): ClickResult {
-    // TODO: Refactor how the context menu interaction works.
-    if (action == 1) {
-      for (const tile of model.localSelection) {
-        model.fogOfWarState[tile.col][tile.row] = '0';
-      }
-    } else if (action == 2) {
-      for (const tile of model.localSelection) {
-        model.fogOfWarState[tile.col][tile.row] = '1';
-      }
-    } else if (action == 6) {
-      for (const tile of model.localSelection) {
-        model.publicSelection[tile.col][tile.row] = '0';
-      }
-    } else if (action == 7) {
-      for (const tile of model.localSelection) {
-        model.publicSelection[tile.col][tile.row] = '1';
-      }
-    } else if (action == 8) {
-      for (const tile of model.localSelection) {
-        model.publicSelection[tile.col][tile.row] = '2';
-      }
-    } else if (action == 9) {
-      if (model.localSelection.length !== 1) {
-        console.log('Requires exactly one tile selected, ignoring');
-      } else {
-        // TODO: Find the token here
-        // TODO: create a version of this form that takes a token for editing
-      }
-      NewTokenForm.create(
-          model.localSelection[0], this.modelHandler);
-    } else if (action == 10) {
-      if (model.localSelection.length !== 1) {
-        console.log('Requires exactly one tile selected, ignoring');
-      } else {
-        // TODO: List all the neighboring locations
-      // TODO: Create a new token there
-      }
-      NewTokenForm.create(
-          model.localSelection[0], this.modelHandler);
-    } else if (action == 4) {
-      for (const tile of model.localSelection) {
-        const current = model.fogOfWarState[tile.col][tile.row];
-        if (current === '1') {
-          model.fogOfWarState[tile.col][tile.row] = '2';
-        }
-      }
-    } else if (action == 5) {
-      for (const tile of model.localSelection) {
-        const current = model.fogOfWarState[tile.col][tile.row];
-        if (current === '2') {
+  onContextMenuClickInternal(
+      action: ContextMenuItem, model: BoardModel): ClickResult {
+    switch (action) {
+      case ContextMenuItem.AddFog:
+        for (const tile of model.localSelection) {
           model.fogOfWarState[tile.col][tile.row] = '1';
         }
-      }
-    } else {
-      NewTokenForm.create(
-          model.localSelection[0], this.modelHandler);
+        break;
+      case ContextMenuItem.ClearFog:
+        for (const tile of model.localSelection) {
+          model.fogOfWarState[tile.col][tile.row] = '0';
+        }
+        break;
+      case ContextMenuItem.PeekFog:
+        for (const tile of model.localSelection) {
+          const current = model.fogOfWarState[tile.col][tile.row];
+          if (current === '1') {
+            model.fogOfWarState[tile.col][tile.row] = '2';
+          }
+        }
+        break;
+      case ContextMenuItem.UnpeekFog:
+        for (const tile of model.localSelection) {
+          const current = model.fogOfWarState[tile.col][tile.row];
+          if (current === '2') {
+            model.fogOfWarState[tile.col][tile.row] = '1';
+          }
+        }
+        break;
+      case ContextMenuItem.ClearHighlight:
+        for (const tile of model.localSelection) {
+          model.publicSelection[tile.col][tile.row] = '0';
+        }
+        break;
+      case ContextMenuItem.BlueHighlight:
+        for (const tile of model.localSelection) {
+          model.publicSelection[tile.col][tile.row] = '1';
+        }
+        break;
+      case ContextMenuItem.OrangeHighlight:
+        for (const tile of model.localSelection) {
+          model.publicSelection[tile.col][tile.row] = '2';
+        }
+        break;
+      case ContextMenuItem.AddToken:
+        NewTokenForm.create(
+            model.localSelection[0], this.modelHandler);
+        break;
+      case ContextMenuItem.EditToken:
+        if (model.localSelection.length !== 1) {
+          console.log('Requires exactly one tile selected, ignoring');
+        } else {
+          // TODO: Find the token here
+          // TODO: create a version of this form that takes a token for editing
+          NewTokenForm.create(
+              model.localSelection[0], this.modelHandler);
+        }
+        break;
+      case ContextMenuItem.CopyToken:
+        if (model.localSelection.length !== 1) {
+          console.log('Requires exactly one tile selected, ignoring');
+        } else {
+          // TODO: List all the neighboring locations
+          // TODO: Create a new token there
+          NewTokenForm.create(
+              model.localSelection[0], this.modelHandler);
+        }
+        break;
+      default:
+        throw new Error('Unsupported context menu action: ' + action);
     }
     model.contextMenuState.isVisible = false;
     model.localSelection = [];
@@ -299,7 +314,7 @@ export class InteractionStateMachine {
     this.currentState = newState;
   }
 
-  onContextMenuClick(action: number): void {
+  onContextMenuClick(action: ContextMenuItem): void {
     const newState = this.currentState.onContextMenuClick(action);
     this.currentState = newState;
   }

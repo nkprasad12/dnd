@@ -3,6 +3,7 @@ import {RemoteBoard} from '/src/game_board/remote/remote_board';
 import {Location, Point} from '/src/common/common';
 import {BoardModel, TokenModel} from '/src/game_board/model/board_model';
 import {BoardView} from '/src/game_board/view/board_view';
+import {ContextMenu} from '/src/game_board/context_menu/context_menu';
 
 export const INVALID_INDEX: number = -1;
 
@@ -11,13 +12,16 @@ export class ModelHandler {
     readonly view: BoardView,
     private model: BoardModel,
     private readonly remoteBoard: RemoteBoard,
+    private readonly menu: ContextMenu,
     private readonly local: boolean) {
     this.view.bind(this.model);
   }
 
   update(newModel: BoardModel): void {
     this.model = newModel;
-    this.view.bind(this.copyModel());
+    const modelCopy = this.copyModel();
+    this.view.bind(modelCopy);
+    this.menu.onNewModel(modelCopy);
     if (!this.local) {
       this.remoteBoard.onLocalUpdate(RemoteBoardModel.create(this.model));
     }

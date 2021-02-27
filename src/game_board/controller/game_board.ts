@@ -10,6 +10,8 @@ import {getElementById} from '/src/common/common';
 import {BoardServer} from '/src/game_board/remote/board_server';
 import {LocalConnection} from '/src/server/local_connection';
 import {BoardUpdateData} from '/src/board_tools/board_form';
+import {ContextMenu} from '/src/game_board/context_menu/context_menu';
+import {ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
 
 export class GameBoard {
   static createLocal(parentId: string, model: BoardModel): GameBoard {
@@ -29,6 +31,9 @@ export class GameBoard {
       server: BoardServer,
       private readonly local: boolean = false) {
     this.view = new BoardView(getElementById(parentId));
+    const menu = new ContextMenu(
+        getElementById('rightClickMenuStub'),
+        (item) => this.onContextMenuClick(item));
     this.remoteBoard =
       new RemoteBoard(
           RemoteBoardModel.create(model),
@@ -37,12 +42,11 @@ export class GameBoard {
             this.modelHandler.applyRemoteDiff(remoteDiff);
           });
     this.modelHandler =
-        new ModelHandler(this.view, model, this.remoteBoard, this.local);
+        new ModelHandler(this.view, model, this.remoteBoard, menu, this.local);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
         this.view.topCanvas,
         (from, to, button) => this.inputHandler.onDragEvent(from, to, button));
-    this.listenForContextMenuClicks();
   }
 
   updateForEditor(options: BoardUpdateData): void {
@@ -55,94 +59,8 @@ export class GameBoard {
     this.modelHandler.update(model);
   }
 
-  // TODO: Refactor how this is done.
-  private listenForContextMenuClicks(): void {
-    new InputListener(
-        this.view.menu.clearFogButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on clearFog');
-          }
-          this.inputHandler.onContextMenuClick(1);
-        });
-
-    new InputListener(
-        this.view.menu.applyFogButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addFog');
-          }
-          this.inputHandler.onContextMenuClick(2);
-        });
-
-    new InputListener(
-        this.view.menu.addTokenButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(3);
-        });
-
-    new InputListener(
-        this.view.menu.peekFogButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(4);
-        });
-
-    new InputListener(
-        this.view.menu.unpeekFogButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(5);
-        });
-
-    new InputListener(
-        this.view.menu.clearHighlightButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(6);
-        });
-
-    new InputListener(
-        this.view.menu.blueHighlightButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(7);
-        });
-    new InputListener(
-        this.view.menu.orangeHighlightButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(8);
-        });
-    new InputListener(
-        this.view.menu.editTokenButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(9);
-        });
-    new InputListener(
-        this.view.menu.copyTokenButton,
-        (_from, _to, button) => {
-          if (button != 0) {
-            console.log('Ignoring non-left click on addToken');
-          }
-          this.inputHandler.onContextMenuClick(10);
-        });
+  private onContextMenuClick(item: ContextMenuItem): void {
+    this.inputHandler.onContextMenuClick(item);
   }
 
   getRemoteModel(): RemoteBoardModel {

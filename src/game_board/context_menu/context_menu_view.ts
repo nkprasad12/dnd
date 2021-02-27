@@ -1,36 +1,44 @@
-import {ContextMenuModel} from '/src/game_board/context_menu/context_menu_model';
+import {ContextMenuModel, ContextMenuItem} from '/src/game_board/context_menu/context_menu_model';
 import {addButton} from '/src/game_board/view/board_view';
 
-export class ContextMenu {
-  menu: HTMLElement;
-  clearFogButton: HTMLElement;
-  applyFogButton: HTMLElement;
-  addTokenButton: HTMLElement;
-  peekFogButton: HTMLElement;
-  unpeekFogButton: HTMLElement;
-  clearHighlightButton: HTMLElement;
-  orangeHighlightButton: HTMLElement;
-  blueHighlightButton: HTMLElement;
-  editTokenButton: HTMLElement;
-  copyTokenButton: HTMLElement;
+const SUPPORTED_MENU_ITEMS = [
+  ContextMenuItem.ClearFog,
+  ContextMenuItem.AddFog,
+  ContextMenuItem.PeekFog,
+  ContextMenuItem.UnpeekFog,
+  ContextMenuItem.ClearHighlight,
+  ContextMenuItem.OrangeHighlight,
+  ContextMenuItem.BlueHighlight,
+  ContextMenuItem.AddToken,
+  ContextMenuItem.EditToken,
+  ContextMenuItem.CopyToken,
+];
 
-  constructor(parent: HTMLElement) {
+export class ContextMenuView {
+  private readonly menu: HTMLElement;
+  private readonly buttons: Map<ContextMenuItem, HTMLElement>;
+
+  constructor(
+      parent: HTMLElement,
+      clickListener: (item: ContextMenuItem) => any) {
     this.menu = document.createElement('div');
     this.menu.id = 'rightClickMenu';
     this.menu.style.zIndex = '20';
     this.menu.style.display = 'none';
     parent.appendChild(this.menu);
 
-    this.clearFogButton = addButton(this.menu, 'Clear Fog');
-    this.applyFogButton = addButton(this.menu, 'Add Fog');
-    this.peekFogButton = addButton(this.menu, 'Peek Fog');
-    this.unpeekFogButton = addButton(this.menu, 'Un-peek Fog');
-    this.clearHighlightButton = addButton(this.menu, 'Clear Highlight');
-    this.orangeHighlightButton = addButton(this.menu, 'Highlight Orange');
-    this.blueHighlightButton = addButton(this.menu, 'Highlight Blue');
-    this.addTokenButton = addButton(this.menu, 'Add Token');
-    this.editTokenButton = addButton(this.menu, 'Edit Token');
-    this.copyTokenButton = addButton(this.menu, 'Copy Token');
+    this.buttons = new Map();
+    for (const item of SUPPORTED_MENU_ITEMS) {
+      const button = addButton(this.menu, item);
+      button.onclick = (mouseEvent) => {
+        if (mouseEvent.button != 0) {
+          console.log('Ignoring non-left button click on ' + item);
+          return;
+        }
+        clickListener(item);
+      };
+      this.buttons.set(item, button);
+    }
   }
 
   bind(model: ContextMenuModel): void {
