@@ -7,7 +7,7 @@ module.exports = {
   entry: {
     GameBoard: './src/game_board/game_board.ts',
     BoardTools: './src/board_tools/board_tools.ts',
-    Sandbox: './src/upload.ts',
+    Sandbox: './src/sandbox.ts',
   },
   // devtool: 'inline-source-map',
   module: {
