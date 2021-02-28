@@ -60,6 +60,13 @@ function default_run {
   start_server
 }
 
+function server_only {
+  echo 'Server only run'
+  switch_to_venv
+  setup_dirs
+  start_server
+}
+
 function full_run {
   echo 'Full run'
   npm ci
@@ -77,6 +84,8 @@ function heroku_run {
 
 if [ "$1" == "" ]; then
   default_run
+elif [ "$1" == "server" ]; then
+  server_only
 elif [ "$1" == "full" ]; then
   full_run
 elif [ "$1" == "heroku" ]; then

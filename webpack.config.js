@@ -35,8 +35,8 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       chunks: ['Sandbox'],
-      filename: 'client_page.html',
-      template: 'app/templates/templates/client_page.html',
+      filename: 'sandbox.html',
+      template: 'app/templates/templates/sandbox.html',
       minify: false,
     }),
   ],

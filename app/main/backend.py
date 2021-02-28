@@ -66,7 +66,7 @@ def game_board():
 def client():
     global comments
     if request.method == 'GET':
-        return render_template('genfiles/client_page.html', comments=comments)
+        return render_template('genfiles/sandbox.html', comments=comments)
     comments.append(request.form['contents'])
     return redirect(url_for('.client'))
 

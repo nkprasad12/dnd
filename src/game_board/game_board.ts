@@ -14,7 +14,7 @@ async function loadActiveBoard(): Promise<GameBoard> {
   const boardId = await server.requestActiveBoardId();
   setLabel('Retrieving active board data');
   const remoteModel = await server.requestBoard(boardId);
-  setLabel('Loading images (may take a few moments');
+  setLabel('Loading images (may take a few moments)');
   const model = await BoardModel.createFromRemote(remoteModel);
   removeChildrenOf(GAME_HOLDER_STUB);
   return new GameBoard(GAME_HOLDER_STUB, model, server);
