@@ -124,6 +124,7 @@ def _merge_board_model(model: dict, diff: dict) -> dict:
       publicSelection = model['publicSelection']
     for d in diff['publicSelectionDiffs']:
       publicSelection[d['col']][d['row']] = d['value']
+    model['publicSelection'] = publicSelection
   
   if 'name' in diff:
     model['name'] = diff['name']
@@ -133,7 +134,6 @@ def _merge_board_model(model: dict, diff: dict) -> dict:
     model['tileSize'] = diff['tileSize']
   model['tokens'] = mergedTokens
   model['fogOfWar'] = fogOfWarState
-  model['publicSelection'] = publicSelection
 
   return model
 
