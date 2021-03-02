@@ -2,10 +2,12 @@
   "include": [
     "src"
   ],
+  "exclude": [
+    "src/server"
+  ],
   "compilerOptions": {
     "module": "es2015",
     "target": "es2015",
-    "moduleResolution": "node",
 
     /* Strict Type-Checking Options */
     "strict": true,                           /* Enable all strict type-checking options. */
@@ -38,9 +40,6 @@
       ],
       "_common/*": [
         "./src/common/*"
-      ],
-      "_server/*": [
-        "./src/server/*"
       ],
     },    
   }
