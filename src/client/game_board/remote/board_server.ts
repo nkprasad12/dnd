@@ -1,6 +1,6 @@
 import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
 import {Socket_} from '_client/server/socket_connection';
-import * as Events from '_common/socket/board_events';
+import * as Events from '_common/board/board_events';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 

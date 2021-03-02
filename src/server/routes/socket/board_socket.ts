@@ -1,6 +1,6 @@
 import {Server, Socket} from 'socket.io';
 
-import * as Events from '_common/socket/board_events';
+import * as Events from '_common/board/board_events';
 
 
 export function registerBoardRoutes(ioServer: Server): void {
