@@ -5,7 +5,7 @@ import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
-import {RemoteBoardModel} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
 import {BoardServer} from '_client/game_board/remote/board_server';
 import {LocalConnection} from '_client/server/local_connection';

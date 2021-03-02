@@ -1,4 +1,4 @@
-import {RemoteBoardDiff} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardDiff} from '_common/board/remote_board_model';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {Location, Point} from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';

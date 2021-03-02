@@ -1,7 +1,7 @@
 import {ContextMenuModel} from '_client/game_board/context_menu/context_menu_model';
 import {Location, Point} from '_common/coordinates';
 import {getId} from '_client/common/id_generator';
-import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenDiff, RemoteTokenModel} from '_common/board/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '_client/utils/image_utils';
 
 /** Data model for a token on the game board. */

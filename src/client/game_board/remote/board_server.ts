@@ -1,4 +1,4 @@
-import {RemoteBoardDiff, RemoteBoardModel} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
 import {Socket_} from '_client/server/socket_connection';
 import * as Events from '_common/socket/board_events';
 

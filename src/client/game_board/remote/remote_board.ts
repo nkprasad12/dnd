@@ -1,4 +1,4 @@
-import {RemoteBoardDiff, RemoteBoardModel} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
 import {BoardServer} from '_client/game_board/remote/board_server';
 
 /** Represents a remote board state synced with the user's. */

@@ -3,7 +3,7 @@ import {BoardSelector, removeChildrenOf} from '_client/board_tools/board_selecto
 import {getElementById} from '_client/common/ui_util';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
-import {RemoteBoardModel} from '_client/game_board/model/remote_board_model';
+import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {BoardServer} from '_client/game_board/remote/board_server';
 import {connectTo} from '_client/server/socket_connection';
 
