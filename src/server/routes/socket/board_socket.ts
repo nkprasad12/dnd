@@ -2,6 +2,7 @@ import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/board/board_events';
 import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
+import {GameLoader} from '_server/routes/socket/game_loader';
 
 
 export function registerBoardRoutes(ioServer: Server): void {
@@ -23,11 +24,11 @@ class BoardSocketServerConnection {
     return connection;
   }
 
-  private readonly loader: any;
+  private readonly loader: GameLoader;
 
   private constructor(private readonly socket: Socket) {
     console.log('New connection on namespace: board');
-    // this.loader = whatever
+    this.loader = new GameLoader();
   }
 
   private handleUpdates() {
@@ -37,13 +38,25 @@ class BoardSocketServerConnection {
         return;
       }
       this.socket.broadcast.emit(Events.BOARD_UPDATE, message);
-      const board: RemoteBoardModel = this.loader.retrieveBoard(message.id);
+      const board = this.loader.retrieveBoard(message.id);
+      if (board === undefined) {
+        console.log('Received update for non-existant board!');
+        console.log('TODO: If you see this, ask the client their board.');
+        return;
+      }
       this.loader.saveBoard(RemoteBoardModel.mergedWith(board, message));
     });
   }
 
   private handleCreateRequests() {
     this.registerEventListener(Events.BOARD_CREATE_REQUEST, (message) => {
+      if (!RemoteBoardModel.isValid(message)) {
+        RemoteBoardModel.fillDefaults(message);
+        if (!RemoteBoardModel.isValid(message)) {
+          console.log('Received invalid board, ignoring!');
+          return;
+        }
+      }
       this.loader.saveBoard(message);
     });
   }
@@ -51,22 +64,22 @@ class BoardSocketServerConnection {
   private handleGetRequests() {
     this.registerEventListener(Events.BOARD_GET_REQUEST, (message) => {
       const board = this.loader.retrieveBoard(message);
-      console.log(`[${Events.BOARD_GET_ALL_RESPONSE}] board ${board.id}`);
+      console.log(`[${Events.BOARD_GET_ALL_RESPONSE}] board ${board?.id}`);
       this.socket.broadcast.emit(Events.BOARD_GET_RESPONSE, board);
     });
   }
 
   private handleGetAllRequests() {
-    this.registerEventListener(Events.BOARD_GET_ALL_REQUEST, (message) => {
-      const boardList = this.loader.retrieveAllBoardIds(message);
+    this.registerEventListener(Events.BOARD_GET_ALL_REQUEST, () => {
+      const boardList = this.loader.retrieveAllBoardIds();
       console.log(`Sending [${Events.BOARD_GET_ALL_RESPONSE}] ${boardList}`);
       this.socket.broadcast.emit(Events.BOARD_GET_ALL_RESPONSE, boardList);
     });
   }
 
   private handleGetActiveRequests() {
-    this.registerEventListener(Events.BOARD_GET_ACTIVE_REQUEST, (message) => {
-      let activeBoard = this.loader.getActiveBoard(message);
+    this.registerEventListener(Events.BOARD_GET_ACTIVE_REQUEST, () => {
+      let activeBoard = this.loader.getActiveBoard();
       if (activeBoard === undefined) {
         activeBoard = 'ERROR';
       }
