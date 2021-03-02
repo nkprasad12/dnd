@@ -1,4 +1,4 @@
-import {checkDefined} from '_client/common/common';
+import {checkDefined} from '_common/preconditions';
 import {ContextMenuModel, ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {addButton} from '_client/game_board/view/board_view';
 

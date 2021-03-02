@@ -1,7 +1,10 @@
-import {checkDefined, getElementById, getOrigin, Location, Point} from '_client/common/common';
+import {Location, Point} from '_common/coordinates';
+import {getOrigin} from '_client/common/get_origin';
+import {getElementById} from '_client/common/ui_util';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 import {LoadedImage} from '_client/utils/image_utils';
+import {checkDefined} from '_common/preconditions';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
 

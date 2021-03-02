@@ -1,6 +1,6 @@
 import {RemoteBoardDiff} from '_client/game_board/model/remote_board_model';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
-import {Location, Point} from '_client/common/common';
+import {Location, Point} from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';

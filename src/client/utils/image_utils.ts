@@ -1,4 +1,4 @@
-import {getOrigin} from '_client/common/common';
+import {getOrigin} from '_client/common/get_origin';
 
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}

@@ -1,4 +1,4 @@
-import {Location} from '_client/common/common';
+import {Location} from '_common/coordinates';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
 import {BoardModel} from '_client/game_board/model/board_model';

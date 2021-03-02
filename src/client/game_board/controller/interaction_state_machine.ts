@@ -1,4 +1,4 @@
-import {Location, areLocationsEqual} from '_client/common/common';
+import {Location, areLocationsEqual} from '_common/coordinates';
 import {BoardModel} from '_client/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';

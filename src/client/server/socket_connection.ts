@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-import {getOrigin} from '_client/common/common';
+import {getOrigin} from '_client/common/get_origin';
 
 /**
  * Represents a SocketIO io object. Must have run the SocketIO script:

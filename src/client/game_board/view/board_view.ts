@@ -1,4 +1,4 @@
-import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '_client/common/common';
+import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';

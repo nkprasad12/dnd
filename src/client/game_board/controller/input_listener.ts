@@ -1,4 +1,4 @@
-import {Point} from '_client/common/common';
+import {Point} from '_common/coordinates';
 
 type DragCallback =
     (from: BaseClickData, to: BaseClickData, mouseButton: number) => any;

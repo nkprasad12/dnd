@@ -1,4 +1,4 @@
-import {getElementById} from '_client/common/common';
+import {getElementById} from '_client/common/ui_util';
 import {BoardServer} from '_client/game_board/remote/board_server';
 
 function addDropdown(parent: HTMLElement): HTMLElement {

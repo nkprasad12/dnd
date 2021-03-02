@@ -3,7 +3,7 @@ import {connectTo} from '_client/server/socket_connection';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardServer} from '_client/game_board/remote/board_server';
 import {removeChildrenOf} from '_client/board_tools/board_selector';
-import {getElementById} from '_client/common/common';
+import {getElementById} from '_client/common/ui_util';
 import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
 
 const GAME_HOLDER_STUB = 'canvasHolder';

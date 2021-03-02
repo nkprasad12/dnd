@@ -1,6 +1,6 @@
 import {BoardUpdateForm, NewBoardForm} from '_client/board_tools/board_form';
 import {BoardSelector, removeChildrenOf} from '_client/board_tools/board_selector';
-import {getElementById} from '_client/common/common';
+import {getElementById} from '_client/common/ui_util';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {RemoteBoardModel} from '_client/game_board/model/remote_board_model';

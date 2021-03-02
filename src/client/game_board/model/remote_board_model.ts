@@ -1,4 +1,4 @@
-import {areLocationsEqual, arePointsEqual, Location, Point} from '_client/common/common';
+import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
 

@@ -1,4 +1,4 @@
-import {Point, copyPoint} from '_client/common/common';
+import {Point, copyPoint} from '_common/coordinates';
 
 export enum ContextMenuItem {
   ClearFog = 'Clear Fog',
