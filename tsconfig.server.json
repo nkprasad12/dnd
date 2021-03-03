@@ -2,11 +2,15 @@
   "include": [
     "src"
   ],
-  "typeAcquisition": { "include": ["jest"] },
+  "exclude": [
+    "src/client",
+  ],
   "compilerOptions": {
-    "module": "es2015",
+    "module": "commonjs",
     "target": "es2015",
     "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
 
     /* Strict Type-Checking Options */
     "strict": true,                           /* Enable all strict type-checking options. */
@@ -34,15 +38,13 @@
 
     "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
     "paths": {
-      "_client/*": [
-        "./src/client/*"
+      "_server/*": [
+        "./src/server/*"
       ],
       "_common/*": [
         "./src/common/*"
       ],
-      "_server/*": [
-        "./src/server/*"
-      ],
-    },    
-  }
+    },       
+  },
+  "lib": ["es2015"],
 }

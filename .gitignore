@@ -1,10 +1,6 @@
-*.pyc
-__pycache__
-.vscode/*
 node_modules/
-app/data/
-venv/
-.env
+build/
 google-credentials.json
-dist/
-app/templates/genfiles
+.env
+genfiles_static/
+data/
