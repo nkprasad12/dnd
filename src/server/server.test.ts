@@ -1,6 +1,9 @@
-import mockfs from 'mock-fs';
+import fs from 'fs';
+import path from 'path';
 import supertest from 'supertest';
+
 import {checkDefined} from '_common/preconditions';
+import {ROOT} from '_server/util/file_util';
 
 const EXPECTED_FILE = 'Hasdrubal.txt';
 const ORIGINAL_ENV = process.env;
@@ -24,19 +27,20 @@ function request(): supertest.SuperTest<supertest.Test> {
 
 beforeAll(() => {
   jest.resetModules();
-  requestSingleton = supertest(prepareServer());
+  requestSingleton = // supertest(prepareServer());
+  supertest.agent(prepareServer());
 });
 
 afterAll(() => {
   process.env = ORIGINAL_ENV;
+  fs.rmdirSync(path.join(ROOT, 'data/images'));
+  fs.rmdirSync(path.join(ROOT, 'data'));
 });
 
 beforeEach(() => {
-  mockfs({'data/images': {}});
 });
 
 afterEach(() => {
-  mockfs.restore();
 });
 
 test('Unauthenticated static request performs redirect', async (done) => {
@@ -65,6 +69,22 @@ test('Unauthenticated non-existant route performs redirect', async (done) => {
 
 test('Unauthenticated retrieve image performs redirect', async (done) => {
   const response = await request().get('/retrieve_image/test.png');
+
+  expect(response.status).toBe(302);
+  expect(response.header.location).toBe('/');
+  done();
+});
+
+test('Unauthenticated home route succeeds', async (done) => {
+  const response = await request().get('/');
+
+  expect(response.status).toBe(200);
+  expect(response.text).toBe('TODO: Find a better solution for this.');
+  done();
+});
+
+test('Authentication fail redirects to login', async (done) => {
+  const response = await request().post('/');
 
   expect(response.status).toBe(302);
   expect(response.header.location).toBe('/');
