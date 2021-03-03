@@ -1,11 +1,17 @@
 {
   "name": "test",
   "version": "1.0.0",
+  "engines": {
+    "node": "14.x"
+  },
   "description": "",
   "main": "dist/main.js",
   "scripts": {
-    "build": "npx webpack --config webpack.client.config.js && npx webpack --config webpack.server.config.js",
-    "start": "mkdir -p data/images && mkdir -p data/server_db && node -r dotenv/config build/server.bundle.js",
+    "build-client": "npx webpack --config webpack.client.config.js",
+    "build-server": "npx webpack --config webpack.server.config.js",
+    "setup-env": "mkdir -p data/images && mkdir -p data/server_db",
+    "build": "npm run build-client && npm run build-server && npm run setup-env",
+    "start": "node -r dotenv/config build/server.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
