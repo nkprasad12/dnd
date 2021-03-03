@@ -3,6 +3,7 @@ import express from 'express';
 import fsPromises from 'fs';
 import multer from 'multer';
 import path from 'path';
+import {storageUtil} from '_server/storage/storage_util';
 import * as FileUtil from '_server/util/file_util';
 
 const ROOT = FileUtil.getRoot();
@@ -24,12 +25,9 @@ imageRouter.get(
         res.status(403).end('Invalid image');
         return;
       }
-      const imagePath = path.join(ROOT, 'data/images', imageName);
-      if (!fsPromises.existsSync(imagePath)) {
-        res.status(403).end('Invalid image');
-        return;
-      }
-      res.sendFile(imagePath);
+      storageUtil().getImagePath(imageName)
+          .then((imagePath) => res.sendFile(imagePath))
+          .catch(() => res.status(403).end('Error retrieving image'));
     },
 );
 
@@ -38,13 +36,10 @@ imageRouter.post(
     upload.single('file'),
     (req, res) => {
       const filePath = req.file.path;
-      const imagePath = path.join(ROOT, 'data/images', req.file.originalname);
       if (!FileUtil.isImage(req.file)) {
         fsPromises.unlink(filePath, () => {});
         res.status(403).contentType('text/plain').end('Invalid file type');
         return;
       }
-      fsPromises.rename(filePath, imagePath, () => {});
-      const filename = path.basename(imagePath);
-      res.send({'path': filename});
+      res.send({'path': storageUtil().saveImage(req.file)});
     });

@@ -1,8 +1,8 @@
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {checkDefined} from '_common/preconditions';
+import {storageUtil} from '_server/storage/storage_util';
 
 
-const fileUtil: any = null;
 const CACHE_SAVE_INTERNAL_MS = 60000;
 const ACTIVE_DB = 'active.db';
 const ALL_BOARD_DB = 'all_boards.db';
@@ -14,19 +14,22 @@ function getBoardKey(boardId: string): string {
 }
 
 /** Loads a board from storage. */
-function loadBoard(fileKey: string): RemoteBoardModel|undefined {
-  const contents = fileUtil.loadFromFile(fileKey);
-  if (contents === undefined) {
-    return undefined;
+async function loadBoard(fileKey: string): Promise<RemoteBoardModel> {
+  const contents = await storageUtil().loadFromFile(fileKey);
+  const parsedContent = JSON.parse(contents);
+  if (!RemoteBoardModel.isValid(parsedContent)) {
+    RemoteBoardModel.fillDefaults(parsedContent);
+    if (!RemoteBoardModel.isValid(parsedContent)) {
+      throw new Error(`${fileKey} does not represent a valid board!`);
+    }
   }
-  // Do we need to handle this further? (JSON.parse)
-  return contents;
+  return parsedContent;
 }
 
 /** Saves a board to storage. */
 function saveBoard(fileKey: string, board: RemoteBoardModel): void {
   // Do we need to handle this further? (JSON.stringify)
-  fileUtil.saveToFile(board, fileKey);
+  storageUtil().saveToFile(JSON.stringify(board), fileKey);
 }
 
 interface CachedGame {
@@ -36,12 +39,9 @@ interface CachedGame {
   gameData: RemoteBoardModel;
 }
 
-function loadFromDisk(boardId: string): CachedGame|undefined {
+async function loadFromDisk(boardId: string): Promise<CachedGame> {
   const fileKey = getBoardKey(boardId);
-  const board = loadBoard(fileKey);
-  if (board === undefined) {
-    return undefined;
-  }
+  const board = await loadBoard(fileKey);
 
   const currentTime = Date.now();
   // Make sure it's before the current time.
@@ -68,6 +68,7 @@ function newBoard(boardId: string, board: RemoteBoardModel): CachedGame {
 class GameCache {
   static create(): GameCache {
     const cache = new GameCache();
+    console.log('Created new game cache, setting timeout');
     setTimeout(() => cache.save(), CACHE_SAVE_INTERNAL_MS);
     return cache;
   }
@@ -102,15 +103,14 @@ class GameCache {
    * If it is not in the cache, try to load it from storage.
    * If is is not storage, returns undefined.
    */
-  getBoard(id: string): RemoteBoardModel|undefined {
-    if (!this.cache.has(id)) {
-      const loadedBoard = loadFromDisk(id);
-      if (loadedBoard === undefined) {
-        return undefined;
-      }
+  async getBoard(id: string): Promise<RemoteBoardModel> {
+    let result = this.cache.get(id);
+    if (result === undefined) {
+      const loadedBoard = await loadFromDisk(id);
       this.cache.set(id, loadedBoard);
+      result = loadedBoard;
     }
-    return this.cache.get(id)?.gameData;
+    return result.gameData;
   }
 
   /** Saves cache items to storage. */
@@ -138,35 +138,35 @@ function isStringArray(input: any): input is string[] {
   return true;
 }
 
-export class GameLoader {
+class GameLoader {
   private activeBoard: string|undefined;
   private allBoardIds: string[]|undefined;
   private gameCache = GameCache.create();
 
   /** Returns the ID of the active board. */
-  getActiveBoard(): string|undefined {
+  async getActiveBoard(): Promise<string> {
     if (this.activeBoard !== undefined) {
       console.log('Got active board from cache');
       return this.activeBoard;
     }
     console.log('Getting active board from disk');
-    this.activeBoard = fileUtil.loadFromFile(ACTIVE_DB);
+    this.activeBoard = await storageUtil().loadFromFile(ACTIVE_DB);
     return this.activeBoard;
   }
 
   /** Sets the given board as active. */
   setActiveBoard(id: string): void {
     this.activeBoard = id;
-    fileUtil.saveToFile(id, ACTIVE_DB);
+    storageUtil().saveToFile(id, ACTIVE_DB);
   }
 
-  retrieveAllBoardIds(): string[] {
+  async retrieveAllBoardIds(): Promise<string[]> {
     if (this.allBoardIds !== undefined) {
       console.log('Returning all board ids from cache');
       return this.allBoardIds;
     }
     console.log('Reading all board ids from storage');
-    const allBoards = fileUtil.loadFromFile(ALL_BOARD_DB);
+    const allBoards = await storageUtil().loadFromFile(ALL_BOARD_DB);
     if (allBoards === undefined) {
       this.allBoardIds = [];
     } else {
@@ -180,11 +180,12 @@ export class GameLoader {
     return this.allBoardIds;
   }
 
-  updateAllBoardIds(newId: string): void {
-    const allIds = this.retrieveAllBoardIds();
+  async updateAllBoardIds(newId: string): Promise<void> {
+    const allIds = await this.retrieveAllBoardIds();
     if (!allIds.includes(newId)) {
-      this.allBoardIds?.push(newId);
-      fileUtil.saveToFile(JSON.stringify(ALL_BOARD_DB));
+      this.allBoardIds = checkDefined(this.allBoardIds);
+      this.allBoardIds.push(newId);
+      storageUtil().saveToFile(JSON.stringify(this.allBoardIds), ALL_BOARD_DB);
     }
   }
 
@@ -198,7 +199,18 @@ export class GameLoader {
     this.updateAllBoardIds(board.id);
   }
 
-  retrieveBoard(boardId: string): RemoteBoardModel|undefined {
+  async retrieveBoard(boardId: string): Promise<RemoteBoardModel> {
     return this.gameCache.getBoard(boardId);
   }
+}
+
+
+let cachedGameLoader: GameLoader|undefined = undefined;
+
+export function gameLoader(): GameLoader {
+  if (cachedGameLoader === undefined) {
+    console.log('Creating new game loader');
+    cachedGameLoader = new GameLoader();
+  }
+  return cachedGameLoader;
 }

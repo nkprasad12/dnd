@@ -2,7 +2,7 @@ import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/board/board_events';
 import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
-import {GameLoader} from '_server/routes/socket/game_loader';
+import {gameLoader} from '_server/routes/socket/game_loader';
 
 
 export function registerBoardRoutes(ioServer: Server): void {
@@ -24,11 +24,10 @@ class BoardSocketServerConnection {
     return connection;
   }
 
-  private readonly loader: GameLoader;
+  private readonly loader = gameLoader();
 
   private constructor(private readonly socket: Socket) {
     console.log('New connection on namespace: board');
-    this.loader = new GameLoader();
   }
 
   private handleUpdates() {
@@ -38,14 +37,21 @@ class BoardSocketServerConnection {
         return;
       }
       this.socket.broadcast.emit(Events.BOARD_UPDATE, message);
-      const board = this.loader.retrieveBoard(message.id);
-      if (board === undefined) {
-        console.log('Received update for non-existant board!');
-        console.log('TODO: If you see this, ask the client their board.');
-        return;
-      }
-      this.loader.saveBoard(RemoteBoardModel.mergedWith(board, message));
+      this.updateLocalBoard(message.id, message);
     });
+  }
+
+  private updateLocalBoard(
+      id: string, diff: RemoteBoardDiff): Promise<RemoteBoardModel> {
+    const updatedBoard =
+        this.loader.retrieveBoard(id)
+            .then((board) => RemoteBoardModel.mergedWith(board, diff))
+            .catch(() => {
+              console.log('TODO: If you see this, ask the client their board.');
+              throw new Error('Received update for non-existant board!');
+            });
+    updatedBoard.then((board) => this.loader.saveBoard(board));
+    return updatedBoard;
   }
 
   private handleCreateRequests() {
@@ -63,29 +69,36 @@ class BoardSocketServerConnection {
 
   private handleGetRequests() {
     this.registerEventListener(Events.BOARD_GET_REQUEST, (message) => {
-      const board = this.loader.retrieveBoard(message);
-      console.log(`[${Events.BOARD_GET_ALL_RESPONSE}] board ${board?.id}`);
-      this.socket.broadcast.emit(Events.BOARD_GET_RESPONSE, board);
+      this.loader.retrieveBoard(message)
+          .then((board) => {
+            console.log(
+                `[${Events.BOARD_GET_RESPONSE}] board ${board?.id}`);
+            this.socket.emit(Events.BOARD_GET_RESPONSE, board);
+          });
     });
   }
 
   private handleGetAllRequests() {
     this.registerEventListener(Events.BOARD_GET_ALL_REQUEST, () => {
-      const boardList = this.loader.retrieveAllBoardIds();
-      console.log(`Sending [${Events.BOARD_GET_ALL_RESPONSE}] ${boardList}`);
-      this.socket.broadcast.emit(Events.BOARD_GET_ALL_RESPONSE, boardList);
+      this.loader.retrieveAllBoardIds()
+          .then((boardList) => {
+            console.log(
+                `Sending [${Events.BOARD_GET_ALL_RESPONSE}] ${boardList}`);
+            this.socket.emit(Events.BOARD_GET_ALL_RESPONSE, boardList);
+          });
     });
   }
 
   private handleGetActiveRequests() {
     this.registerEventListener(Events.BOARD_GET_ACTIVE_REQUEST, () => {
-      let activeBoard = this.loader.getActiveBoard();
-      if (activeBoard === undefined) {
-        activeBoard = 'ERROR';
-      }
-      console.log(
-          `[${Events.BOARD_GET_ACTIVE_RESPONSE}] sending ${activeBoard}`);
-      this.socket.broadcast.emit(Events.BOARD_GET_ACTIVE_RESPONSE, activeBoard);
+      this.loader.getActiveBoard()
+          .catch(() => 'ERROR')
+          .then((activeBoard) => {
+            console.log(
+                `[${Events.BOARD_GET_ACTIVE_RESPONSE}] sending ${activeBoard}`);
+            this.socket.emit(
+                Events.BOARD_GET_ACTIVE_RESPONSE, activeBoard);
+          });
     });
   }
 
