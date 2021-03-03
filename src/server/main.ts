@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import {prepareServer} from '_server/server';
 
 const PORT = process.env.PORT;
