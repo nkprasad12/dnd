@@ -1,4 +1,4 @@
-import {Point, copyPoint} from '_common/coordinates';
+import {Point} from '_common/coordinates';
 
 export enum ContextMenuItem {
   ClearFog = 'Clear Fog',
@@ -22,9 +22,6 @@ export class ContextMenuModel {
     public isVisible: boolean) { }
 
   deepCopy(): ContextMenuModel {
-    return new ContextMenuModel(
-        copyPoint(this.clickPoint),
-        this.isVisible,
-    );
+    return new ContextMenuModel(this.clickPoint, this.isVisible);
   }
 }
