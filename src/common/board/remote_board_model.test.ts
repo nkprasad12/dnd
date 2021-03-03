@@ -1,4 +1,4 @@
-import {RemoteTokenDiff, RemoteTokenModel} from './remote_board_model';
+import {RemoteTokenModel} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
 const DEFAULT_LOCATION = {row: 7, col: 14};
@@ -138,7 +138,7 @@ test('RemoteTokenModel isValid with missing speed returns false', () => {
 });
 
 test('RemoteTokenModel mergeWith different IDs ignores', () => {
-  const diff = new RemoteTokenDiff('56970');
+  const diff = {id: '56970'};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.id).toStrictEqual(DEFAULT_TOKEN.id);
@@ -147,7 +147,7 @@ test('RemoteTokenModel mergeWith different IDs ignores', () => {
 
 test('RemoteTokenModel mergeWith overwrites name', () => {
   const newName = 'Marcus Aurelius';
-  const diff = new RemoteTokenDiff(DEFAULT_ID, undefined, newName);
+  const diff = {id: DEFAULT_ID, name: newName};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.name).toStrictEqual(newName);
@@ -156,7 +156,7 @@ test('RemoteTokenModel mergeWith overwrites name', () => {
 
 test('RemoteTokenModel mergeWith overwrites location', () => {
   const newLocation = {col: 99, row: 199};
-  const diff = new RemoteTokenDiff(DEFAULT_ID, newLocation);
+  const diff = {id: DEFAULT_ID, location: newLocation};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.location).toStrictEqual(newLocation);
@@ -165,7 +165,7 @@ test('RemoteTokenModel mergeWith overwrites location', () => {
 
 test('RemoteTokenModel mergeWith overwrites location', () => {
   const newSource = 'source@/Imperator Caesar Divi Filius Augustus';
-  const diff = new RemoteTokenDiff(DEFAULT_ID, undefined, undefined, newSource);
+  const diff = {id: DEFAULT_ID, imageSource: newSource};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.imageSource).toStrictEqual(newSource);
@@ -174,9 +174,7 @@ test('RemoteTokenModel mergeWith overwrites location', () => {
 
 test('RemoteTokenModel mergeWith overwrites size', () => {
   const newSize = 55555;
-  const diff =
-      new RemoteTokenDiff(
-          DEFAULT_ID, undefined, undefined, undefined, newSize);
+  const diff = {id: DEFAULT_ID, size: newSize};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.size).toStrictEqual(newSize);
@@ -185,11 +183,18 @@ test('RemoteTokenModel mergeWith overwrites size', () => {
 
 test('RemoteTokenModel mergeWith overwrites speed', () => {
   const newSpeed = 55555;
-  const diff =
-      new RemoteTokenDiff(
-          DEFAULT_ID, undefined, undefined, undefined, undefined, newSpeed);
+  const diff = {id: DEFAULT_ID, speed: newSpeed};
   const mergeResult = RemoteTokenModel.mergedWith(DEFAULT_TOKEN, diff);
 
   expect(mergeResult.speed).toStrictEqual(newSpeed);
   expect(mergeResult === DEFAULT_TOKEN).toBe(false);
+});
+
+test('RemoteTokenModel computeDiff different ids throws', () => {
+  expect(() => RemoteTokenModel.computeDiff(DEFAULT_TOKEN, ID_TOKEN)).toThrow();
+});
+
+test('RemoteTokenModel computeDiff different locations', () => {
+  const diff = RemoteTokenModel.computeDiff(DEFAULT_TOKEN, LOCATION_TOKEN);
+  expect(diff).toEqual({id: DEFAULT_ID, location: DEFAULT_LOCATION});
 });
