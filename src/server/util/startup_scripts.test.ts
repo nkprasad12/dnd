@@ -1,3 +1,4 @@
+import mockfs from 'mock-fs';
 import fs from 'fs';
 
 import {writeGoogleCredentials} from './startup_scripts';
@@ -5,20 +6,16 @@ import {writeGoogleCredentials} from './startup_scripts';
 const EXPECTED_FILE = 'Hasdrubal.txt';
 const ORIGINAL_ENV = process.env;
 
-function removeOutputs() {
-  if (fs.existsSync(EXPECTED_FILE)) {
-    fs.rmSync(EXPECTED_FILE);
-  }
-}
 
 beforeEach(() => {
   jest.resetModules();
   process.env = {...ORIGINAL_ENV};
-  removeOutputs();
+  mockfs({});
 });
 
 afterEach(() => {
-  removeOutputs();
+  process.env = {...ORIGINAL_ENV};
+  mockfs.restore();
 });
 
 test('writeGoogleCredentials without APP_CREDENTIALS throws', () => {

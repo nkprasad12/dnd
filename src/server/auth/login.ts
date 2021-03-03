@@ -6,12 +6,14 @@ import passportLocal from 'passport-local';
 
 import {checkDefined} from '_common/preconditions';
 
-const SESSION_OPTIONS: session.SessionOptions =
-{
-  secret: checkDefined(process.env.SECRET_KEY),
-  resave: false,
-  saveUninitialized: false,
-};
+// Deferring instatiation for tests.
+function sessionOptions(): session.SessionOptions {
+  return {
+    secret: checkDefined(process.env.SECRET_KEY),
+    resave: false,
+    saveUninitialized: false,
+  };
+}
 
 function localStrategy(): passportLocal.Strategy {
   return new passportLocal.Strategy(
@@ -29,7 +31,7 @@ function localStrategy(): passportLocal.Strategy {
 
 export function setupLogin(
     app: express.Express, passport: PassportStatic): void {
-  app.use(session(SESSION_OPTIONS));
+  app.use(session(sessionOptions()));
   app.use(bodyParser.urlencoded({extended: false}));
   app.use(passport.initialize());
   app.use(passport.session());

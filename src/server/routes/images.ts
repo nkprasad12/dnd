@@ -12,10 +12,17 @@ const ROOT = FileUtil.ROOT;
 export const imageRouter = express.Router();
 imageRouter.use(ensureLoggedIn('/'));
 
-const upload = multer({
-  dest: path.join(ROOT, 'data/images'),
-});
-
+// Deferring instatiation for tests.
+let uploadSingleton: multer.Multer|undefined = undefined;
+function upload(): multer.Multer {
+  if (uploadSingleton === undefined) {
+    uploadSingleton =
+      multer({
+        dest: path.join(ROOT, 'data/images'),
+      });
+  }
+  return uploadSingleton;
+}
 
 imageRouter.get(
     '/retrieve_image/:imageName',
@@ -33,7 +40,7 @@ imageRouter.get(
 
 imageRouter.post(
     '/uploadImage',
-    upload.single('file'),
+    upload().single('file'),
     (req, res) => {
       const filePath = req.file.path;
       if (!FileUtil.isImage(req.file)) {
