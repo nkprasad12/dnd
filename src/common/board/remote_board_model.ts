@@ -35,6 +35,9 @@ export class RemoteTokenModel {
       readonly speed: number) { }
 
   static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
+    if (first.id != other.id) {
+      return false;
+    }
     if (first.name != other.name) {
       return false;
     }

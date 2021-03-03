@@ -9,4 +9,9 @@ module.exports = {
   'transform': {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
+  'moduleNameMapper': {
+    '_common/(.*)': '<rootDir>/src/common/$1',
+    '_client/(.*)': '<rootDir>/src/client/$1',
+    '_server/(.*)': '<rootDir>/src/server/$1',
+  },
 };
