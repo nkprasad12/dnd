@@ -3,13 +3,12 @@ import fsPromises from 'fs';
 import path from 'path';
 
 import {checkDefined} from '_common/preconditions';
-import {getRoot} from '_server/util/file_util';
+import {ROOT} from '_server/util/file_util';
 
 const GCS_BUCKET = checkDefined(process.env.GCS_BUCKET);
 const UPLOAD_FOLDER = 'data/images';
 const DB_FOLDER = 'data/server_db';
 const GCS_ROOT = 'DenJonver/';
-const ROOT = getRoot();
 
 type ExpressFile = Express.Multer.File;
 

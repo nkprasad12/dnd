@@ -6,7 +6,7 @@ import path from 'path';
 import {storageUtil} from '_server/storage/storage_util';
 import * as FileUtil from '_server/util/file_util';
 
-const ROOT = FileUtil.getRoot();
+const ROOT = FileUtil.ROOT;
 
 // eslint-disable-next-line new-cap
 export const imageRouter = express.Router();

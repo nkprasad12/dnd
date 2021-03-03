@@ -4,14 +4,13 @@ import http from 'http';
 import passport from 'passport';
 
 import {setupLogin} from '_server/auth/login';
-import {getRoot} from '_server/util/file_util';
+import {ROOT} from '_server/util/file_util';
 import {imageRouter} from '_server/routes/images';
 import {contentRouter} from '_server/routes/content';
 import {writeGoogleCredentials} from '_server/util/startup_scripts';
 import {registerBoardRoutes} from '_server/routes/socket/board_socket';
 
 const PORT = process.env.PORT;
-const ROOT = getRoot();
 
 writeGoogleCredentials();
 const app = express();
