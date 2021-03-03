@@ -14,4 +14,9 @@ module.exports = {
     '_client/(.*)': '<rootDir>/src/client/$1',
     '_server/(.*)': '<rootDir>/src/server/$1',
   },
+  'collectCoverageFrom': [
+    '**/*.{ts,tsx}',
+    '!**/node_modules/**',
+    '!**/vendor/**',
+  ],
 };

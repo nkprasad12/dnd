@@ -12,7 +12,9 @@
     "setup-env": "mkdir -p data/images && mkdir -p data/server_db",
     "build": "npm run build-client && npm run build-server && npm run setup-env",
     "start": "node -r dotenv/config build/server.bundle.js",
-    "test": "jest"
+    "full-start": "npm run build && npm run start",
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
