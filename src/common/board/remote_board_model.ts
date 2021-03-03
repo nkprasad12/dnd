@@ -1,3 +1,5 @@
+import deepEqual from 'deep-equal';
+
 import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
@@ -35,25 +37,7 @@ export class RemoteTokenModel {
       readonly speed: number) { }
 
   static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
-    if (first.id != other.id) {
-      return false;
-    }
-    if (first.name != other.name) {
-      return false;
-    }
-    if (first.imageSource != other.imageSource) {
-      return false;
-    }
-    if (first.size != other.size) {
-      return false;
-    }
-    if (!areLocationsEqual(first.location, other.location)) {
-      return false;
-    }
-    if (first.speed != other.speed) {
-      return false;
-    }
-    return true;
+    return deepEqual(first, other);
   }
 
   static mergedWith(

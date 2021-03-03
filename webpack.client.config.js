@@ -67,7 +67,7 @@ module.exports = {
     },
   },
   performance: {
-    maxEntrypointSize: 300000,
+    maxEntrypointSize: 600000,
   },
   output: {
     filename: '[name].[contenthash].client-bundle.js',

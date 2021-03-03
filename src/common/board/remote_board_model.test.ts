@@ -1,7 +1,7 @@
 import {RemoteTokenModel} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
-const DEFAULT_LOCATION = {row: 7, col: 14};
+const DEFAULT_LOCATION = {row: 1, col: 7};
 const DEFAULT_NAME = 'Ozymandias';
 const DEFAULT_IMAGE_SOURCE = 'source@kingOfKings';
 const DEFAULT_SIZE = 2;
@@ -43,7 +43,7 @@ test('RemoteTokenModel equals returns true for same inputs', () => {
   const copy =
       new RemoteTokenModel(
           DEFAULT_ID,
-          DEFAULT_LOCATION,
+          {row: 1, col: 7},
           DEFAULT_NAME,
           DEFAULT_IMAGE_SOURCE,
           DEFAULT_SIZE,
