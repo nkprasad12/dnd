@@ -2,6 +2,7 @@
   "include": [
     "src"
   ],
+  "typeAcquisition": { "include": ["jest"] },
   "compilerOptions": {
     "module": "es2015",
     "target": "es2015",
