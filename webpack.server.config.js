@@ -4,7 +4,8 @@ const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 module.exports = {
   target: 'node',
   entry: {
-    app: ['./src/server/main.ts'],
+    prestart: ['./src/server/prestart.ts'],
+    server: ['./src/server/main.ts'],
   },
   module: {
     rules: [
@@ -34,7 +35,7 @@ module.exports = {
   ],
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'server.bundle.js',
+    filename: '[name].bundle.js',
   },
   externals: {
     '@google-cloud/storage': 'commonjs @google-cloud/storage',

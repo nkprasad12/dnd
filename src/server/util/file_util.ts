@@ -2,14 +2,12 @@ import path from 'path';
 
 const ALLOWED_IMAGE_TYPES = ['.png', '.jpg', '.jpeg'];
 
+/** The application root directory. (Server starts in root/build) */
+export const ROOT = parentOf(__dirname);
+
 /** Given a directory, returns the absolute parth to the parent. */
 export function parentOf(directory: string): string {
   return directory.split(path.sep).slice(0, -1).join(path.sep);
-}
-
-/** Returns the application root directory. */
-export function getRoot(): string {
-  return parentOf(__dirname);
 }
 
 export function isImage(file: Express.Multer.File): boolean {

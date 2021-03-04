@@ -1,3 +1,5 @@
+import Split from 'split.js';
+
 import {Socket_, connectTo} from '_client/server/socket_connection';
 import {saveImageToServer} from '_client/board_tools/board_form';
 
@@ -55,3 +57,10 @@ function listenForFileUpload() {
     handleImageUpload(event);
   });
 }
+
+// eslint-disable-next-line new-cap
+Split(['#firstPanel', '#secondPanel'], {
+  sizes: [75, 25],
+  cursor: 'col-resize',
+  gutterSize: 4,
+});

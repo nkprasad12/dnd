@@ -1,3 +1,5 @@
+import deepEqual from 'deep-equal';
+
 import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
@@ -35,30 +37,13 @@ export class RemoteTokenModel {
       readonly speed: number) { }
 
   static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
-    if (first.id != other.id) {
-      return false;
-    }
-    if (first.name != other.name) {
-      return false;
-    }
-    if (first.imageSource != other.imageSource) {
-      return false;
-    }
-    if (first.size != other.size) {
-      return false;
-    }
-    if (!areLocationsEqual(first.location, other.location)) {
-      return false;
-    }
-    if (first.speed != other.speed) {
-      return false;
-    }
-    return true;
+    return deepEqual(first, other);
   }
 
   static mergedWith(
-      model: RemoteTokenModel, diff: RemoteTokenDiff): RemoteTokenModel {
-    if (diff.id != model.id) {
+      model: RemoteTokenModel,
+      diff: RemoteTokenDiff): RemoteTokenModel {
+    if (diff.id !== model.id) {
       console.log('[RemoteTokenModel] Diff ID does not match current ID');
       return model;
     }
@@ -71,46 +56,31 @@ export class RemoteTokenModel {
         diff.speed === undefined ? model.speed : diff.speed,
     );
   }
-}
 
-/** Represents a mutation of RemoteTokenModel. */
-export class RemoteTokenDiff {
-  static isValid(input: any): input is RemoteTokenDiff {
-    const maybeDiff = (input as RemoteTokenDiff);
-    const isValid =
-        maybeDiff.id !== undefined;
-    return isValid;
-  }
-
-  static computeBetween(
+  static computeDiff(
       newModel: RemoteTokenModel,
       oldModel: RemoteTokenModel): RemoteTokenDiff {
     if (newModel.id != oldModel.id) {
-      throw new Error('[RemoteTokenDiff] Models have different IDs!');
+      throw new Error(
+          '[RemoteTokenModel computeDiff] Models have different IDs!');
     }
-    return new RemoteTokenDiff(
-        newModel.id,
-        areLocationsEqual(newModel.location, oldModel.location) ?
-            undefined : newModel.location,
-        newModel.name === oldModel.name ?
-            undefined : newModel.name,
-        newModel.imageSource === oldModel.imageSource ?
-            undefined : newModel.imageSource,
-        newModel.size === oldModel.size ?
-            undefined : newModel.size,
-        newModel.speed === oldModel.speed ?
-            undefined : newModel.speed,
-    );
+    return {
+      id: newModel.id,
+      location: areLocationsEqual(newModel.location, oldModel.location) ?
+          undefined : newModel.location,
+      name: newModel.name === oldModel.name ?
+          undefined : newModel.name,
+      imageSource: newModel.imageSource === oldModel.imageSource ?
+          undefined : newModel.imageSource,
+      size: newModel.size === oldModel.size ?
+          undefined : newModel.size,
+      speed: newModel.speed === oldModel.speed ?
+          undefined : newModel.speed,
+    };
   }
-
-  constructor(
-    readonly id: string,
-    readonly location?: Location,
-    readonly name?: string,
-    readonly imageSource?: string,
-    readonly size?: number,
-    readonly speed?: number) { }
 }
+
+export type RemoteTokenDiff = Partial<RemoteTokenModel>;
 
 /**
  * Represents the data model for a remote board.
@@ -278,12 +248,12 @@ export class RemoteBoardDiff {
       return false;
     }
     for (const tokenDiff of maybeDiff.tokenDiffs) {
-      if (!RemoteTokenDiff.isValid(tokenDiff)) {
+      if (tokenDiff.id === undefined) {
         return false;
       }
     }
-    for (const newToken of maybeDiff.tokenDiffs) {
-      if (!RemoteTokenDiff.isValid(newToken)) {
+    for (const newToken of maybeDiff.newTokens) {
+      if (!RemoteBoardModel.isValid(newToken)) {
         return false;
       }
     }
@@ -309,8 +279,7 @@ export class RemoteBoardDiff {
         }
         foundMatch = true;
         if (!RemoteTokenModel.equals(newToken, oldToken)) {
-          modifiedTokens.push(
-              RemoteTokenDiff.computeBetween(newToken, oldToken));
+          modifiedTokens.push(RemoteTokenModel.computeDiff(newToken, oldToken));
         }
         break;
       }

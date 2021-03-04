@@ -11,4 +11,7 @@ jobs:
     - uses: actions/checkout@v2
     - run: npm ci
     - run: npm run build
+      env:
+        GOOGLE_KEY: google-key
+        GOOGLE_APPLICATION_CREDENTIALS: google-credentials.json
     - run: npm run test

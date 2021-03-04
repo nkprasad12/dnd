@@ -27,7 +27,7 @@ class IO_ {
    * @param address: address to try to connect to.
    */
   connect(address: string): Socket_ {
-    console.log('About to try to make a socket');
+    console.log('Trying to connect to: ' + address);
     return io(address);
   }
 }

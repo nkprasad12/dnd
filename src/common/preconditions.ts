@@ -7,7 +7,3 @@ export function checkDefined<T>(input: T|undefined|null, name?: string): T {
   }
   return input;
 }
-
-export function printFoo(): void {
-  console.log('Ladedadee');
-}

@@ -2,7 +2,7 @@ import {ensureLoggedIn} from 'connect-ensure-login';
 import express from 'express';
 import * as FileUtil from '_server/util/file_util';
 
-const ROOT = FileUtil.getRoot();
+const ROOT = FileUtil.ROOT;
 
 // eslint-disable-next-line new-cap
 export const contentRouter = express.Router();
