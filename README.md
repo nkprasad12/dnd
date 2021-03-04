@@ -18,6 +18,19 @@ Command | Effect
 
 **Starting from scratch**
 
-Clone the repository. To start the server, from the root directory run:
+Clone the repository. Then, add a .env file in the root with values for the following:
+
+Variable | Explanation
+-------- | -----------
+SECRET_KEY | Secret key for authentication. Generate a random byte string for this.
+PORT | Which port the server should listen at.
+ADMIN_USER | Username of admin, for login.
+ADMIN_PASSWORD | Password of admin, for login.
+GOOGLE_KEY | Google API key.
+GOOGLE_APPLICATION_CREDENTIALS | Path where the Google API key will be written.
+GCS_BUCKET | Google Cloud Storage bucket to use for backups.
+
+To start the server, from the root directory run:
 
 `npm ci && npm run full-start`
+
