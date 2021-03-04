@@ -8,12 +8,14 @@ import {ROOT} from '_server/util/file_util';
 import {imageRouter} from '_server/routes/images';
 import {contentRouter} from '_server/routes/content';
 import {registerBoardRoutes} from '_server/routes/socket/board_socket';
+import {registerChatRoutes} from '_server/chat/chat_socket';
 
 export function prepareServer(): http.Server {
   const app = express();
   const server = http.createServer(app);
   const ioServer = new Server(server);
   registerBoardRoutes(ioServer);
+  registerChatRoutes(ioServer);
   setupLogin(app, passport);
   app.use(express.static('public'));
 

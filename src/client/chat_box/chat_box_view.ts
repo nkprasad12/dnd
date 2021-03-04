@@ -1,27 +1,27 @@
 import * as UiUtil from '_client/common/ui_util';
+import {ChatMessage} from '_common/chat/chat_model';
 
 
-const INPUT_HINT = 'Roll via: [Name] [Command]';
+const INPUT_HINT = 'To roll: [Avrae Command] [Character]';
 const CHAT_BOX_STUB = 'chatBoxStub';
 
-export interface ChatMessage {
-  header?: string;
-  body: string;
-}
-
 export class ChatBoxView {
-  static create(parent: HTMLElement): ChatBoxView {
-    return new ChatBoxView(parent);
+  static create(
+      parent: HTMLElement,
+      listener: (message: ChatMessage) => any): ChatBoxView {
+    return new ChatBoxView(parent, listener);
   }
 
-  static createDefault(): ChatBoxView {
-    return ChatBoxView.create(UiUtil.getElementById(CHAT_BOX_STUB));
+  static createDefault(listener: (message: ChatMessage) => any): ChatBoxView {
+    return ChatBoxView.create(UiUtil.getElementById(CHAT_BOX_STUB), listener);
   }
 
   private input: HTMLTextAreaElement;
   private messages: HTMLDivElement;
 
-  private constructor(parent: HTMLElement) {
+  private constructor(
+      parent: HTMLElement,
+      listener: (message: ChatMessage) => any) {
     this.input = UiUtil.addTextArea(parent, 'chat-input', INPUT_HINT, 1);
     this.messages = UiUtil.addDiv(parent);
     this.messages.style.overflowY = 'auto';
@@ -32,7 +32,9 @@ export class ChatBoxView {
         const entered = this.input.value.trim();
         if (entered !== '') {
           console.log(this.input.value.length);
-          this.addMessage({body: entered});
+          const newMessage = {body: entered};
+          this.addMessage(newMessage);
+          listener(newMessage);
         }
         this.input.value = '';
         event.preventDefault();
