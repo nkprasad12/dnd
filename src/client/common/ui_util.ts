@@ -30,6 +30,16 @@ export function addDiv(
   return element;
 }
 
+export function prependDiv(
+    parent: HTMLElement, className?: string): HTMLDivElement {
+  const element = document.createElement('div');
+  if (className) {
+    element.className = className;
+  }
+  parent.prepend(element);
+  return element;
+}
+
 export function addTextArea(
     parent: HTMLElement,
     className?: string,
