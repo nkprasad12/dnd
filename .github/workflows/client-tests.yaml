@@ -12,3 +12,6 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm run test
+      env:
+        GOOGLE_KEY: google-key
+        GOOGLE_APPLICATION_CREDENTIALS: google-credentials
