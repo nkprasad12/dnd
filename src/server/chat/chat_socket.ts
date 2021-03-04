@@ -2,6 +2,7 @@ import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/chat/chat_events';
 import {isChatMessage} from '_common/chat/chat_model';
+import {commandResolver} from '_server/chat/chat_resolver';
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
@@ -32,8 +33,13 @@ class ChatSocketServerConnection {
     if (!isChatMessage(input)) {
       return;
     }
-    console.log('possiblyHandleRoll ' + input);
-    // resolveRoll(input);
+    console.log('possiblyHandleRoll ' + input.body);
+    const result = await commandResolver().handleCommand(input.body);
+    if (!result) {
+      return;
+    }
+    this.socket.emit(Events.NEW_MESSAGE, result);
+    this.socket.broadcast.emit(Events.NEW_MESSAGE, result);
   }
 
   private registerEventListener(

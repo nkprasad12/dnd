@@ -44,6 +44,7 @@ export class ChatBoxView {
 
   addMessage(content: ChatMessage): void {
     const message = UiUtil.prependDiv(this.messages, 'chat-text');
+    message.style.wordWrap = 'break-word';
     if (content.header) {
       UiUtil.addParagraph(message, content.header);
     }
