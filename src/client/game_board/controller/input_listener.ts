@@ -7,7 +7,7 @@ type DragCallback =
 function clickData(event: MouseEvent): BaseClickData {
   return {
     clientPoint: {x: event.clientX, y: event.clientY},
-    pagePoint: {x: event.pageX, y: event.pageY},
+    pagePoint: {x: event.offsetX, y: event.offsetY},
   };
 }
 

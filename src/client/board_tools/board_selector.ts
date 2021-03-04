@@ -95,7 +95,7 @@ export class BoardSelector {
       boards: Promise<string[]>): BoardSelector {
     return new BoardSelector(
         getElementById(parentId),
-        'Set Active Board',
+        'Set Active',
         (id) => server.setActiveBoard(id),
         BoardSelectorModel.createForActiveSetting(server, boards));
   }
@@ -111,7 +111,7 @@ export class BoardSelector {
                   ids.map((id) => new BoardSelectorItem(id, false))));
     return new BoardSelector(
         getElementById(parentId),
-        'Edit Existing Board',
+        'Edit Existing',
         onSelection,
         initialModel);
   }

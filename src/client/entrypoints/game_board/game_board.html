@@ -11,22 +11,35 @@
   <link rel="stylesheet" type="text/css" href="./styles/game_board.css">
 </head>
 
-<div class="topnav">
-  <a class="active" href="./gameBoard">Game Board</a>
-  <a href="./boardTools">Board Tools</a>
-  <a href="./sandbox">Sandbox</a>
-  <a href="./index">Index</a>
-</div>
-
 <body style="background-color:rgb(39, 39, 39);">
-
-  <div id="canvasHolder" style="position:relative;"></div>
-
-  <div id="rightClickMenuStub"></div>
-  <div id="addNewIconFormStub" style="z-index: 30" style="display: top"></div>
-
-  <!-- <script type="module" src="/static/dist/GameBoard.bundle.js"></script> --> -->
-
+  <div id="panel1" class="split left">
+    
+    <div id="canvasHolder" style="position:relative;"></div>
+    <div id="rightClickMenuStub"></div>
+    <div id="addNewIconFormStub" style="z-index: 30" style="display: top"></div>
+  </div>
+  <div id="panel2" class="split right">
+    <div style="background-color:rgb(69, 69, 69);">
+      <div class="topnav">
+        <a class="active" href="./gameBoard">Game Board</a>
+        <a href="./boardTools">Board Tools</a>
+        <a href="./sandbox">Sandbox</a>
+        <a href="./index">Index</a>
+      </div>
+      <textarea placeholder="Roll via: [Name] [Command]" class="chat-input" rows="1"></textarea>
+      <div style="overflow-y: auto; height: 92%;">
+        <div class="chat-text">
+          <p>Here's a message</p>
+          <p>This is the the second dummy comment. It's no more interesting
+            than the first.</p>
+        </div>
+        <div class="chat-text">
+          <p>Here's a second message</p>
+          <p>This is the first dummy comment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
