@@ -1,4 +1,5 @@
 import {commandResolver} from '_common/chat/chat_resolver';
+import {CommandType} from '_common/chat/command_parser';
 
 
 test('processCommand on non command gives error', async (done) => {
@@ -58,10 +59,15 @@ test('processCommand with help gives expected', async (done) => {
   done();
 });
 
-test('processCommand with load gives expected', async (done) => {
+test('processCommand with override gives expected', async (done) => {
   const commandString = '!load';
+  commandResolver().addCommandHandler(
+      CommandType.Load,
+      () => {
+        return {body: 'It worked!'};
+      });
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.body).toContain('Not supported yet');
+  expect(result?.body).toBe('It worked!');
   done();
 });

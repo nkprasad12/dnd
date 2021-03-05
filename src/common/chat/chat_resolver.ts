@@ -4,10 +4,20 @@ import {handleRollCommand} from '_common/chat/command_handlers/roll_command_hand
 import {CommandType, processCommand} from '_common/chat/command_parser';
 
 
+const COMING_SOON = 'Not supported yet - coming soon!';
+
+export type CommandHandler = (input: string) => ChatMessage;
 export type ResolvedCommand = Promise<ChatMessage|undefined>;
 
 export class CommandResolver {
+  private handlers: Map<CommandType, CommandHandler> = new Map();
+
   constructor() {}
+
+  /** Overrides existing handling for the type, if any. */
+  addCommandHandler(command: CommandType, handler: CommandHandler) {
+    this.handlers.set(command, handler);
+  }
 
   async handleCommand(inputCommand: string): ResolvedCommand {
     const result = processCommand(inputCommand);
@@ -23,22 +33,11 @@ export class CommandResolver {
     }
 
     const command = checkDefined(result.command);
-    if (command.command === CommandType.Roll) {
-      return handleRollCommand(command.query);
-    } else if (command.command === CommandType.Attack) {
-      // TODO: Handle attack rolls
-    } else if (command.command === CommandType.Check) {
-      // TODO: Handle ability checks
-    } else if (command.command === CommandType.Help) {
-      return handleHelpCommand();
-    } else if (command.command === CommandType.Save) {
-      // TODO: Handle saving throws
-    } else if (command.command === CommandType.Load) {
-      // TODO: Handle setting character
+    const override = this.handlers.get(command.command);
+    if (override !== undefined) {
+      return override(command.query);
     }
-    return {
-      header: inputCommand,
-      body: 'Not supported yet - coming soon!'};
+    return handleHelpCommand();
   }
 }
 
@@ -62,6 +61,23 @@ export function commandResolver(): CommandResolver {
   if (cachedResolver === undefined) {
     console.log('Creating new command resolver');
     cachedResolver = new CommandResolver();
+    cachedResolver.addCommandHandler(CommandType.Roll, handleRollCommand);
+    cachedResolver.addCommandHandler(CommandType.Help, handleHelpCommand);
+    cachedResolver.addCommandHandler(
+        CommandType.Attack,
+        () => {
+          return {header: CommandType.Attack, body: COMING_SOON};
+        });
+    cachedResolver.addCommandHandler(
+        CommandType.Check,
+        () => {
+          return {header: CommandType.Check, body: COMING_SOON};
+        });
+    cachedResolver.addCommandHandler(
+        CommandType.Save,
+        () => {
+          return {header: CommandType.Save, body: COMING_SOON};
+        });
   }
   return cachedResolver;
 }
