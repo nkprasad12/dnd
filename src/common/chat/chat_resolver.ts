@@ -30,7 +30,7 @@ export class CommandResolver {
     } else if (command.command === CommandType.Check) {
       // TODO: Handle ability checks
     } else if (command.command === CommandType.Help) {
-      // TODO: Handle
+      return handleHelpCommand();
     } else if (command.command === CommandType.Save) {
       // TODO: Handle saving throws
     } else if (command.command === CommandType.SetCharacter) {
@@ -40,6 +40,26 @@ export class CommandResolver {
       header: inputCommand,
       body: 'Not supported yet - coming soon!'};
   }
+}
+
+function handleHelpCommand(): ChatMessage {
+  const header = '!help - command reference';
+  const body = [
+    'Hint: anything can be abbreviated if unambiguous',
+    '',
+    'Command Guide (? indicates optional)',
+    '',
+    '!attack [weapon] [adv / dis]? [character name]',
+    '',
+    '!check [skill] [adv / dis]? [character name]',
+    '',
+    '!roll AdB (+ ... + XdY)? + number? [adv / dis]?',
+    '',
+    '!save [ability] [adv / dis]? [character name]',
+    '',
+    '!set [character name]',
+  ];
+  return {header: header, body: body.join('\n')};
 }
 
 let cachedResolver: CommandResolver|undefined = undefined;

@@ -54,7 +54,7 @@ test('processCommand with help gives expected', async (done) => {
   const commandString = '!help';
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.body).toContain('Not supported yet');
+  expect(result?.header).toContain('command reference');
   done();
 });
 
