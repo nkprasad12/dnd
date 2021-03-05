@@ -63,7 +63,7 @@ test('processCommand with override gives expected', async (done) => {
   const commandString = '!load';
   commandResolver().addCommandHandler(
       CommandType.Load,
-      () => {
+      async () => {
         return {body: 'It worked!'};
       });
   const result = await commandResolver().handleCommand(commandString);
