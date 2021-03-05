@@ -2,8 +2,12 @@ import {GraphNode} from '_common/graphs/primitives';
 
 /** Represents an autocompleter for partial inputs. */
 export class Autocompleter {
-  static create(): Autocompleter {
-    return new Autocompleter;
+  static create(initalOptions?: string[]): Autocompleter {
+    const completer = new Autocompleter();
+    if (initalOptions) {
+      completer.addOptions(initalOptions);
+    }
+    return completer;
   }
 
   private readonly root = new GraphNode('');
