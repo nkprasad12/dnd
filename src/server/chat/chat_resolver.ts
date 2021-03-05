@@ -1,6 +1,7 @@
 import {ChatMessage} from '_common/chat/chat_model';
 import {checkDefined} from '_common/preconditions';
 import {CommandType, processCommand} from '_server/chat/command_parser';
+import {rollDice} from '_server/chat/dice_roller';
 
 
 export type ResolvedCommand = Promise<ChatMessage|undefined>;
@@ -44,25 +45,11 @@ export class CommandResolver {
 }
 
 function rollMessage(numDice: number, numSides: number): ChatMessage {
-  const rolls = rollDice(numDice, numSides);
+  const rolls = rollDice(numSides, numDice);
   const header = `Result of ${numDice} d${numSides} rolls:`;
   const sum = rolls.reduceRight((sumSoFar, current) => sumSoFar + current, 0);
   const body = `${sum} from ${JSON.stringify(rolls)}`;
   return {header: header, body: body};
-}
-
-function rollDice(numDice: number, numSides: number): number[] {
-  return Array(numDice).fill(0).map(() => rollDie(numSides));
-}
-
-function rollDie(numSides: number): number {
-  return getRandomIntInclusive(1, numSides);
-}
-
-function getRandomIntInclusive(min: number, max: number): number {
-  const minInt = Math.ceil(min);
-  const maxInt = Math.floor(max);
-  return Math.floor(Math.random() * (maxInt - minInt + 1) + minInt);
 }
 
 function rollErrorMessage(input: string): ChatMessage {
