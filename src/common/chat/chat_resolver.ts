@@ -51,7 +51,7 @@ function handleHelpCommand(): ChatMessage {
     '!check [skill] [adv / dis]? [character name]',
     '!roll AdB (+ ... + XdY)? + number? [adv / dis]?',
     '!save [ability] [adv / dis]? [character name]',
-    '!set [character name]',
+    '!load [character sheet URL]',
   ];
   return {header: header, body: body.join('<br>')};
 }
