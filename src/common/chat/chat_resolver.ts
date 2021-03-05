@@ -6,7 +6,7 @@ import {CommandType, processCommand} from '_common/chat/command_parser';
 
 const COMING_SOON = 'Not supported yet - coming soon!';
 
-export type CommandHandler = (input: string) => ChatMessage;
+export type CommandHandler = (input: string) => Promise<ChatMessage>;
 export type ResolvedCommand = Promise<ChatMessage|undefined>;
 
 export class CommandResolver {
@@ -41,7 +41,7 @@ export class CommandResolver {
   }
 }
 
-function handleHelpCommand(): ChatMessage {
+async function handleHelpCommand(): Promise<ChatMessage> {
   const header = '!help - command reference';
   const body = [
     'Hint: anything can be abbreviated if unambiguous',
@@ -65,17 +65,17 @@ export function commandResolver(): CommandResolver {
     cachedResolver.addCommandHandler(CommandType.Help, handleHelpCommand);
     cachedResolver.addCommandHandler(
         CommandType.Attack,
-        () => {
+        async () => {
           return {header: CommandType.Attack, body: COMING_SOON};
         });
     cachedResolver.addCommandHandler(
         CommandType.Check,
-        () => {
+        async () => {
           return {header: CommandType.Check, body: COMING_SOON};
         });
     cachedResolver.addCommandHandler(
         CommandType.Save,
-        () => {
+        async () => {
           return {header: CommandType.Save, body: COMING_SOON};
         });
   }

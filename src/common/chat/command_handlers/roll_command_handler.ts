@@ -3,7 +3,7 @@ import {rollDice} from '_common/chat/dice_roller';
 
 
 /** Handles a roll query. If the input was !r 1d20, '1d20' is the query. */
-export function handleRollCommand(query: string): ChatMessage {
+export async function handleRollCommand(query: string): Promise<ChatMessage> {
   const diceParts = query.split('d');
   if (diceParts.length < 2) {
     return rollErrorMessage(query);
