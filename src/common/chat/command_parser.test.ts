@@ -1,4 +1,4 @@
-import {CommandType, processCommand} from '_server/chat/command_parser';
+import {CommandType, processCommand} from '_common/chat/command_parser';
 
 
 test('processCommand on non command gives error', () => {
@@ -10,13 +10,12 @@ test('processCommand on non command gives error', () => {
 });
 
 test('processCommand on ambiguous command gives error', () => {
-  const result = processCommand('!s');
+  const result = processCommand('!');
 
   expect(result.command).toBeUndefined();
   expect(result.error).toBeDefined();
-  expect(result.error?.possibleTypes.length).toBe(2);
-  expect(result.error?.possibleTypes).toContain(CommandType.Save);
-  expect(result.error?.possibleTypes).toContain(CommandType.SetCharacter);
+  expect(result.error?.possibleTypes.length)
+      .toBe(Object.keys(CommandType).length);
 });
 
 test('processCommand on short input gives expected', () => {

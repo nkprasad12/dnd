@@ -2,7 +2,7 @@ import * as UiUtil from '_client/common/ui_util';
 import {ChatMessage} from '_common/chat/chat_model';
 
 
-const INPUT_HINT = 'To roll: [Avrae Command] [Character]';
+const INPUT_HINT = 'Type !help for commands';
 const CHAT_BOX_STUB = 'chatBoxStub';
 
 export class ChatBoxView {

@@ -14,7 +14,8 @@
     "setup-env": "npm run setup-key && npm run setup-dirs",
     "build": "npm run build-client && npm run build-server && npm run setup-env",
     "start": "node -r dotenv/config build/server.bundle.js",
-    "full-start": "npm run build && npm run start",
+    "start:client-inc": "npm run build-client && npm run start",
+    "start:full": "npm run build && npm run start",
     "test": "jest",
     "coverage": "jest --coverage"
   },
@@ -60,6 +61,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "googleapis": "^67.1.1",
     "module-alias": "^2.2.2",
     "multer": "^1.4.2",
     "passport": "^0.4.1",

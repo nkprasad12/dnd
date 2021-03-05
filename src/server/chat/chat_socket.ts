@@ -2,10 +2,16 @@ import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/chat/chat_events';
 import {isChatMessage} from '_common/chat/chat_model';
-import {commandResolver} from '_server/chat/chat_resolver';
+import {commandResolver} from '_common/chat/chat_resolver';
+import {CommandType} from '_common/chat/command_parser';
+import {loadCommandHandler} from '_server/sheets/load_command_handler';
+import {CharacterSheetCache} from '_server/sheets/sheet_cache';
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
+  commandResolver().addCommandHandler(
+      CommandType.Load,
+      loadCommandHandler(CharacterSheetCache.create()));
   ioServer
       .of('/chat')
       .on('connection', (socket) => ChatSocketServerConnection.create(socket));
@@ -25,15 +31,15 @@ class ChatSocketServerConnection {
   private handleNewMessages() {
     this.registerEventListener(Events.NEW_MESSAGE, (message) => {
       this.socket.broadcast.emit(Events.NEW_MESSAGE, message);
-      this.possiblyHandleRoll(message);
+      this.possiblyHandleCommand(message);
     });
   }
 
-  private async possiblyHandleRoll(input: string): Promise<void> {
+  private async possiblyHandleCommand(input: string): Promise<void> {
     if (!isChatMessage(input)) {
       return;
     }
-    console.log('possiblyHandleRoll ' + input.body);
+    console.log('possiblyHandleCommand ' + input.body);
     const result = await commandResolver().handleCommand(input.body);
     if (!result) {
       return;
