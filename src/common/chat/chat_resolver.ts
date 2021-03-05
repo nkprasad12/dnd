@@ -33,7 +33,7 @@ export class CommandResolver {
       return handleHelpCommand();
     } else if (command.command === CommandType.Save) {
       // TODO: Handle saving throws
-    } else if (command.command === CommandType.SetCharacter) {
+    } else if (command.command === CommandType.Load) {
       // TODO: Handle setting character
     }
     return {

@@ -6,7 +6,7 @@ export enum CommandType {
   Save = '!save',
   Check = '!check',
   Attack = '!attack',
-  SetCharacter = '!set',
+  Load = '!load',
   Help = '!help',
 };
 
@@ -15,7 +15,7 @@ COMMAND_TYPE_LOOKUP.set('!roll', CommandType.Roll);
 COMMAND_TYPE_LOOKUP.set('!save', CommandType.Save);
 COMMAND_TYPE_LOOKUP.set('!check', CommandType.Check);
 COMMAND_TYPE_LOOKUP.set('!attack', CommandType.Attack);
-COMMAND_TYPE_LOOKUP.set('!set', CommandType.SetCharacter);
+COMMAND_TYPE_LOOKUP.set('!load', CommandType.Load);
 COMMAND_TYPE_LOOKUP.set('!help', CommandType.Help);
 
 /** Represents a partially parsed command. */

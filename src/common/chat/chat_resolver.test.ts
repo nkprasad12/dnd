@@ -58,8 +58,8 @@ test('processCommand with help gives expected', async (done) => {
   done();
 });
 
-test('processCommand with set gives expected', async (done) => {
-  const commandString = '!set';
+test('processCommand with load gives expected', async (done) => {
+  const commandString = '!load';
   const result = await commandResolver().handleCommand(commandString);
 
   expect(result?.body).toContain('Not supported yet');
