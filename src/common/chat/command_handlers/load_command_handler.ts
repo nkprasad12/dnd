@@ -1,6 +1,6 @@
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
-import {CharacterSheetCache} from '_server/sheets/sheet_cache';
+import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 
 
 const SHEET_ID_PREFIX = 'spreadsheets/d/';

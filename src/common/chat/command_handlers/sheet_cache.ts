@@ -1,6 +1,5 @@
 import {checkDefined} from '_common/preconditions';
-import {extractSheetData} from '_server/sheets/sheets';
-import {CharacterSheetData} from '_server/sheets/types';
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 
 export type CharacterLoader = (id: string) => Promise<CharacterSheetData>;
@@ -12,17 +11,14 @@ export interface LoadResult {
 
 export class CharacterSheetCache {
   /* istanbul ignore next */
-  static create(loader?: CharacterLoader) {
+  static create(loader: CharacterLoader) {
     return new CharacterSheetCache(loader);
   }
 
-  private readonly loader;
   private nameDataMap: Map<string, CharacterSheetData> = new Map();
   private sheetNameMap: Map<string, string> = new Map();
 
-  constructor(loader?: CharacterLoader) {
-    this.loader = loader === undefined ? extractSheetData : loader;
-  }
+  constructor(private readonly loader: CharacterLoader) {}
 
   /**
    * Loads a character data sheet.

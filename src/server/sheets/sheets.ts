@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import {google, sheets_v4 as sheetsV4} from 'googleapis';
 import {checkDefined} from '_common/preconditions';
-import {CharacterSheetData} from '_server/sheets/types';
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 
 const SHEET = 'v2.1!';

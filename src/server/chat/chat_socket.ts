@@ -4,14 +4,16 @@ import * as Events from '_common/chat/chat_events';
 import {isChatMessage} from '_common/chat/chat_model';
 import {commandResolver} from '_common/chat/chat_resolver';
 import {CommandType} from '_common/chat/command_parser';
-import {loadCommandHandler} from '_server/sheets/load_command_handler';
-import {CharacterSheetCache} from '_server/sheets/sheet_cache';
+import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
+import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
+import {extractSheetData} from '_server/sheets/sheets';
+
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
   commandResolver().addCommandHandler(
       CommandType.Load,
-      loadCommandHandler(CharacterSheetCache.create()));
+      loadCommandHandler(CharacterSheetCache.create(extractSheetData)));
   ioServer
       .of('/chat')
       .on('connection', (socket) => ChatSocketServerConnection.create(socket));

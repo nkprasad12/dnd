@@ -1,5 +1,5 @@
-import {CharacterSheetCache} from '_server/sheets/sheet_cache';
-import {CharacterSheetData} from '_server/sheets/types';
+import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 
 const CALIGULA_SHEET = 'caligula.sheet';
