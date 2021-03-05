@@ -1,4 +1,4 @@
-import {CommandType, processCommand} from '_server/chat/command_parser';
+import {CommandType, processCommand} from '_common/chat/command_parser';
 
 
 test('processCommand on non command gives error', () => {

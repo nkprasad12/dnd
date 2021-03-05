@@ -1,4 +1,4 @@
-import {rollDice} from '_server/chat/dice_roller';
+import {rollDice} from '_common/chat/dice_roller';
 
 
 test('rollDice rolls expected number of dice', () => {

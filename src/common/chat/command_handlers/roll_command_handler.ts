@@ -1,5 +1,5 @@
 import {ChatMessage} from '_common/chat/chat_model';
-import {rollDice} from '_server/chat/dice_roller';
+import {rollDice} from '_common/chat/dice_roller';
 
 
 /** Handles a roll query. If the input was !r 1d20, '1d20' is the query. */

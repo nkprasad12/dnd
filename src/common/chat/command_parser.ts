@@ -1,5 +1,5 @@
 import {checkDefined} from '_common/preconditions';
-import {Autocompleter} from '_server/chat/autocompleter';
+import {Autocompleter} from '_common/chat/autocompleter';
 
 export enum CommandType {
   Roll = '!roll',

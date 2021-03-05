@@ -2,7 +2,7 @@ import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/chat/chat_events';
 import {isChatMessage} from '_common/chat/chat_model';
-import {commandResolver} from '_server/chat/chat_resolver';
+import {commandResolver} from '_common/chat/chat_resolver';
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.

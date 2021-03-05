@@ -1,4 +1,4 @@
-import {handleRollCommand} from '_server/chat/command_handlers/roll_command_handler';
+import {handleRollCommand} from '_common/chat/command_handlers/roll_command_handler';
 
 
 test('handleRollCommand returns error on invalid input', () => {

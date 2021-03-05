@@ -1,7 +1,7 @@
 import {ChatMessage} from '_common/chat/chat_model';
 import {checkDefined} from '_common/preconditions';
-import {handleRollCommand} from '_server/chat/command_handlers/roll_command_handler';
-import {CommandType, processCommand} from '_server/chat/command_parser';
+import {handleRollCommand} from '_common/chat/command_handlers/roll_command_handler';
+import {CommandType, processCommand} from '_common/chat/command_parser';
 
 
 export type ResolvedCommand = Promise<ChatMessage|undefined>;
@@ -25,6 +25,16 @@ export class CommandResolver {
     const command = checkDefined(result.command);
     if (command.command === CommandType.Roll) {
       return handleRollCommand(command.query);
+    } else if (command.command === CommandType.Attack) {
+      // TODO: Handle attack rolls
+    } else if (command.command === CommandType.Check) {
+      // TODO: Handle ability checks
+    } else if (command.command === CommandType.Help) {
+      // TODO: Handle
+    } else if (command.command === CommandType.Save) {
+      // TODO: Handle saving throws
+    } else if (command.command === CommandType.SetCharacter) {
+      // TODO: Handle setting character
     }
     return {
       header: inputCommand,
