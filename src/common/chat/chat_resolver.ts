@@ -46,20 +46,14 @@ function handleHelpCommand(): ChatMessage {
   const header = '!help - command reference';
   const body = [
     'Hint: anything can be abbreviated if unambiguous',
-    '',
     'Command Guide (? indicates optional)',
-    '',
     '!attack [weapon] [adv / dis]? [character name]',
-    '',
     '!check [skill] [adv / dis]? [character name]',
-    '',
     '!roll AdB (+ ... + XdY)? + number? [adv / dis]?',
-    '',
     '!save [ability] [adv / dis]? [character name]',
-    '',
     '!set [character name]',
   ];
-  return {header: header, body: body.join('\n')};
+  return {header: header, body: body.join('<br>')};
 }
 
 let cachedResolver: CommandResolver|undefined = undefined;
