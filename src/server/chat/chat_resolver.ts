@@ -1,4 +1,7 @@
 import {ChatMessage} from '_common/chat/chat_model';
+import {checkDefined} from '_common/preconditions';
+import {handleRollCommand} from '_server/chat/command_handlers/roll_command_handler';
+import {CommandType, processCommand} from '_server/chat/command_parser';
 
 
 export type ResolvedCommand = Promise<ChatMessage|undefined>;
@@ -7,53 +10,26 @@ export class CommandResolver {
   constructor() {}
 
   async handleCommand(inputCommand: string): ResolvedCommand {
-    const body = inputCommand.trim();
-    if (!body.startsWith('!roll ')) {
-      return undefined;
+    const result = processCommand(inputCommand);
+    if (result.error) {
+      if (result.error.possibleTypes.length === 0) {
+        // If it's not parsable as a command, it's probably a regular chat.
+        return undefined;
+      }
+      const header = 'Got ambiguous command ' + result.error.commandAttempt;
+      const body =
+          'Could be either ' + JSON.stringify(result.error.possibleTypes);
+      return {header: header, body: body};
     }
-    const command = body.split(' ')[1];
-    const diceParts = command.split('d');
-    if (diceParts.length < 2) {
-      return rollErrorMessage(body);
+
+    const command = checkDefined(result.command);
+    if (command.command === CommandType.Roll) {
+      return handleRollCommand(command.query);
     }
-    const numDice = parseInt(diceParts[0]);
-    if (numDice === undefined || numDice < 1) {
-      return rollErrorMessage(body);
-    }
-    const numSides = parseInt(diceParts[1]);
-    if (numSides === undefined || numSides < 1) {
-      return rollErrorMessage(body);
-    }
-    return rollMessage(numDice, numSides);
+    return {
+      header: inputCommand,
+      body: 'Not supported yet - coming soon!'};
   }
-}
-
-function rollMessage(numDice: number, numSides: number): ChatMessage {
-  const rolls = rollDice(numDice, numSides);
-  const header = `Result of ${numDice} d${numSides} rolls:`;
-  const sum = rolls.reduceRight((sumSoFar, current) => sumSoFar + current, 0);
-  const body = `${sum} from ${JSON.stringify(rolls)}`;
-  return {header: header, body: body};
-}
-
-function rollDice(numDice: number, numSides: number): number[] {
-  return Array(numDice).fill(0).map(() => rollDie(numSides));
-}
-
-function rollDie(numSides: number): number {
-  return getRandomIntInclusive(1, numSides);
-}
-
-function getRandomIntInclusive(min: number, max: number): number {
-  const minInt = Math.ceil(min);
-  const maxInt = Math.floor(max);
-  return Math.floor(Math.random() * (maxInt - minInt + 1) + minInt);
-}
-
-function rollErrorMessage(input: string): ChatMessage {
-  const header = `${input} is not a valid input.`;
-  const usage = 'Example: !roll 2d20 to roll 2 dice with 20 sides.';
-  return {header: header, body: usage};
 }
 
 let cachedResolver: CommandResolver|undefined = undefined;
