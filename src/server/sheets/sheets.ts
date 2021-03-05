@@ -1,5 +1,7 @@
+/* istanbul ignore file */
 import {google, sheets_v4 as sheetsV4} from 'googleapis';
 import {checkDefined} from '_common/preconditions';
+import {CharacterSheetData} from '_server/sheets/types';
 
 
 const SHEET = 'v2.1!';
@@ -121,17 +123,8 @@ function processAttackBonuses(
   return result;
 }
 
-export interface CharacterData {
-  readonly name: string;
-  readonly proficiencyBonus: number;
-  readonly checkBonuses: Map<string, number>;
-  readonly saveBonuses: Map<string, number>;
-  readonly abilityBonuses: Map<string, number>;
-  readonly attackBonuses: Map<string, number>;
-}
-
 export async function extractSheetData(
-    sheetId: string): Promise<CharacterData> {
+    sheetId: string): Promise<CharacterSheetData> {
   const sheets = google.sheets('v4');
   const params = {
     auth: process.env.GOOGLE_API_KEY,
