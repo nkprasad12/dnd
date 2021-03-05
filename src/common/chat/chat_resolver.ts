@@ -47,10 +47,10 @@ async function handleHelpCommand(): Promise<ChatMessage> {
     'Hint: anything can be abbreviated if unambiguous',
     'Command Guide (? indicates optional)',
     '------------------------------------',
-    '!roll AdB (+ ... + XdY)? + number? [dis(advantage)]?',
-    '!attack [weapon] [dis(advantage)]? @[character name]',
-    '!check [skill] [dis(advantage)]? @[character name]',
-    '!save [ability] [dis(advantage)]? @[character name]',
+    '!roll AdB (+ ... + XdY)? + number? @[dis(advantage)]?',
+    '!attack [weapon] @[dis(advantage)]? @[character name]',
+    '!check [skill] @[dis(advantage)]? @[character name]',
+    '!save [ability] @[dis(advantage)]? @[character name]',
     '!load [character sheet URL]',
   ];
   return {header: header, body: body.join('<br>')};
