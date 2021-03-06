@@ -2,7 +2,7 @@ import {Autocompleter} from '_common/chat/autocompleter';
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
-import {ABILITY_ORDER, CharacterSheetData, SKILL_ORDER} from '_common/chat/command_handlers/types';
+import {ABILITY_ORDER, ADVANTAGE, CharacterSheetData, DISADVANTAGE, SKILL_ORDER} from '_common/chat/command_handlers/types';
 import {rollDice} from '_common/chat/dice_roller';
 
 
@@ -11,9 +11,6 @@ const AMBIGUOUS_WEAPON = 'Multiple weapons could match: ';
 const AMBIGUOUS_SKILL = 'Multiple skills could match: ';
 const AMBIGUOUS_ATTR = 'Multiple abilities could match: ';
 const AMBIGUOUS_HEADER = ' request was ambiguous';
-
-const ADVANTAGE = 'advantage';
-const DISADVANTAGE = 'disadvantage';
 
 const advantageCompleter = Autocompleter.create([ADVANTAGE, DISADVANTAGE]);
 const skillCompleter = Autocompleter.create(SKILL_ORDER);

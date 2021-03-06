@@ -36,3 +36,6 @@ export const ABILITY_ORDER = [
   'Wisdom',
   'Charisma',
 ];
+
+export const ADVANTAGE = 'advantage';
+export const DISADVANTAGE = 'disadvantage';
