@@ -7,13 +7,22 @@ import {CommandType} from '_common/chat/command_parser';
 import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {extractSheetData} from '_server/sheets/sheets';
+import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
+import {attackCommandHandler, checkCommandHandler, saveCommandHandler} from '_common/chat/command_handlers/character_command_handlers';
 
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
+  const cache = CharacterSheetCache.create(extractSheetData);
+  const resolver = CharacterResolver.create(cache);
   commandResolver().addCommandHandler(
-      CommandType.Load,
-      loadCommandHandler(CharacterSheetCache.create(extractSheetData)));
+      CommandType.Load, loadCommandHandler(cache));
+  commandResolver().addCommandHandler(
+      CommandType.Attack, attackCommandHandler(resolver));
+  commandResolver().addCommandHandler(
+      CommandType.Check, checkCommandHandler(resolver));
+  commandResolver().addCommandHandler(
+      CommandType.Save, saveCommandHandler(resolver));
   ioServer
       .of('/chat')
       .on('connection', (socket) => ChatSocketServerConnection.create(socket));
