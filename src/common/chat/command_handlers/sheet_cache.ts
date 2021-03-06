@@ -34,7 +34,7 @@ export class CharacterSheetCache {
 
   /** Returns the data for the character with the given name. */
   getDataForName(name: string): CharacterSheetData|undefined {
-    return this.nameDataMap.get(name);
+    return this.nameDataMap.get(name.toLowerCase());
   }
 
   /**

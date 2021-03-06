@@ -110,7 +110,7 @@ test('load second time returns cached valid sheet', async (done) => {
 
   await cache.load(CALIGULA_SHEET);
   const result = await cache.load(CALIGULA_SHEET);
-  expect(result.loadedName).toBe(CALIGULA_DATA.name);
+  expect(result.loadedName).toBe(CALIGULA_DATA.name.toLowerCase());
   expect(result.removedName).toBeUndefined();
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(1);
   done();
@@ -138,8 +138,8 @@ test('getNames returns expected', async (done) => {
 
   const names = cache.getNames();
   expect(names.length).toBe(2);
-  expect(names).toContain(CALIGULA_DATA.name);
-  expect(names).toContain(BRUTUS_DATA.name);
+  expect(names).toContain(CALIGULA_DATA.name.toLowerCase());
+  expect(names).toContain(BRUTUS_DATA.name.toLowerCase());
   done();
 });
 
@@ -152,6 +152,6 @@ test('load second time forces reload cached valid sheet', async (done) => {
   const result = await cache.load(CALIGULA_SHEET, true);
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(2);
   expect(result.loadedName).toBe(UPDATED_CALIGULA_DATA.name);
-  expect(result.removedName).toBe(CALIGULA_DATA.name);
+  expect(result.removedName).toBe(CALIGULA_DATA.name.toLowerCase());
   done();
 });
