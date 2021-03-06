@@ -17,7 +17,8 @@
     "start:client-inc": "npm run build-client && npm run start",
     "start:full": "npm run build && npm run start",
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "count": "find src -name '*.ts' | xargs wc -l"
   },
   "author": "",
   "license": "ISC",

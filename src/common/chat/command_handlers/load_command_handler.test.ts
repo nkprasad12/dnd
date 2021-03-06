@@ -1,7 +1,7 @@
 import {CommandHandler} from '_common/chat/chat_resolver';
-import {loadCommandHandler} from '_server/sheets/load_command_handler';
-import {CharacterSheetCache} from '_server/sheets/sheet_cache';
-import {CharacterSheetData} from '_server/sheets/types';
+import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
+import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 
 const CALIGULA_SHEET = 'caligula.sheet';

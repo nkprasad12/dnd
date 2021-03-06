@@ -34,5 +34,5 @@ GOOGLE_API_KEY | Key for accessing Google APIs. Must be authorized for the Sheet
 
 To start the server, from the root directory run:
 
-`npm ci && npm run full-start`
+`npm ci && npm run start:full`
 

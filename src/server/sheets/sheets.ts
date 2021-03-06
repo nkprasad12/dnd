@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import {google, sheets_v4 as sheetsV4} from 'googleapis';
 import {checkDefined} from '_common/preconditions';
-import {CharacterSheetData} from '_server/sheets/types';
+import {ABILITY_ORDER, AttackData, CharacterSheetData, SKILL_ORDER} from '_common/chat/command_handlers/types';
 
 
 const SHEET = 'v2.1!';
@@ -10,40 +10,12 @@ const PROF = 'H14';
 const NAME = 'C6';
 
 const SKILLS = 'I25:I42';
-const SKILL_ORDER = [
-  'Acrobatics',
-  'Animal Handling',
-  'Arcana',
-  'Athletics',
-  'Deception',
-  'History',
-  'Insight',
-  'Intimidation',
-  'Investigation',
-  'Medicine',
-  'Nature',
-  'Perception',
-  'Performance',
-  'Persuasion',
-  'Religion',
-  'Sleight of Hand',
-  'Stealth',
-  'Survival',
-];
 
 // Take every 5, starting with the second for abilities
 const ABILITIES = 'C13:C38';
 const SAVING_THROWS = 'I17:I22';
-const ABILITY_ORDER = [
-  'Strength',
-  'Dexterity',
-  'Constitution',
-  'Intelligence',
-  'Wisdom',
-  'Charisma',
-];
 
-const ATTACKS = 'R32:Y36';
+const ATTACKS = 'R32:AC36';
 
 const RAW_RANGES = [NAME, PROF, ABILITIES, SAVING_THROWS, SKILLS, ATTACKS];
 const RANGES = RAW_RANGES.map((range) => SHEET + range);
@@ -107,21 +79,46 @@ function processCheckBonuses(
 }
 
 function processAttackBonuses(
-    data: sheetsV4.Schema$ValueRange): Map<string, number> {
+    data: sheetsV4.Schema$ValueRange): Map<string, AttackData> {
   if (data.range !== RANGES[5]) {
     throw new Error('Invalid value range for attack checks.');
   }
-  const result: Map<string, number> = new Map();
+  const result: Map<string, AttackData> = new Map();
   const values = checkDefined(data.values, 'attackBonuses:data.values');
   for (let i = 0; i < 5; i++) {
     const attackName = values[0][i];
     if (!attackName || !(attackName as string).trim()) {
       break;
     }
-    result.set(attackName, Number.parseInt(values[7][i]));
+    result.set(
+        attackName,
+        {
+          toHit: Number.parseInt(values[7][i]),
+          damageRoll: values[11][i].split('[')[0],
+          info: values[11][i],
+        });
   }
   return result;
 }
+
+// TODO: Try to query directly. The sheets client API has literally
+//       every google service in it and slows down our build times
+//       considerably.
+//
+//       We can use the query below to build value queries, we just
+//       need to figure out how to parse the response to find the data.
+//
+// function buildQuery(sheetId: string) {
+//   const query =
+//       'https://sheets.googleapis.com/v4/spreadsheets/' +
+//           sheetId +
+//           '/values:batchGet' +
+//           `?key=${process.env.GOOGLE_API_KEY}` +
+//           `&majorDimension=ROWS` +
+//           RANGES.map((range) => '&ranges=' + range).join('');
+//   console.log(query);
+//   http.get(query, (res) => console.log(res));
+// }
 
 export async function extractSheetData(
     sheetId: string): Promise<CharacterSheetData> {

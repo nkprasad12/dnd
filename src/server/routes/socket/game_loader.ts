@@ -1,5 +1,6 @@
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {checkDefined} from '_common/preconditions';
+import {isStringArray} from '_common/verification';
 import {storageUtil} from '_server/storage/storage_util';
 
 
@@ -124,18 +125,6 @@ class GameCache {
     });
     setTimeout(() => this.save(), CACHE_SAVE_INTERNAL_MS);
   }
-}
-
-function isStringArray(input: any): input is string[] {
-  if (!Array.isArray(input)) {
-    return false;
-  }
-  for (const item of input) {
-    if (typeof item !== 'string') {
-      return false;
-    }
-  }
-  return true;
 }
 
 class GameLoader {

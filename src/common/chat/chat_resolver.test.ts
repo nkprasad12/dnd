@@ -22,8 +22,7 @@ test('processCommand with roll gives expected', async (done) => {
   const commandString = '!roll 2d20';
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.header).toContain('Result of');
-  expect(result?.header).toContain('rolls');
+  expect(result?.header).toContain('result:');
   done();
 });
 
