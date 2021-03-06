@@ -1,4 +1,4 @@
-import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
+import {CharacterSheetCache, LoadResult} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 
@@ -52,6 +52,13 @@ class FakeLoader {
   }
 }
 
+class FakeListener {
+  lastResult: LoadResult|undefined = undefined;
+  listener(result: LoadResult): void {
+    this.lastResult = result;
+  }
+}
+
 test('load throws on invalid sheet id', async (done) => {
   const loader = new FakeLoader();
   const cache = new CharacterSheetCache((id) => loader.load(id));
@@ -73,6 +80,27 @@ test('load loads valid sheet', async (done) => {
   const result = await cache.load(CALIGULA_SHEET);
   expect(result.loadedName).toBe(CALIGULA_DATA.name);
   expect(result.removedName).toBeUndefined();
+  done();
+});
+
+test('load loads valid sheet', async (done) => {
+  const loader = new FakeLoader();
+  const cache = new CharacterSheetCache((id) => loader.load(id));
+
+  expect(cache.getDataForName(CALIGULA_DATA.name)).toBeUndefined();
+  await cache.load(CALIGULA_SHEET);
+  expect(cache.getDataForName(CALIGULA_DATA.name)).toBe(CALIGULA_DATA);
+  done();
+});
+
+test('load updates listener', async (done) => {
+  const loader = new FakeLoader();
+  const cache = new CharacterSheetCache((id) => loader.load(id));
+  const listener = new FakeListener();
+  cache.addListener((result) => listener.listener(result));
+
+  const result = await cache.load(CALIGULA_SHEET);
+  expect(listener.lastResult).toBe(result);
   done();
 });
 
@@ -98,6 +126,20 @@ test('load different sheet returns expected sheet', async (done) => {
   expect(result.removedName).toBeUndefined();
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(1);
   expect(loader.invocations.get(BRUTUS_SHEET)).toBe(1);
+  done();
+});
+
+test('getNames returns expected', async (done) => {
+  const loader = new FakeLoader();
+  const cache = new CharacterSheetCache((id) => loader.load(id));
+
+  await cache.load(CALIGULA_SHEET);
+  await cache.load(BRUTUS_SHEET);
+
+  const names = cache.getNames();
+  expect(names.length).toBe(2);
+  expect(names).toContain(CALIGULA_DATA.name);
+  expect(names).toContain(BRUTUS_DATA.name);
   done();
 });
 
