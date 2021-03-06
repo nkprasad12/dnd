@@ -165,7 +165,6 @@ async function handleAttackCommand(
     return characterError;
   }
   const character = parsed.characters[0];
-  console.log(character);
 
   const weaponCompleter =
       Autocompleter.create(Array.from(character.attackBonuses.keys()));
