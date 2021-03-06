@@ -95,6 +95,25 @@ function processAttackBonuses(
   return result;
 }
 
+// TODO: Try to query directly. The sheets client API has literally
+//       every google service in it and slows down our build times
+//       considerably.
+//
+//       We can use the query below to build value queries, we just
+//       need to figure out how to parse the response to find the data.
+//
+// function buildQuery(sheetId: string) {
+//   const query =
+//       'https://sheets.googleapis.com/v4/spreadsheets/' +
+//           sheetId +
+//           '/values:batchGet' +
+//           `?key=${process.env.GOOGLE_API_KEY}` +
+//           `&majorDimension=ROWS` +
+//           RANGES.map((range) => '&ranges=' + range).join('');
+//   console.log(query);
+//   http.get(query, (res) => console.log(res));
+// }
+
 export async function extractSheetData(
     sheetId: string): Promise<CharacterSheetData> {
   const sheets = google.sheets('v4');
