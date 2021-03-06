@@ -127,7 +127,7 @@ export async function handleRollCommand(query: string): Promise<ChatMessage> {
   }
   const roll: DiceResult = checkDefined(result.result);
   return {
-    header: `Roll ${query} result: ${roll.value}`,
+    header: `Roll ${query.replace(/\s/g, '')} result: ${roll.value}`,
     body: roll.text,
   };
 }
