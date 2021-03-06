@@ -34,6 +34,16 @@ const LOCATION_TOKEN =
         DEFAULT_SIZE,
         DEFAULT_SPEED);
 
+function defaultToken(): RemoteTokenModel {
+  return new RemoteTokenModel(
+      DEFAULT_ID,
+      DEFAULT_LOCATION,
+      DEFAULT_NAME,
+      DEFAULT_IMAGE_SOURCE,
+      DEFAULT_SIZE,
+      DEFAULT_SPEED);
+}
+
 function defaultBoard(): RemoteBoardModel {
   return new RemoteBoardModel(
       DEFAULT_ID, DEFAULT_NAME, DEFAULT_IMAGE_SOURCE,
@@ -256,6 +266,24 @@ test('RemoteBoardModel isValid false without publicSelection', () => {
   expect(RemoteBoardModel.isValid(copy)).toBe(false);
 });
 
+test('RemoteBoardModel isValid false without cols', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.cols = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without gridOffset', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.gridOffset = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without rows', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.rows = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
 test('RemoteBoardModel isValid false invalid fogOfWar', () => {
   const copy = Object.assign(defaultBoard());
   copy.fogOfWar = [[0]];
@@ -266,4 +294,122 @@ test('RemoteBoardModel isValid false invalid fogOfWar', () => {
   const copy = Object.assign(defaultBoard());
   copy.tokens = [{not: 'aTokenModel'}];
   expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel fillDefaults adds empty token', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.tokens = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+  expect(Array.isArray(copy.tokens)).toBe(true);
+});
+
+test('RemoteBoardModel fillDefaults corrects tokens', () => {
+  const copy = Object.assign(defaultBoard());
+  const token = Object.assign(defaultToken());
+  token.speed = undefined;
+
+  expect(RemoteTokenModel.isValid(token)).toBe(false);
+  copy.tokens = [token];
+  RemoteBoardModel.fillDefaults(copy);
+  expect(RemoteTokenModel.isValid(copy.tokens[0])).toBe(true);
+});
+
+test('RemoteBoardModel fillDefaults no row fails', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.rows = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel fillDefaults no col fails', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.cols = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel fillDefaults adds gridOffset', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.gridOffset = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+  expect(copy.gridOffset).toBeDefined();
+});
+
+test('RemoteBoardModel fillDefaults no col fails', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.cols = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel fillDefaults adds fogOfWar with correct cols', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = undefined;
+  copy.cols = 17;
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.fogOfWar)).toBe(true);
+  expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
+  expect(copy.fogOfWar.length).toBe(17);
+});
+
+test('RemoteBoardModel fillDefaults adds fogOfWar with correct rows', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = undefined;
+  copy.rows = 17;
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.fogOfWar)).toBe(true);
+  expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
+  expect(copy.fogOfWar[0].length).toBe(17);
+});
+
+test('RemoteBoardModel fillDefaults adds fogOfWar corrects True', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = [['True']];
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.fogOfWar)).toBe(true);
+  expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
+  expect(copy.fogOfWar[0][0]).toBe('1');
+});
+
+test('RemoteBoardModel fillDefaults adds fogOfWar corrects others', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = [['17']];
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.fogOfWar)).toBe(true);
+  expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
+  expect(copy.fogOfWar[0][0]).toBe('0');
+});
+
+test('RemoteBoardModel fillDefaults adds publicSelection cols', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = undefined;
+  copy.cols = 17;
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.publicSelection)).toBe(true);
+  expect(Array.isArray(copy.publicSelection[0])).toBe(true);
+  expect(copy.publicSelection.length).toBe(17);
+});
+
+test('RemoteBoardModel fillDefaults adds publicSelection rows', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = undefined;
+  copy.rows = 17;
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.publicSelection)).toBe(true);
+  expect(Array.isArray(copy.publicSelection[0])).toBe(true);
+  expect(copy.publicSelection[0].length).toBe(17);
+});
+
+test('RemoteBoardModel fillDefaults adds publicSelection value', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = undefined;
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(copy.publicSelection[0][0]).toBe('0');
 });

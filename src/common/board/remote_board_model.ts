@@ -116,7 +116,7 @@ export class RemoteBoardModel {
 
   static fillDefaults(input: any): any {
     if (input.tokens === undefined) {
-      return;
+      input.tokens = [];
     }
     for (let i = 0; i < input.tokens.length; i++) {
       input.tokens[i] = RemoteTokenModel.fillDefaults(input.tokens[i]);
