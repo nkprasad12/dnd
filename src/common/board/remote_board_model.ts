@@ -236,8 +236,21 @@ export interface PublicSelectionDiff {
 }
 
 /** Represents a mutation of RemoteBoardModel. */
-export class RemoteBoardDiff {
-  static isValid(input: any): input is RemoteBoardDiff {
+export interface RemoteBoardDiff {
+    readonly id: string;
+    readonly name?: string;
+    readonly tokenDiffs: RemoteTokenDiff[];
+    readonly removedTokens: string[];
+    readonly newTokens: RemoteTokenModel[];
+    readonly publicSelectionDiffs: PublicSelectionDiff[];
+    readonly imageSource?: string;
+    readonly tileSize?: number;
+    readonly gridOffset?: Point;
+    readonly fogOfWarDiffs?: FogOfWarDiff[];
+}
+
+export namespace RemoteBoardDiff {
+  export function isValid(input: any): input is RemoteBoardDiff {
     const maybeDiff = (input as RemoteBoardDiff);
     const isValid =
         maybeDiff.id !== undefined &&
@@ -260,7 +273,7 @@ export class RemoteBoardDiff {
     return isValid;
   }
 
-  static computeBetween(
+  export function computeBetween(
       newModel: RemoteBoardModel,
       oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
     if (newModel.id != oldModel.id) {
@@ -345,30 +358,17 @@ export class RemoteBoardDiff {
       return undefined;
     }
 
-    return new RemoteBoardDiff(
-        newModel.id,
-        diffName,
-        modifiedTokens,
-        removedTokens,
-        newTokens,
-        publicSelectionDiffs,
-        diffImageSource,
-        diffTileSize,
-        diffGridOffset,
-        fogOfWarDiffs,
-    );
+    return {
+      id: newModel.id,
+      name: diffName,
+      tokenDiffs: modifiedTokens,
+      removedTokens: removedTokens,
+      newTokens: newTokens,
+      publicSelectionDiffs: publicSelectionDiffs,
+      imageSource: diffImageSource,
+      tileSize: diffTileSize,
+      gridOffset: diffGridOffset,
+      fogOfWarDiffs: fogOfWarDiffs,
+    };
   }
-
-  constructor(
-    readonly id: string,
-    readonly name?: string,
-    readonly tokenDiffs: RemoteTokenDiff[] = [],
-    readonly removedTokens: string[] = [],
-    readonly newTokens: RemoteTokenModel[] = [],
-    readonly publicSelectionDiffs: PublicSelectionDiff[] = [],
-    readonly imageSource?: string,
-    readonly tileSize?: number,
-    readonly gridOffset?: Point,
-    readonly fogOfWarDiffs?: FogOfWarDiff[],
-  ) { }
 }
