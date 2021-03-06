@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import {google, sheets_v4 as sheetsV4} from 'googleapis';
 import {checkDefined} from '_common/preconditions';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {ABILITY_ORDER, CharacterSheetData, SKILL_ORDER} from '_common/chat/command_handlers/types';
 
 
 const SHEET = 'v2.1!';
@@ -10,38 +10,10 @@ const PROF = 'H14';
 const NAME = 'C6';
 
 const SKILLS = 'I25:I42';
-const SKILL_ORDER = [
-  'Acrobatics',
-  'Animal Handling',
-  'Arcana',
-  'Athletics',
-  'Deception',
-  'History',
-  'Insight',
-  'Intimidation',
-  'Investigation',
-  'Medicine',
-  'Nature',
-  'Perception',
-  'Performance',
-  'Persuasion',
-  'Religion',
-  'Sleight of Hand',
-  'Stealth',
-  'Survival',
-];
 
 // Take every 5, starting with the second for abilities
 const ABILITIES = 'C13:C38';
 const SAVING_THROWS = 'I17:I22';
-const ABILITY_ORDER = [
-  'Strength',
-  'Dexterity',
-  'Constitution',
-  'Intelligence',
-  'Wisdom',
-  'Charisma',
-];
 
 const ATTACKS = 'R32:Y36';
 
