@@ -1,8 +1,15 @@
 /* istanbul ignore file */
-import {google, sheets_v4 as sheetsV4} from 'googleapis';
+import axios from 'axios';
 import {checkDefined} from '_common/preconditions';
 import {ABILITY_ORDER, AttackData, CharacterSheetData, SKILL_ORDER} from '_common/chat/command_handlers/types';
 
+
+namespace sheetsV4 {
+  export interface Schema$ValueRange {
+    range: string;
+    values: string[][];
+  }
+}
 
 const SHEET = 'v2.1!';
 
@@ -101,39 +108,51 @@ function processAttackBonuses(
   return result;
 }
 
-// TODO: Try to query directly. The sheets client API has literally
-//       every google service in it and slows down our build times
-//       considerably.
-//
-//       We can use the query below to build value queries, we just
-//       need to figure out how to parse the response to find the data.
-//
-// function buildQuery(sheetId: string) {
-//   const query =
-//       'https://sheets.googleapis.com/v4/spreadsheets/' +
-//           sheetId +
-//           '/values:batchGet' +
-//           `?key=${process.env.GOOGLE_API_KEY}` +
-//           `&majorDimension=ROWS` +
-//           RANGES.map((range) => '&ranges=' + range).join('');
-//   console.log(query);
-//   http.get(query, (res) => console.log(res));
+// To use the official Google API client:
+// Install "googleapis" (at version "^67.1.1")
+// Add the following import:
+//   import {google, sheets_v4 as sheetsV4} from 'googleapis';
+// and use the below function to request a sheet instead.
+// export async function requestFromGoogleApi(sheetId: string) {
+//   console.log('Requesting via Google API');
+//   const sheets = google.sheets('v4');
+//   const params = {
+//     auth: process.env.GOOGLE_API_KEY,
+//     spreadsheetId: sheetId,
+//     majorDimension: 'COLUMNS',
+//     ranges: RANGES,
+//   };
+//   const sheetValues = await sheets.spreadsheets.values.batchGet(params);
+//   if (sheetValues.status != 200) {
+//     throw new Error(
+//        'Was unable to retrieve data. Is this a permission issue?');
+//   }
+//   return checkDefined(sheetValues.data.valueRanges);
 // }
 
-export async function extractSheetData(
-    sheetId: string): Promise<CharacterSheetData> {
-  const sheets = google.sheets('v4');
-  const params = {
-    auth: process.env.GOOGLE_API_KEY,
-    spreadsheetId: sheetId,
-    majorDimension: 'COLUMNS',
-    ranges: RANGES,
-  };
-  const sheetValues = await sheets.spreadsheets.values.batchGet(params);
+function buildSheetsQuery(sheetId: string) {
+  const query =
+      'https://sheets.googleapis.com/v4/spreadsheets/' +
+          sheetId +
+          '/values:batchGet' +
+          `?key=${process.env.GOOGLE_API_KEY}` +
+          `&majorDimension=COLUMNS` +
+          RANGES.map((range) => '&ranges=' + range).join('');
+  console.log(query);
+  return query;
+}
+
+export async function requestFromAxios(sheetId: string) {
+  const sheetValues = await axios.get(buildSheetsQuery(sheetId));
   if (sheetValues.status != 200) {
     throw new Error('Was unable to retrieve data. Is this a permission issue?');
   }
-  const data = checkDefined(sheetValues.data.valueRanges);
+  return checkDefined(sheetValues.data.valueRanges);
+}
+
+export async function extractSheetData(
+    sheetId: string): Promise<CharacterSheetData> {
+  const data = await requestFromAxios(sheetId);
 
   return {
     name: processName(data[0]),
