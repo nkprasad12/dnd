@@ -359,7 +359,7 @@ export class RemoteBoardDiff {
     );
   }
 
-  private constructor(
+  constructor(
     readonly id: string,
     readonly name?: string,
     readonly tokenDiffs: RemoteTokenDiff[] = [],

@@ -1,4 +1,4 @@
-import {RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
 const DEFAULT_LOCATION = {row: 1, col: 7};
@@ -412,4 +412,11 @@ test('RemoteBoardModel fillDefaults adds publicSelection value', () => {
   RemoteBoardModel.fillDefaults(copy);
 
   expect(copy.publicSelection[0][0]).toBe('0');
+});
+
+test('RemoteBoardModel mergedWith throws on bad id', () => {
+  const board = defaultBoard();
+  const diff = new RemoteBoardDiff('whateverId');
+
+  expect(() => RemoteBoardModel.mergedWith(board, diff)).toThrow();
 });
