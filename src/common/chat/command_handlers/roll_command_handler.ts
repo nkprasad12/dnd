@@ -74,7 +74,7 @@ function resolveRollPart(input: string): DiceResolution {
   return {result: {value: sum, text: JSON.stringify(rolls)}};
 }
 
-function rollForString(query: string): DiceResolution {
+export function rollForString(query: string): DiceResolution {
   let parts = query.split('+');
   parts = parts.map((part) => part.trim());
   const resolution = parts.map((part) => resolveRollPart(part));

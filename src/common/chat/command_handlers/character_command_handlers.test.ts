@@ -11,7 +11,7 @@ const BOBBY_DATA: CharacterSheetData = {
   proficiencyBonus: 3,
   saveBonuses: new Map([['Dexterity', 0], ['Wisdom', -2]]),
   abilityBonuses: new Map(),
-  attackBonuses: new Map([['Words', 1]]),
+  attackBonuses: new Map([['Words', {toHit: 1, damageRoll: '1d8+2'}]]),
   checkBonuses: new Map([['Perception', 0], ['Arcana', 1]]),
 };
 
@@ -21,7 +21,9 @@ const BRUTUS_DATA: CharacterSheetData = {
   proficiencyBonus: 2,
   saveBonuses: new Map([['Dexterity', 3], ['Wisdom', -1]]),
   abilityBonuses: new Map(),
-  attackBonuses: new Map([['Longbow', 9], ['Dagger', 3]]),
+  attackBonuses: new Map([
+    ['Longbow', {toHit: 8, damageRoll: '1d8+2'}],
+    ['Dagger', {toHit: 3, damageRoll: 'malformed'}]]),
   checkBonuses: new Map([['Perception', 3], ['Arcana', 1]]),
 };
 
@@ -172,6 +174,22 @@ test('attackHandler basic matching request', async (done) => {
   done();
 });
 
+test('attackHandler basic with valid damage shows both', async (done) => {
+  const handler = await attackHandler();
+
+  const result = await handler('Longbow @Brutus');
+  expect(result.body).toContain('To hit');
+  expect(result.body).toContain('Damage');
+  done();
+});
+
+test('attackHandler basic with invalid damage shows to hit', async (done) => {
+  const handler = await attackHandler();
+
+  const result = await handler('Dagger @Brutus');
+  expect(result.body).toContain('To hit');
+  done();
+});
 
 test('saveHandler short lower case base query', async (done) => {
   const handler = await saveHandler();
@@ -210,7 +228,7 @@ test('saveHandler short lower case base query and name', async (done) => {
   done();
 });
 
-test('checkHandler short lower case base query', async (done) => {
+test('checkHandler short lower case base query and name', async (done) => {
   const handler = await checkHandler();
 
   const result = await handler('perc @bru');
@@ -219,7 +237,7 @@ test('checkHandler short lower case base query', async (done) => {
   done();
 });
 
-test('attackHandler short lower case base query', async (done) => {
+test('attackHandler short lower case base query and name', async (done) => {
   const handler = await attackHandler();
 
   const result = await handler('da @bru');
@@ -238,7 +256,7 @@ test('saveHandler advantage', async (done) => {
   done();
 });
 
-test('checkHandler short lower case base query', async (done) => {
+test('checkHandler advantage', async (done) => {
   const handler = await checkHandler();
 
   const result = await handler('perc @adv @bru');
@@ -247,7 +265,7 @@ test('checkHandler short lower case base query', async (done) => {
   done();
 });
 
-test('attackHandler short lower case base query', async (done) => {
+test('attackHandler advantage', async (done) => {
   const handler = await attackHandler();
 
   const result = await handler('da @adv @bru');
@@ -257,7 +275,7 @@ test('attackHandler short lower case base query', async (done) => {
 });
 
 
-test('saveHandler advantage', async (done) => {
+test('saveHandler disadvantage', async (done) => {
   const handler = await saveHandler();
 
   const result = await handler('dex @D @bru');
@@ -266,7 +284,7 @@ test('saveHandler advantage', async (done) => {
   done();
 });
 
-test('checkHandler short lower case base query', async (done) => {
+test('checkHandler disadvantage', async (done) => {
   const handler = await checkHandler();
 
   const result = await handler('perc @D @bru');
@@ -275,7 +293,7 @@ test('checkHandler short lower case base query', async (done) => {
   done();
 });
 
-test('attackHandler short lower case base query', async (done) => {
+test('attackHandler disadvantage', async (done) => {
   const handler = await attackHandler();
 
   const result = await handler('da @D @bru');

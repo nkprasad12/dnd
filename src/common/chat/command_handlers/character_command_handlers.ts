@@ -2,8 +2,10 @@ import {Autocompleter} from '_common/chat/autocompleter';
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
+import {rollForString} from '_common/chat/command_handlers/roll_command_handler';
 import {ABILITY_ORDER, ADVANTAGE, CharacterSheetData, DISADVANTAGE, SKILL_ORDER} from '_common/chat/command_handlers/types';
 import {rollDice} from '_common/chat/dice_roller';
+import {checkDefined} from '_common/preconditions';
 
 
 const AMBIGUOUS_CHARACTER = 'Multiple characters could match: ';
@@ -163,6 +165,7 @@ async function handleAttackCommand(
     return characterError;
   }
   const character = parsed.characters[0];
+  console.log(character);
 
   const weaponCompleter =
       Autocompleter.create(Array.from(character.attackBonuses.keys()));
@@ -175,18 +178,27 @@ async function handleAttackCommand(
   }
 
   const rolls = rollDice(20, parsed.advantage === 0 ? 1 : 2);
-  const modifier = getIgnoringCase(character.attackBonuses, weapon[0]);
-  if (modifier === undefined) {
+  const attackData = getIgnoringCase(character.attackBonuses, weapon[0]);
+  if (attackData === undefined) {
     return {
       header: 'Could not resolve request',
       body: query,
     };
   }
   const result =
-      modifier +
+      attackData.toHit +
           (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
   const header = `${character.name} ${weapon[0]} attack roll: ${result}`;
-  const body = `${result} = ${JSON.stringify(rolls)} + ${modifier}`;
+  const damageRoll = rollForString(attackData.damageRoll);
+  console.log(damageRoll);
+
+  let body = `<b>To hit:</b> ` +
+      `${result} = ${JSON.stringify(rolls)} + ${attackData.toHit}`;
+  if (!damageRoll.error) {
+    const damage = checkDefined(damageRoll.result);
+    body += `<br><b>Damage:</b> `;
+    body += `${damage.value} = ${damage.text}`;
+  }
   return {
     body: body,
     header: header,
