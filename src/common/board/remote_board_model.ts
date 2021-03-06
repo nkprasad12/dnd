@@ -100,10 +100,10 @@ export class RemoteBoardModel {
         maybeModel.cols !== undefined &&
         maybeModel.gridOffset !== undefined &&
         maybeModel.rows !== undefined;
-    if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
+    if (!isValid) {
       return false;
     }
-    if (!isValid) {
+    if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
       return false;
     }
     for (const maybeToken of maybeModel.tokens) {

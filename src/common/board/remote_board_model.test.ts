@@ -1,4 +1,4 @@
-import {RemoteTokenModel} from './remote_board_model';
+import {RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
 const DEFAULT_LOCATION = {row: 1, col: 7};
@@ -33,6 +33,12 @@ const LOCATION_TOKEN =
         DEFAULT_IMAGE_SOURCE,
         DEFAULT_SIZE,
         DEFAULT_SPEED);
+
+function defaultBoard(): RemoteBoardModel {
+  return new RemoteBoardModel(
+      DEFAULT_ID, DEFAULT_NAME, DEFAULT_IMAGE_SOURCE,
+      57, [DEFAULT_TOKEN], [['0']], [['0']], {x: 57, y: 57}, 1, 1);
+};
 
 test('RemoteTokenModel equals returns false for different inputs', () => {
   expect(RemoteTokenModel.equals(DEFAULT_TOKEN, ID_TOKEN)).toBe(false);
@@ -197,4 +203,67 @@ test('RemoteTokenModel computeDiff different ids throws', () => {
 test('RemoteTokenModel computeDiff different locations', () => {
   const diff = RemoteTokenModel.computeDiff(DEFAULT_TOKEN, LOCATION_TOKEN);
   expect(diff).toEqual({id: DEFAULT_ID, location: DEFAULT_LOCATION});
+});
+
+test('RemoteBoardModel isValid true on valid model', () => {
+  expect(RemoteBoardModel.isValid(defaultBoard())).toBe(true);
+});
+
+test('RemoteBoardModel isValid true on copied model', () => {
+  const copy = Object.assign(defaultBoard());
+  expect(RemoteBoardModel.isValid(copy)).toBe(true);
+});
+
+test('RemoteBoardModel isValid false without id', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.id = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without name', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.name = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without source', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.imageSource = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without tileSize', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.tileSize = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without tokens', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.tokens = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false without publicSelection', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = undefined;
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false invalid fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = [[0]];
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false invalid fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.tokens = [{not: 'aTokenModel'}];
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
 });
