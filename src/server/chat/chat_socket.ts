@@ -9,11 +9,14 @@ import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {extractSheetData} from '_server/sheets/sheets';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {attackCommandHandler, checkCommandHandler, saveCommandHandler} from '_common/chat/command_handlers/character_command_handlers';
+import {storageUtil} from '_server/storage/storage_util';
+import {isStringArray} from '_common/verification';
 
 
 export function registerChatRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
   const cache = CharacterSheetCache.create(extractSheetData);
+  const preloader = new SheetPreloader(cache);
   const resolver = CharacterResolver.create(cache);
   commandResolver().addCommandHandler(
       CommandType.Load, loadCommandHandler(cache));
@@ -23,9 +26,31 @@ export function registerChatRoutes(ioServer: Server): void {
       CommandType.Check, checkCommandHandler(resolver));
   commandResolver().addCommandHandler(
       CommandType.Save, saveCommandHandler(resolver));
-  ioServer
-      .of('/chat')
-      .on('connection', (socket) => ChatSocketServerConnection.create(socket));
+  ioServer.of('/chat').on('connection',
+      (socket) => {
+        preloader.preLoad();
+        ChatSocketServerConnection.create(socket);
+      });
+}
+
+class SheetPreloader {
+  private hasPreloaded = false;
+
+  constructor(private readonly cache: CharacterSheetCache) {}
+
+  async preLoad() {
+    if (this.hasPreloaded) {
+      return;
+    }
+    this.hasPreloaded = true;
+    const sheetData = await storageUtil().loadFromFile('saved_sheets.db');
+    console.log('Found saved sheets: ' + sheetData);
+    const sheets = JSON.parse(sheetData);
+    if (! isStringArray(sheets)) {
+      return;
+    }
+    sheets.forEach(async (sheet) => await this.cache.load(sheet));
+  }
 }
 
 class ChatSocketServerConnection {

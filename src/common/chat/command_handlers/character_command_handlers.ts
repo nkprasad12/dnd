@@ -189,7 +189,6 @@ async function handleAttackCommand(
           (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
   const header = `${character.name} ${weapon[0]} attack roll: ${result}`;
   const damageRoll = rollForString(attackData.damageRoll);
-  console.log(damageRoll);
 
   let body = `<b>To hit:</b> ` +
       `${result} = ${JSON.stringify(rolls)} + ${attackData.toHit}`;
