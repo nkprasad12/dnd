@@ -63,7 +63,7 @@ class BoardSocketServerConnection {
           return;
         }
       }
-      this.loader.saveBoard(message);
+      this.loader.createNewBoard(message);
     });
   }
 

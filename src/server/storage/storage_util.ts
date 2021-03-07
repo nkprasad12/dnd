@@ -21,8 +21,15 @@ async function downloadFile(
   const blob = storage.bucket(GCS_BUCKET).file(remotePath);
   // TODO: Keep track of what we've already checked
   // also, if there's a way to check the entire dir contents
-  if (!await blob.exists()) {
-    throw new Error(`File ${remotePath} was not found!`);
+  try {
+    const exists = await blob.exists();
+    if (!exists[0]) {
+      return Promise.reject(new Error(`File ${remotePath} was not found!`));
+    }
+  } catch (error) {
+    console.log('Error while checking if file exists!');
+    console.log(error);
+    return Promise.reject(new Error(`File ${remotePath} was not found!`));
   }
   return blob.download({destination: localPath}).then(() => {});
 }
@@ -63,7 +70,11 @@ class StorageUtil {
     // TODO: Make this check async.
     if (!fsPromises.existsSync(dest)) {
       const gcsDest = path.join(GCS_ROOT, UPLOAD_FOLDER, imageKey);
-      await downloadFile(gcsDest, dest);
+      try {
+        await downloadFile(gcsDest, dest);
+      } catch {
+        return Promise.reject(new Error('File does not exist: ' + imageKey));
+      }
       return dest;
     }
     return dest;

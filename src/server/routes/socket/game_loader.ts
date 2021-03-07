@@ -103,6 +103,10 @@ class GameCache {
     return false;
   }
 
+  async addNewBoard(board: RemoteBoardModel): Promise<void> {
+    this.cache.set(board.id, newBoard(board.id, board));
+  }
+
   /**
    * Returns the board with the given ID.
    *
@@ -146,7 +150,11 @@ class GameLoader {
       return this.activeBoard;
     }
     console.log('Getting active board from disk');
-    this.activeBoard = await storageUtil().loadFromFile(ACTIVE_DB);
+    try {
+      this.activeBoard = await storageUtil().loadFromFile(ACTIVE_DB);
+    } catch {
+      this.activeBoard = 'ERROR';
+    }
     return this.activeBoard;
   }
 
@@ -162,7 +170,10 @@ class GameLoader {
       return this.allBoardIds;
     }
     console.log('Reading all board ids from storage');
-    const allBoards = await storageUtil().loadFromFile(ALL_BOARD_DB);
+    let allBoards: undefined|string = undefined;
+    try {
+      allBoards = await storageUtil().loadFromFile(ALL_BOARD_DB);
+    } catch {}
     if (allBoards === undefined) {
       this.allBoardIds = [];
     } else {
@@ -192,6 +203,11 @@ class GameLoader {
    */
   async saveBoard(board: RemoteBoardModel): Promise<void> {
     await this.gameCache.updateBoard(board.id, board);
+    await this.updateAllBoardIds(board.id);
+  }
+
+  async createNewBoard(board: RemoteBoardModel): Promise<void> {
+    this.gameCache.addNewBoard(board);
     await this.updateAllBoardIds(board.id);
   }
 

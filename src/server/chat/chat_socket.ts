@@ -43,13 +43,15 @@ class SheetPreloader {
       return;
     }
     this.hasPreloaded = true;
-    const sheetData = await storageUtil().loadFromFile('saved_sheets.db');
-    console.log('Found saved sheets: ' + sheetData);
-    const sheets = JSON.parse(sheetData);
-    if (! isStringArray(sheets)) {
-      return;
-    }
-    sheets.forEach(async (sheet) => await this.cache.load(sheet));
+    try {
+      const sheetData = await storageUtil().loadFromFile('saved_sheets.db');
+      console.log('Found saved sheets: ' + sheetData);
+      const sheets = JSON.parse(sheetData);
+      if (! isStringArray(sheets)) {
+        return;
+      }
+      sheets.forEach(async (sheet) => await this.cache.load(sheet));
+    } catch {}
   }
 }
 
