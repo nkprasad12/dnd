@@ -84,7 +84,11 @@ class StorageUtil {
     const dest = path.join(ROOT, DB_FOLDER, fileKey);
     if (!fsPromises.existsSync(dest)) {
       const gcsDest = path.join(GCS_ROOT, DB_FOLDER, fileKey);
-      await downloadFile(gcsDest, dest);
+      try {
+        await downloadFile(gcsDest, dest);
+      } catch (error) {
+        return Promise.reject(error);
+      }
     }
     const buffer = await fsPromises.promises.readFile(dest);
     const result = buffer.toString();
