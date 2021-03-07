@@ -35,5 +35,8 @@ connectTo('chat')
       ChatBox.initialize(client);
     });
 
-
-loadActiveBoard();
+loadActiveBoard()
+    .catch((error) => {
+      console.log(error);
+      setLabel('An error occurred while loading the board... go check logs');
+    });
