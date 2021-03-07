@@ -275,7 +275,7 @@ export namespace RemoteBoardDiff {
       }
     }
     for (const newToken of maybeDiff.newTokens) {
-      if (!RemoteBoardModel.isValid(newToken)) {
+      if (!RemoteTokenModel.isValid(newToken)) {
         return false;
       }
     }

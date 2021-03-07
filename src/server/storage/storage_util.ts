@@ -71,7 +71,7 @@ class StorageUtil {
 
   /** Saves the given contents to the input file key. */
   saveToFile(contents: string, fileKey: string): void {
-    const dest = path.join(ROOT, UPLOAD_FOLDER, fileKey);
+    const dest = path.join(ROOT, DB_FOLDER, fileKey);
     // TODO: Should this be async?
     fsPromises.writeFileSync(dest, contents);
     const gcsDest = path.join(GCS_ROOT, DB_FOLDER, fileKey);

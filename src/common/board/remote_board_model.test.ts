@@ -1,4 +1,4 @@
-import {RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
+import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
 const DEFAULT_LOCATION = {row: 1, col: 7};
@@ -48,6 +48,16 @@ function defaultBoard(): RemoteBoardModel {
   return new RemoteBoardModel(
       DEFAULT_ID, DEFAULT_NAME, DEFAULT_IMAGE_SOURCE,
       57, [DEFAULT_TOKEN], [['0']], [['0']], {x: 57, y: 57}, 1, 1);
+};
+
+function defaultBoardDiff(): RemoteBoardDiff {
+  return {
+    id: DEFAULT_ID,
+    newTokens: [defaultToken()],
+    removedTokens: ['removedId'],
+    tokenDiffs: [{id: 'tokenDiffId', speed: 5}],
+    publicSelectionDiffs: [],
+  };
 };
 
 test('RemoteTokenModel equals returns false for different inputs', () => {
@@ -461,4 +471,51 @@ test('RemoteBoardModel mergedWith throws on bad id', () => {
   const diff = {id: 'whateverId'};
 
   expect(() => RemoteBoardModel.mergedWith(board, (diff as any))).toThrow();
+});
+
+test('RemoteBoardDiff isValid returns true on valid', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  expect(RemoteBoardDiff.isValid(copy)).toBe(true);
+});
+
+test('RemoteBoardDiff isValid requires id', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.id = undefined;
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardDiff isValid requires newTokens', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.newTokens = undefined;
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardDiff isValid requires removedTokens', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.removedTokens = undefined;
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardDiff isValid requires tokenDiffs', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.tokenDiffs = undefined;
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardDiff isValid requires tokenDiffs with ids', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.tokenDiffs = [{whatever: 'whatever'}];
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardDiff isValid requires valid newTokens', () => {
+  const copy = Object.assign(defaultBoardDiff());
+  copy.newTokens = [{whatever: 'whatever'}];
+
+  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
 });
