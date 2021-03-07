@@ -1,6 +1,7 @@
 import deepEqual from 'deep-equal';
 
 import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
+import {isGrid} from '_common/verification';
 
 const DEFAULT_SPEED = 6;
 
@@ -103,7 +104,13 @@ export class RemoteBoardModel {
     if (!isValid) {
       return false;
     }
+    if (!isGrid(maybeModel.fogOfWar, maybeModel.cols, maybeModel.rows)) {
+      return false;
+    }
     if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
+      return false;
+    }
+    if (!isGrid(maybeModel.publicSelection, maybeModel.cols, maybeModel.rows)) {
       return false;
     }
     for (const maybeToken of maybeModel.tokens) {
@@ -128,7 +135,8 @@ export class RemoteBoardModel {
     if (input.gridOffset === undefined) {
       input.gridOffset = {x: 0, y: 0};
     }
-    if (input.fogOfWar === undefined) {
+    if (input.fogOfWar === undefined ||
+        !isGrid(input.fogOfWar, input.cols, input.rows)) {
       input.fogOfWar = [];
       for (let i = 0; i < input.cols; i++) {
         input.fogOfWar.push([]);
@@ -151,7 +159,8 @@ export class RemoteBoardModel {
         }
       }
     }
-    if (input.publicSelection === undefined) {
+    if (input.publicSelection === undefined ||
+        !isGrid(input.publicSelection, input.cols, input.rows)) {
       input.publicSelection = [];
       for (let i = 0; i < input.cols; i++) {
         input.publicSelection.push([]);

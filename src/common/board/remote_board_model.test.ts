@@ -290,6 +290,30 @@ test('RemoteBoardModel isValid false invalid fogOfWar', () => {
   expect(RemoteBoardModel.isValid(copy)).toBe(false);
 });
 
+test('RemoteBoardModel isValid false on not array fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = 'blahblah';
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false on not 2Darray fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = ['blahblah'];
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false on not array publicSelection', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = 'blahblah';
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
+test('RemoteBoardModel isValid false on not 2Darray publicSelection', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = ['blahblah'];
+  expect(RemoteBoardModel.isValid(copy)).toBe(false);
+});
+
 test('RemoteBoardModel isValid false invalid fogOfWar', () => {
   const copy = Object.assign(defaultBoard());
   copy.tokens = [{not: 'aTokenModel'}];
@@ -382,6 +406,24 @@ test('RemoteBoardModel fillDefaults adds fogOfWar corrects others', () => {
   expect(Array.isArray(copy.fogOfWar)).toBe(true);
   expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
   expect(copy.fogOfWar[0][0]).toBe('0');
+});
+
+test('RemoteBoardModel fillDefaults corrects invalid fogOfWar', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.fogOfWar = '2DArray';
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.fogOfWar)).toBe(true);
+  expect(Array.isArray(copy.fogOfWar[0])).toBe(true);
+});
+
+test('RemoteBoardModel fillDefaults corrects invalid publicSelection', () => {
+  const copy = Object.assign(defaultBoard());
+  copy.publicSelection = '2DArray';
+  RemoteBoardModel.fillDefaults(copy);
+
+  expect(Array.isArray(copy.publicSelection)).toBe(true);
+  expect(Array.isArray(copy.publicSelection[0])).toBe(true);
 });
 
 test('RemoteBoardModel fillDefaults adds publicSelection cols', () => {
