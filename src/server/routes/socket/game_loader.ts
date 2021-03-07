@@ -41,6 +41,7 @@ interface CachedGame {
 }
 
 async function loadFromDisk(boardId: string): Promise<CachedGame> {
+  console.log('loadFromDisk called on id: ' + boardId);
   const fileKey = getBoardKey(boardId);
   const board = await loadBoard(fileKey);
 
@@ -86,11 +87,15 @@ class GameCache {
    *
    * @returns whether a new board was created.
    */
-  updateBoard(id: string, board: RemoteBoardModel): boolean {
-    if (this.getBoard(id) === undefined) {
+  async updateBoard(id: string, board: RemoteBoardModel): Promise<boolean> {
+    console.log('updateBoard called on id: ' + id);
+    try {
+      await this.getBoard(id);
+    } catch {
       this.cache.set(id, newBoard(id, board));
       return true;
     }
+    console.log('Found an existing board with the given id');
     const cachedBoard = checkDefined(this.cache.get(id));
     const currentTime = Date.now();
     cachedBoard.gameData = board;
@@ -102,11 +107,13 @@ class GameCache {
    * Returns the board with the given ID.
    *
    * If it is not in the cache, try to load it from storage.
-   * If is is not storage, returns undefined.
+   * If is is not storage, returns a rejected promise.
    */
   async getBoard(id: string): Promise<RemoteBoardModel> {
+    console.log('getBoard called on id ' + id);
     let result = this.cache.get(id);
     if (result === undefined) {
+      console.log('did not find board in cache');
       const loadedBoard = await loadFromDisk(id);
       this.cache.set(id, loadedBoard);
       result = loadedBoard;
@@ -183,9 +190,9 @@ class GameLoader {
    *
    * If there is an existing board with the same id, overwrites it.
    */
-  saveBoard(board: RemoteBoardModel): void {
-    this.gameCache.updateBoard(board.id, board);
-    this.updateAllBoardIds(board.id);
+  async saveBoard(board: RemoteBoardModel): Promise<void> {
+    await this.gameCache.updateBoard(board.id, board);
+    await this.updateAllBoardIds(board.id);
   }
 
   async retrieveBoard(boardId: string): Promise<RemoteBoardModel> {

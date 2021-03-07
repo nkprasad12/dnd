@@ -111,7 +111,7 @@ class BoardSocketServerConnection {
   private registerEventListener(
       event: string, listener: (message: string) => any) {
     this.socket.on(event, (message) => {
-      console.log(`[${event}] ${message}`);
+      console.log(`[${event}] ${JSON.stringify(message)}`);
       listener(message);
     });
   }

@@ -9,3 +9,25 @@ export function isStringArray(input: any): input is string[] {
   }
   return true;
 }
+
+export function isGrid(
+    input: any, cols: number, rows: number): input is any[][] {
+  if (!Array.isArray(input)) {
+    return false;
+  }
+  if (input.length !== cols) {
+    return false;
+  }
+  if (cols === 0) {
+    return true;
+  }
+  for (const column of input) {
+    if (!Array.isArray(column)) {
+      return false;
+    }
+    if (column.length !== rows) {
+      return false;
+    }
+  }
+  return true;
+}

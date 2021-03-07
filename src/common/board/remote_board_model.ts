@@ -1,6 +1,7 @@
 import deepEqual from 'deep-equal';
 
 import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
+import {isGrid} from '_common/verification';
 
 const DEFAULT_SPEED = 6;
 
@@ -100,10 +101,16 @@ export class RemoteBoardModel {
         maybeModel.cols !== undefined &&
         maybeModel.gridOffset !== undefined &&
         maybeModel.rows !== undefined;
+    if (!isValid) {
+      return false;
+    }
+    if (!isGrid(maybeModel.fogOfWar, maybeModel.cols, maybeModel.rows)) {
+      return false;
+    }
     if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
       return false;
     }
-    if (!isValid) {
+    if (!isGrid(maybeModel.publicSelection, maybeModel.cols, maybeModel.rows)) {
       return false;
     }
     for (const maybeToken of maybeModel.tokens) {
@@ -116,7 +123,7 @@ export class RemoteBoardModel {
 
   static fillDefaults(input: any): any {
     if (input.tokens === undefined) {
-      return;
+      input.tokens = [];
     }
     for (let i = 0; i < input.tokens.length; i++) {
       input.tokens[i] = RemoteTokenModel.fillDefaults(input.tokens[i]);
@@ -128,7 +135,8 @@ export class RemoteBoardModel {
     if (input.gridOffset === undefined) {
       input.gridOffset = {x: 0, y: 0};
     }
-    if (input.fogOfWar === undefined) {
+    if (input.fogOfWar === undefined ||
+        !isGrid(input.fogOfWar, input.cols, input.rows)) {
       input.fogOfWar = [];
       for (let i = 0; i < input.cols; i++) {
         input.fogOfWar.push([]);
@@ -151,7 +159,8 @@ export class RemoteBoardModel {
         }
       }
     }
-    if (input.publicSelection === undefined) {
+    if (input.publicSelection === undefined ||
+        !isGrid(input.publicSelection, input.cols, input.rows)) {
       input.publicSelection = [];
       for (let i = 0; i < input.cols; i++) {
         input.publicSelection.push([]);
@@ -236,8 +245,21 @@ export interface PublicSelectionDiff {
 }
 
 /** Represents a mutation of RemoteBoardModel. */
-export class RemoteBoardDiff {
-  static isValid(input: any): input is RemoteBoardDiff {
+export interface RemoteBoardDiff {
+    readonly id: string;
+    readonly name?: string;
+    readonly tokenDiffs: RemoteTokenDiff[];
+    readonly removedTokens: string[];
+    readonly newTokens: RemoteTokenModel[];
+    readonly publicSelectionDiffs: PublicSelectionDiff[];
+    readonly imageSource?: string;
+    readonly tileSize?: number;
+    readonly gridOffset?: Point;
+    readonly fogOfWarDiffs?: FogOfWarDiff[];
+}
+
+export namespace RemoteBoardDiff {
+  export function isValid(input: any): input is RemoteBoardDiff {
     const maybeDiff = (input as RemoteBoardDiff);
     const isValid =
         maybeDiff.id !== undefined &&
@@ -253,14 +275,14 @@ export class RemoteBoardDiff {
       }
     }
     for (const newToken of maybeDiff.newTokens) {
-      if (!RemoteBoardModel.isValid(newToken)) {
+      if (!RemoteTokenModel.isValid(newToken)) {
         return false;
       }
     }
     return isValid;
   }
 
-  static computeBetween(
+  export function computeBetween(
       newModel: RemoteBoardModel,
       oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
     if (newModel.id != oldModel.id) {
@@ -345,30 +367,17 @@ export class RemoteBoardDiff {
       return undefined;
     }
 
-    return new RemoteBoardDiff(
-        newModel.id,
-        diffName,
-        modifiedTokens,
-        removedTokens,
-        newTokens,
-        publicSelectionDiffs,
-        diffImageSource,
-        diffTileSize,
-        diffGridOffset,
-        fogOfWarDiffs,
-    );
+    return {
+      id: newModel.id,
+      name: diffName,
+      tokenDiffs: modifiedTokens,
+      removedTokens: removedTokens,
+      newTokens: newTokens,
+      publicSelectionDiffs: publicSelectionDiffs,
+      imageSource: diffImageSource,
+      tileSize: diffTileSize,
+      gridOffset: diffGridOffset,
+      fogOfWarDiffs: fogOfWarDiffs,
+    };
   }
-
-  private constructor(
-    readonly id: string,
-    readonly name?: string,
-    readonly tokenDiffs: RemoteTokenDiff[] = [],
-    readonly removedTokens: string[] = [],
-    readonly newTokens: RemoteTokenModel[] = [],
-    readonly publicSelectionDiffs: PublicSelectionDiff[] = [],
-    readonly imageSource?: string,
-    readonly tileSize?: number,
-    readonly gridOffset?: Point,
-    readonly fogOfWarDiffs?: FogOfWarDiff[],
-  ) { }
 }
