@@ -77,6 +77,17 @@ test('Autocompleter will find full token if no prefix matches', () => {
   expect(results).toContain('beautiful cabbages');
 });
 
+test('Autocompleter will prefix match first', () => {
+  const completer = Autocompleter.create();
+  const options = ['diocletian', 'farms', 'cabbages', 'beautiful cabbages'];
+
+  completer.addOptions(options);
+  const results = completer.getOptions('cabbages');
+
+  expect(results.length).toBe(1);
+  expect(results).toContain('cabbages');
+});
+
 function expectArraysMatch(first: string[], second: string[]): void {
   expect(first.sort()).toEqual(second.sort());
 }

@@ -24,8 +24,8 @@ export class Autocompleter {
       const char = entry.charAt(i);
       const maybeChild = currentNode.getChild(char);
       currentNode =
-        maybeChild !== undefined ?
-          maybeChild : currentNode.addValueAsNeighbor(char);
+          maybeChild !== undefined ?
+            maybeChild : currentNode.addValueAsNeighbor(char);
     }
 
     const tokens = option.split(' ');
@@ -33,9 +33,8 @@ export class Autocompleter {
       if (!this.tokenMap.has(token)) {
         this.tokenMap.set(token, [option]);
       } else {
-        const curOptions: string[] = checkDefined(this.tokenMap.get(token));
-        curOptions.push(option);
-        this.tokenMap.set(token, curOptions);
+        // Update the array held in the map by reference
+        checkDefined(this.tokenMap.get(token)).push(option);
       }
     });
   }
@@ -50,20 +49,20 @@ export class Autocompleter {
   /** Returns the autocomplete options for the given prefix string. */
   getOptions(input: string): string[] {
     const prefix = input.trim().toLowerCase();
-    let found: boolean = true;
+    let foundPrefixMatch: boolean = true;
     let prefixRoot = this.root;
 
     for (let i = 0; i < prefix.length; i++) {
       const char = prefix.charAt(i);
       const next = prefixRoot.getChild(char);
       if (next === undefined) {
-        found = false;
+        foundPrefixMatch = false;
         break;
       }
       prefixRoot = next;
     }
 
-    if (!found) {
+    if (!foundPrefixMatch) {
       return this.tokenMap.has(input) ?
         checkDefined(this.tokenMap.get(input)) : [];
     }
