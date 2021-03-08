@@ -66,6 +66,17 @@ test('Autocompleter returns all subpaths', () => {
   expect(results).toContain('diofarms');
 });
 
+test('Autocompleter will find full token if no prefix matches', () => {
+  const completer = Autocompleter.create();
+  const options = ['diocletian', 'farms', 'beautiful cabbages'];
+
+  completer.addOptions(options);
+  const results = completer.getOptions('cabbages');
+
+  expect(results.length).toBe(1);
+  expect(results).toContain('beautiful cabbages');
+});
+
 function expectArraysMatch(first: string[], second: string[]): void {
   expect(first.sort()).toEqual(second.sort());
 }

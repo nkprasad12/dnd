@@ -1,4 +1,5 @@
 import {GraphNode} from '_common/graphs/primitives';
+import {checkDefined} from '_common/preconditions';
 
 /** Represents an autocompleter for partial inputs. */
 export class Autocompleter {
@@ -11,8 +12,9 @@ export class Autocompleter {
   }
 
   private readonly root = new GraphNode('');
+  private tokenMap: Map<string, string[]> = new Map<string, string[]>();
 
-  private constructor() {}
+  private constructor() { }
 
   /** Adds the option to the list of outputs to complete to. Ignores case. */
   addOption(option: string): void {
@@ -22,9 +24,20 @@ export class Autocompleter {
       const char = entry.charAt(i);
       const maybeChild = currentNode.getChild(char);
       currentNode =
-          maybeChild !== undefined ?
-              maybeChild : currentNode.addValueAsNeighbor(char);
+        maybeChild !== undefined ?
+          maybeChild : currentNode.addValueAsNeighbor(char);
     }
+
+    const tokens = option.split(' ');
+    tokens.forEach((token) => {
+      if (!this.tokenMap.has(token)) {
+        this.tokenMap.set(token, [option]);
+      } else {
+        const existingOptions: string[] = checkDefined(this.tokenMap.get(token));
+        existingOptions.push(option);
+        this.tokenMap.set(token, existingOptions);
+      }
+    });
   }
 
   /** Adds the options to the list of outputs to complete to. Ignores case. */
@@ -37,17 +50,29 @@ export class Autocompleter {
   /** Returns the autocomplete options for the given prefix string. */
   getOptions(input: string): string[] {
     const prefix = input.trim().toLowerCase();
+    let found: boolean = true;
     let prefixRoot = this.root;
+    let result: string[] = [];
     for (let i = 0; i < prefix.length; i++) {
       const char = prefix.charAt(i);
       const next = prefixRoot.getChild(char);
       if (next === undefined) {
-        return [];
+        found = false;
+        break;
       }
       prefixRoot = next;
     }
-    const start = prefix.substr(0, prefix.length - 1);
-    return completeFromNode(prefixRoot).map((suffix) => start + suffix);
+
+    if (found) {
+      const start = prefix.substr(0, prefix.length - 1);
+      result = completeFromNode(prefixRoot).map((suffix) => start + suffix);
+    }
+
+    if (result.length > 0) {
+      return result;
+    } else {
+      return this.tokenMap.has(input) ? checkDefined(this.tokenMap.get(input)) : [];
+    }
   }
 }
 

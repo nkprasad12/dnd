@@ -9,7 +9,7 @@ Command | Effect
 `npm run build-client ` | Builds the client side code.
 `npm run build-server` | Builds the server side code.
 `npm run build` | Builds the client side code, server side code, and creates required directories.
-`npm run start` | Starts the server (but does not build anything new).
+`npm run start` | Starts the server (but does not build anything new). Site is accessible on the port specified in .env (e.g. http://localhost:5757/)
 `npm run start:client-inc` | Builds client code only and starts the server.
 `npm run start:full` | Builds all code and starts the server.
 `npm run test` | Runs all tests.
