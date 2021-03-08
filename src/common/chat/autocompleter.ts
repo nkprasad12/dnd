@@ -52,7 +52,7 @@ export class Autocompleter {
     const prefix = input.trim().toLowerCase();
     let found: boolean = true;
     let prefixRoot = this.root;
-    let result: string[] = [];
+
     for (let i = 0; i < prefix.length; i++) {
       const char = prefix.charAt(i);
       const next = prefixRoot.getChild(char);
@@ -63,17 +63,13 @@ export class Autocompleter {
       prefixRoot = next;
     }
 
-    if (found) {
-      const start = prefix.substr(0, prefix.length - 1);
-      result = completeFromNode(prefixRoot).map((suffix) => start + suffix);
-    }
-
-    if (result.length > 0) {
-      return result;
-    } else {
+    if (!found) {
       return this.tokenMap.has(input) ?
         checkDefined(this.tokenMap.get(input)) : [];
     }
+
+    const start = prefix.substr(0, prefix.length - 1);
+    return completeFromNode(prefixRoot).map((suffix) => start + suffix);
   }
 }
 
