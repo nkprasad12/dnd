@@ -33,9 +33,9 @@ export class Autocompleter {
       if (!this.tokenMap.has(token)) {
         this.tokenMap.set(token, [option]);
       } else {
-        const existingOptions: string[] = checkDefined(this.tokenMap.get(token));
-        existingOptions.push(option);
-        this.tokenMap.set(token, existingOptions);
+        const curOptions: string[] = checkDefined(this.tokenMap.get(token));
+        curOptions.push(option);
+        this.tokenMap.set(token, curOptions);
       }
     });
   }
@@ -71,7 +71,8 @@ export class Autocompleter {
     if (result.length > 0) {
       return result;
     } else {
-      return this.tokenMap.has(input) ? checkDefined(this.tokenMap.get(input)) : [];
+      return this.tokenMap.has(input) ?
+        checkDefined(this.tokenMap.get(input)) : [];
     }
   }
 }
