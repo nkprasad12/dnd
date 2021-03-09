@@ -5,6 +5,7 @@ import {isChatMessage} from '_common/chat/chat_model';
 import {commandResolver} from '_common/chat/chat_resolver';
 import {CommandType} from '_common/chat/command_parser';
 import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
+import {lookupCommandHandler} from '_common/chat/command_handlers/lookup_command_handler';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {extractSheetData} from '_server/sheets/sheets';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
@@ -37,6 +38,11 @@ export function registerChatRoutes(ioServer: Server): void {
     CommandType.Save,
     saveCommandHandler(resolver)
   );
+  commandResolver().addCommandHandler(
+    CommandType.Lookup,
+    lookupCommandHandler()
+  );
+
   ioServer.of('/chat').on('connection', (socket) => {
     preloader.preLoad();
     ChatSocketServerConnection.create(socket);
