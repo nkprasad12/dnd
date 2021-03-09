@@ -99,14 +99,14 @@ export class TokenModel {
   }
 
   remoteCopy(): RemoteTokenModel {
-    return new RemoteTokenModel(
-      this.id,
-      this.location,
-      this.name,
-      this.imageSource,
-      this.size,
-      this.speed
-    );
+    return {
+      id: this.id,
+      location: this.location,
+      name: this.name,
+      imageSource: this.imageSource,
+      size: this.size,
+      speed: this.speed,
+    };
   }
 
   mutableCopy(): MutableTokenModel {

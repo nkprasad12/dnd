@@ -1,4 +1,5 @@
 import deepEqual from 'deep-equal';
+import {TokenData} from '_common/board/token_data';
 
 import {
   areLocationsEqual,
@@ -14,8 +15,12 @@ const DEFAULT_SPEED = 6;
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
-export class RemoteTokenModel {
-  static isValid(input: any): input is RemoteTokenModel {
+export interface RemoteTokenModel extends TokenData {
+  readonly location: Location;
+}
+
+export namespace RemoteTokenModel {
+  export function isValid(input: any): input is RemoteTokenModel {
     const maybeToken = input as RemoteTokenModel;
     const isValid =
       maybeToken.id !== undefined &&
@@ -27,27 +32,21 @@ export class RemoteTokenModel {
     return isValid;
   }
 
-  static fillDefaults(input: any): any {
+  export function fillDefaults(input: any): any {
     if (input.speed === undefined) {
       input.speed = DEFAULT_SPEED;
     }
     return input;
   }
 
-  constructor(
-    readonly id: string,
-    readonly location: Location,
-    readonly name: string,
-    readonly imageSource: string,
-    readonly size: number,
-    readonly speed: number
-  ) {}
-
-  static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
+  export function equals(
+    first: RemoteTokenModel,
+    other: RemoteTokenModel
+  ): boolean {
     return deepEqual(first, other);
   }
 
-  static mergedWith(
+  export function mergedWith(
     model: RemoteTokenModel,
     diff: RemoteTokenDiff
   ): RemoteTokenModel {
@@ -55,17 +54,18 @@ export class RemoteTokenModel {
       console.log('[RemoteTokenModel] Diff ID does not match current ID');
       return model;
     }
-    return new RemoteTokenModel(
-      model.id,
-      diff.location === undefined ? model.location : diff.location,
-      diff.name === undefined ? model.name : diff.name,
-      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-      diff.size === undefined ? model.size : diff.size,
-      diff.speed === undefined ? model.speed : diff.speed
-    );
+    return {
+      id: model.id,
+      location: diff.location === undefined ? model.location : diff.location,
+      name: diff.name === undefined ? model.name : diff.name,
+      imageSource:
+        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+      size: diff.size === undefined ? model.size : diff.size,
+      speed: diff.speed === undefined ? model.speed : diff.speed,
+    };
   }
 
-  static computeDiff(
+  export function computeDiff(
     newModel: RemoteTokenModel,
     oldModel: RemoteTokenModel
   ): RemoteTokenDiff {
