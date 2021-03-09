@@ -36,8 +36,9 @@ export class GameBoard {
     private readonly local: boolean = false
   ) {
     this.view = new BoardView(getElementById(parentId));
-    const menu = new ContextMenu(getElementById('rightClickMenuStub'), (item) =>
-      this.onContextMenuClick(item)
+    const menu = ContextMenu.create(
+      getElementById('rightClickMenuStub'),
+      (item) => this.onContextMenuClick(item)
     );
     this.remoteBoard = new RemoteBoard(
       BoardModel.createRemote(model),

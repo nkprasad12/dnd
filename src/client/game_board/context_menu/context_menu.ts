@@ -4,14 +4,15 @@ import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view
 import {BoardModel} from '_client/game_board/model/board_model';
 
 export class ContextMenu {
-  private readonly view: ContextMenuView;
-
-  constructor(
+  static create(
     parent: HTMLElement,
     clickListener: (item: ContextMenuItem) => any
-  ) {
-    this.view = new ContextMenuView(parent, clickListener);
+  ): ContextMenu {
+    const view = new ContextMenuView(parent, clickListener);
+    return new ContextMenu(view);
   }
+
+  constructor(private readonly view: ContextMenuView) {}
 
   onNewModel(model: BoardModel): void {
     const invalidItems: ContextMenuItem[] = [];
