@@ -15,16 +15,18 @@ export class ContextMenu {
 
   onNewModel(model: BoardModel): void {
     const invalidItems: ContextMenuItem[] = [];
-    if (model.localSelection.length > 1) {
+    const selectedTiles = model.localSelection.length;
+    const hasToken =
+      selectedTiles > 0 && this.hasTokenAt(model, model.localSelection[0]);
+    if (selectedTiles > 1) {
       invalidItems.push(ContextMenuItem.AddToken);
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
-    } else if (
-      model.localSelection.length === 1 &&
-      !this.hasTokenAt(model, model.localSelection[0])
-    ) {
+    } else if (selectedTiles === 1 && !hasToken) {
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
+    } else if (selectedTiles === 1 && hasToken) {
+      invalidItems.push(ContextMenuItem.AddToken);
     }
 
     let fullFogTiles = 0;
