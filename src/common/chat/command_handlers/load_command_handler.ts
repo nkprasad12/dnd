@@ -2,13 +2,14 @@ import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 
-
 const SHEET_ID_PREFIX = 'spreadsheets/d/';
 const BAD_SHEET = ' was either not public, or was not in the expected format';
 
 /** Loads a character sheet from URL. */
 async function handleLoadCommand(
-    query: string, cache: CharacterSheetCache): Promise<ChatMessage> {
+  query: string,
+  cache: CharacterSheetCache
+): Promise<ChatMessage> {
   if (query.indexOf(SHEET_ID_PREFIX) === -1) {
     return loadErrorMessage(query);
   }

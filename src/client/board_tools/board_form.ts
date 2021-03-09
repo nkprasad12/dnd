@@ -35,8 +35,9 @@ function handleImageUpload(event: HTMLInputEvent): Promise<LoadedImage> {
 
   const loadImagePromise = loadImageFromFile(file);
   const saveImagePromise = saveImageToServer(file);
-  return Promise.all([loadImagePromise, saveImagePromise])
-      .then((promises) => new LoadedImage(promises[0], promises[1]));
+  return Promise.all([loadImagePromise, saveImagePromise]).then(
+    (promises) => new LoadedImage(promises[0], promises[1])
+  );
 }
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
@@ -117,7 +118,10 @@ function addParagraph(parent: HTMLElement, content: string): HTMLElement {
 }
 
 export function addLabel(
-    parent: HTMLElement, content: string, color?: string): HTMLElement {
+  parent: HTMLElement,
+  content: string,
+  color?: string
+): HTMLElement {
   const item = document.createElement('label');
   if (color !== undefined) {
     item.style.color = color;
@@ -144,7 +148,9 @@ function addBreak(parent: HTMLElement, numBreaks: number): void {
 }
 
 function addSubmitButton(
-    parent: HTMLElement, label: string): HTMLButtonElement {
+  parent: HTMLElement,
+  label: string
+): HTMLButtonElement {
   const item = createSubmitButton(label);
   parent.appendChild(item);
   return item;
@@ -158,8 +164,11 @@ function createSubmitButton(label: string): HTMLButtonElement {
 }
 
 function addInputSection(
-    parent: HTMLElement, label: string, inputType: InputType,
-    color?: string): HTMLInputElement {
+  parent: HTMLElement,
+  label: string,
+  inputType: InputType,
+  color?: string
+): HTMLInputElement {
   addLabel(parent, label, color);
   addBreak(parent, 1);
   const inputField = addInput(parent, inputType);
@@ -168,11 +177,16 @@ function addInputSection(
 }
 
 function addNumberInputSection(
-    parent: HTMLElement, label: string,
-    options?: NumberInputEntryOptions): HTMLElement {
-  const inputField =
-      addInputSection(
-          parent, label, InputType.NUMBER_INPUT, options?.textColor);
+  parent: HTMLElement,
+  label: string,
+  options?: NumberInputEntryOptions
+): HTMLElement {
+  const inputField = addInputSection(
+    parent,
+    label,
+    InputType.NUMBER_INPUT,
+    options?.textColor
+  );
   if (options?.min !== undefined) {
     inputField.min = String(options.min);
   }
@@ -185,25 +199,29 @@ function addNumberInputSection(
   return inputField;
 }
 
-
 type ResolvedListener = (resolved: boolean) => any;
 
 abstract class FormInputEntry<T> {
   abstract addToParent(parent: HTMLElement, listener: ResolvedListener): void;
-  abstract getResolved(): T|undefined;
+  abstract getResolved(): T | undefined;
 }
 
 export class TextInputEntry extends FormInputEntry<string> {
   private result?: string;
 
   constructor(
-      private readonly label: string, private readonly defaultValue?: string) {
+    private readonly label: string,
+    private readonly defaultValue?: string
+  ) {
     super();
   }
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField =
-        addInputSection(parent, this.label, InputType.TEXT_INPUT);
+    const inputField = addInputSection(
+      parent,
+      this.label,
+      InputType.TEXT_INPUT
+    );
     if (this.defaultValue !== undefined) {
       inputField.defaultValue = this.defaultValue;
       this.result = this.defaultValue;
@@ -211,13 +229,13 @@ export class TextInputEntry extends FormInputEntry<string> {
     }
     inputField.oninput = (event) => {
       // @ts-ignore
-      const target = (event.target as HTMLTextAreaElement);
+      const target = event.target as HTMLTextAreaElement;
       this.result = target.value.length === 0 ? undefined : target.value;
       listener(this.result != undefined);
     };
   }
 
-  getResolved(): string|undefined {
+  getResolved(): string | undefined {
     return this.result;
   }
 }
@@ -233,8 +251,9 @@ export class NumberInputEntry extends FormInputEntry<number> {
   private result?: number;
 
   constructor(
-      private readonly label: string,
-      private readonly options?: NumberInputEntryOptions) {
+    private readonly label: string,
+    private readonly options?: NumberInputEntryOptions
+  ) {
     super();
   }
 
@@ -245,14 +264,14 @@ export class NumberInputEntry extends FormInputEntry<number> {
       listener(true);
     }
     inputField.oninput = (event) => {
-      const target = (event.target as HTMLTextAreaElement);
+      const target = event.target as HTMLTextAreaElement;
       this.result =
-          target.value.length === 0 ? undefined : parseInt(target.value);
+        target.value.length === 0 ? undefined : parseInt(target.value);
       listener(this.result != undefined);
     };
   }
 
-  getResolved(): number|undefined {
+  getResolved(): number | undefined {
     return this.result;
   }
 }
@@ -264,39 +283,38 @@ export class ImageInputEntry extends FormInputEntry<LoadedImage> {
     super();
   }
 
-  addToParent(
-      parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField =
-        addInputSection(parent, this.label, InputType.IMAGE_INPUT);
-    inputField.onchange =
-      (event) => {
-        handleImageUpload((event as HTMLInputEvent))
-            .then((imageSource) => {
-              this.result = imageSource;
-              listener(true);
-            });
-      };
+  addToParent(parent: HTMLElement, listener: ResolvedListener): void {
+    const inputField = addInputSection(
+      parent,
+      this.label,
+      InputType.IMAGE_INPUT
+    );
+    inputField.onchange = (event) => {
+      handleImageUpload(event as HTMLInputEvent).then((imageSource) => {
+        this.result = imageSource;
+        listener(true);
+      });
+    };
   }
 
-  getResolved(): LoadedImage|undefined {
+  getResolved(): LoadedImage | undefined {
     return this.result;
   }
 }
 
 function addAllInputFields(
-    parent: HTMLElement,
-    inputEntries: FormInputEntry<any>[],
-    onAllInputsReady: (allReady: boolean) => any): void {
+  parent: HTMLElement,
+  inputEntries: FormInputEntry<any>[],
+  onAllInputsReady: (allReady: boolean) => any
+): void {
   const ready: boolean[] = [];
   for (let i = 0; i < inputEntries.length; i++) {
     const entry = inputEntries[i];
     ready.push(false);
-    entry.addToParent(
-        parent,
-        (isReady) => {
-          ready[i] = isReady;
-          onAllInputsReady(!ready.includes(false));
-        });
+    entry.addToParent(parent, (isReady) => {
+      ready[i] = isReady;
+      onAllInputsReady(!ready.includes(false));
+    });
   }
 }
 
@@ -306,16 +324,14 @@ abstract class BaseSimpleForm {
   private readonly submitButton: HTMLButtonElement;
 
   protected constructor(
-      parent: HTMLElement,
-      inputFields: FormInputEntry<any>[],
-      onSubmit: () => any) {
+    parent: HTMLElement,
+    inputFields: FormInputEntry<any>[],
+    onSubmit: () => any
+  ) {
     this.root = addDiv(parent);
-    addAllInputFields(
-        this.root,
-        inputFields,
-        (allReady) => {
-          this.submitButton.disabled = allReady ? false : true;
-        });
+    addAllInputFields(this.root, inputFields, (allReady) => {
+      this.submitButton.disabled = allReady ? false : true;
+    });
     this.submitButton = addSubmitButton(this.root, 'Update');
     this.submitButton.disabled = true;
     this.submitButton.style.display = 'block';
@@ -341,42 +357,44 @@ export interface BoardUpdateData {
 /** Class for a form requesting information to make a game board. */
 export class BoardUpdateForm extends BaseSimpleForm {
   static create(
-      parentId: string,
-      onUpdate: (data: BoardUpdateData) => any): void {
+    parentId: string,
+    onUpdate: (data: BoardUpdateData) => any
+  ): void {
     new BoardUpdateForm(getElementById(parentId), onUpdate);
   }
 
   private constructor(
-      parent: HTMLElement,
-      onUpdate: (data: BoardUpdateData) => any) {
-    const tileSizeEntry: NumberInputEntry =
-        new NumberInputEntry(
-            'Tile Size (in pixels)', {textColor: TEXT_COLOR, min: 10});
-    const offsetXEntry: NumberInputEntry =
-        new NumberInputEntry(
-            'Grid Offset X (in pixels, 0 <= offset < tileSize)',
-            {textColor: TEXT_COLOR, min: 0});
-    const offsetYEntry: NumberInputEntry =
-        new NumberInputEntry(
-            'Grid Offset Y (in pixel, 0 <= offset < tileSize)',
-            {textColor: TEXT_COLOR, min: 0});
-    super(
-        parent, [tileSizeEntry, offsetXEntry, offsetYEntry],
-        () => {
-          const tileSize =
-              checkDefined(tileSizeEntry.getResolved(), 'tileSize');
-          const offsetX =
-              checkDefined(offsetXEntry.getResolved(), 'offsetX');
-          const offsetY =
-              checkDefined(offsetYEntry.getResolved(), 'offsetY');
-          if (tileSize < 1 || offsetX < 0 ||
-             offsetX >= tileSize || offsetY < 0 || offsetY >= tileSize) {
-            console.log('Invalid input! ignoring');
-            return;
-          }
-          onUpdate({tileSize: tileSize, offset: {x: offsetX, y: offsetY}});
-        },
+    parent: HTMLElement,
+    onUpdate: (data: BoardUpdateData) => any
+  ) {
+    const tileSizeEntry: NumberInputEntry = new NumberInputEntry(
+      'Tile Size (in pixels)',
+      {textColor: TEXT_COLOR, min: 10}
     );
+    const offsetXEntry: NumberInputEntry = new NumberInputEntry(
+      'Grid Offset X (in pixels, 0 <= offset < tileSize)',
+      {textColor: TEXT_COLOR, min: 0}
+    );
+    const offsetYEntry: NumberInputEntry = new NumberInputEntry(
+      'Grid Offset Y (in pixel, 0 <= offset < tileSize)',
+      {textColor: TEXT_COLOR, min: 0}
+    );
+    super(parent, [tileSizeEntry, offsetXEntry, offsetYEntry], () => {
+      const tileSize = checkDefined(tileSizeEntry.getResolved(), 'tileSize');
+      const offsetX = checkDefined(offsetXEntry.getResolved(), 'offsetX');
+      const offsetY = checkDefined(offsetYEntry.getResolved(), 'offsetY');
+      if (
+        tileSize < 1 ||
+        offsetX < 0 ||
+        offsetX >= tileSize ||
+        offsetY < 0 ||
+        offsetY >= tileSize
+      ) {
+        console.log('Invalid input! ignoring');
+        return;
+      }
+      onUpdate({tileSize: tileSize, offset: {x: offsetX, y: offsetY}});
+    });
   }
 }
 
@@ -388,17 +406,17 @@ abstract class BaseDialogForm {
   private readonly error: HTMLSpanElement;
 
   protected constructor(
-      parent: HTMLElement,
-      title: string,
-      inputFields: FormInputEntry<any>[],
-      onSubmit: () => any) {
+    parent: HTMLElement,
+    title: string,
+    inputFields: FormInputEntry<any>[],
+    onSubmit: () => any
+  ) {
     this.modal = addModal(parent);
     this.modalContent = addModalContent(this.modal);
     const closeSpan = addCloseSpan(this.modalContent);
-    closeSpan.addEventListener(
-        'click', () => {
-          this.hide();
-        });
+    closeSpan.addEventListener('click', () => {
+      this.hide();
+    });
     addParagraph(this.modalContent, title);
     this.submitButton = createSubmitButton('Create');
     this.submitButton.style.display = 'none';
@@ -406,12 +424,9 @@ abstract class BaseDialogForm {
       this.hide();
       onSubmit();
     };
-    addAllInputFields(
-        this.modalContent,
-        inputFields,
-        (allReady) => {
-          this.submitButton.style.display = allReady ? 'block' : 'none';
-        });
+    addAllInputFields(this.modalContent, inputFields, (allReady) => {
+      this.submitButton.style.display = allReady ? 'block' : 'none';
+    });
     const previousDisplay = this.submitButton.style.display;
     this.error = addSpan(this.modalContent);
     this.error.style.color = 'red';
@@ -436,9 +451,10 @@ abstract class BaseDialogForm {
 /** Class for a form requesting information to make a game board. */
 export class NewBoardForm extends BaseDialogForm {
   static createOnClick(
-      bindingElementId: string,
-      parentId: string,
-      onNewBoard: (model: BoardModel) => any): void {
+    bindingElementId: string,
+    parentId: string,
+    onNewBoard: (model: BoardModel) => any
+  ): void {
     const boardForm = new NewBoardForm(getElementById(parentId), onNewBoard);
     getElementById(bindingElementId).onclick = () => {
       boardForm.show();
@@ -446,31 +462,38 @@ export class NewBoardForm extends BaseDialogForm {
   }
 
   private constructor(
-      parent: HTMLElement,
-      onNewBoard: (boardModel: BoardModel) => any) {
+    parent: HTMLElement,
+    onNewBoard: (boardModel: BoardModel) => any
+  ) {
     const boardNameEntry: TextInputEntry = new TextInputEntry('Board Name');
-    const tileSizeEntry: NumberInputEntry =
-        new NumberInputEntry('Tile Size (pixels)');
-    const backgroundImageEntry: ImageInputEntry =
-        new ImageInputEntry('Background Image');
+    const tileSizeEntry: NumberInputEntry = new NumberInputEntry(
+      'Tile Size (pixels)'
+    );
+    const backgroundImageEntry: ImageInputEntry = new ImageInputEntry(
+      'Background Image'
+    );
     super(
-        parent, 'Create a new board',
-        [boardNameEntry, tileSizeEntry, backgroundImageEntry],
-        () => {
-          const boardName =
-              checkDefined(boardNameEntry.getResolved(), 'boardName');
-          const tileSize =
-              checkDefined(tileSizeEntry.getResolved(), 'tileSize');
-          const backgroundImage =
-              checkDefined(
-                  backgroundImageEntry.getResolved(), 'backgroundImage');
-          onNewBoard(
-              BoardModel.Builder.forNewBoard()
-                  .setName(boardName)
-                  .setBackgroundImage(backgroundImage)
-                  .setTileSize(tileSize)
-                  .build());
-        },
+      parent,
+      'Create a new board',
+      [boardNameEntry, tileSizeEntry, backgroundImageEntry],
+      () => {
+        const boardName = checkDefined(
+          boardNameEntry.getResolved(),
+          'boardName'
+        );
+        const tileSize = checkDefined(tileSizeEntry.getResolved(), 'tileSize');
+        const backgroundImage = checkDefined(
+          backgroundImageEntry.getResolved(),
+          'backgroundImage'
+        );
+        onNewBoard(
+          BoardModel.Builder.forNewBoard()
+            .setName(boardName)
+            .setBackgroundImage(backgroundImage)
+            .setTileSize(tileSize)
+            .build()
+        );
+      }
     );
   }
 }
@@ -488,8 +511,9 @@ class TokenFormDefaults {
     this.speed = input === undefined ? 6 : input.speed;
     this.size = input === undefined ? 1 : input.size;
     this.icon =
-        input === undefined ?
-            undefined : new LoadedImage(input.image, input.imageSource);
+      input === undefined
+        ? undefined
+        : new LoadedImage(input.image, input.imageSource);
   }
 }
 
@@ -497,126 +521,132 @@ class TokenFormDefaults {
 export class NewTokenForm extends BaseDialogForm {
   static create(tile: Location, modelHandler: ModelHandler) {
     const form = new NewTokenForm(
-        // TODO: get this from the menu itself.
-        getElementById(TOKEN_FORM_STUB),
-        tile,
-        (token) => {
-          console.log('NewTokenForm onNewToken');
-          const newModel = modelHandler.copyModel();
-          newModel.tokens.push(token);
-          modelHandler.update(newModel);
-        },
-        new TokenFormDefaults());
+      // TODO: get this from the menu itself.
+      getElementById(TOKEN_FORM_STUB),
+      tile,
+      (token) => {
+        console.log('NewTokenForm onNewToken');
+        const newModel = modelHandler.copyModel();
+        newModel.tokens.push(token);
+        modelHandler.update(newModel);
+      },
+      new TokenFormDefaults()
+    );
     form.show();
   }
 
   static createOnClick(
-      bindingElementId: string,
-      parentId: string,
-      tile: Location,
-      onNewToken: (model: TokenModel) => any): void {
-    const boardForm =
-        new NewTokenForm(
-            getElementById(parentId), tile, onNewToken,
-            new TokenFormDefaults());
+    bindingElementId: string,
+    parentId: string,
+    tile: Location,
+    onNewToken: (model: TokenModel) => any
+  ): void {
+    const boardForm = new NewTokenForm(
+      getElementById(parentId),
+      tile,
+      onNewToken,
+      new TokenFormDefaults()
+    );
     getElementById(bindingElementId).onclick = () => {
       boardForm.show();
     };
   }
 
   private constructor(
-      parent: HTMLElement,
-      tile: Location,
-      onNewToken: (model: TokenModel) => any,
-      defaults: TokenFormDefaults,
-      label: string = 'Create a new token') {
+    parent: HTMLElement,
+    tile: Location,
+    onNewToken: (model: TokenModel) => any,
+    defaults: TokenFormDefaults,
+    label: string = 'Create a new token'
+  ) {
     const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
-    const sizeEntry: NumberInputEntry =
-        new NumberInputEntry('Size (tiles)', {defaultValue: defaults.size});
-    const speedEntry: NumberInputEntry =
-        new NumberInputEntry(
-            'Speed (tiles / move)', {defaultValue: defaults.speed});
-    const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
-    super(
-        parent, label,
-        [nameEntry, sizeEntry, speedEntry, iconEntry],
-        () => {
-          const name = checkDefined(nameEntry.getResolved(), 'name');
-          const icon = checkDefined(iconEntry.getResolved(), 'icon');
-          const speed = checkDefined(speedEntry.getResolved(), 'speed');
-          const size = checkDefined(sizeEntry.getResolved(), 'size');
-          const token = TokenModel.create(name, icon, size, tile, false, speed);
-          console.log(token);
-          onNewToken(token);
-        },
+    const sizeEntry: NumberInputEntry = new NumberInputEntry('Size (tiles)', {
+      defaultValue: defaults.size,
+    });
+    const speedEntry: NumberInputEntry = new NumberInputEntry(
+      'Speed (tiles / move)',
+      {defaultValue: defaults.speed}
     );
+    const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
+    super(parent, label, [nameEntry, sizeEntry, speedEntry, iconEntry], () => {
+      const name = checkDefined(nameEntry.getResolved(), 'name');
+      const icon = checkDefined(iconEntry.getResolved(), 'icon');
+      const speed = checkDefined(speedEntry.getResolved(), 'speed');
+      const size = checkDefined(sizeEntry.getResolved(), 'size');
+      const token = TokenModel.create(name, icon, size, tile, false, speed);
+      console.log(token);
+      onNewToken(token);
+    });
   }
 }
 
 /** Class for a form requesting information to make a game board. */
 export class EditTokenForm extends BaseDialogForm {
-  static create(
-      token: TokenModel,
-      modelHandler: ModelHandler): void {
+  static create(token: TokenModel, modelHandler: ModelHandler): void {
     const form = new EditTokenForm(
-        // TODO: get this from the menu itself.
-        getElementById(TOKEN_FORM_STUB),
-        token,
-        modelHandler,
-        (edited) => {
-          const newModel = modelHandler.copyModel();
-          let index: number|undefined = undefined;
-          for (let i = 0; i < newModel.tokens.length; i++) {
-            if (newModel.tokens[i].id === edited.id) {
-              index = i;
-              break;
-            }
+      // TODO: get this from the menu itself.
+      getElementById(TOKEN_FORM_STUB),
+      token,
+      modelHandler,
+      (edited) => {
+        const newModel = modelHandler.copyModel();
+        let index: number | undefined = undefined;
+        for (let i = 0; i < newModel.tokens.length; i++) {
+          if (newModel.tokens[i].id === edited.id) {
+            index = i;
+            break;
           }
-          if (index === undefined) {
-            console.log('Could not find token to update!');
-            return;
-          }
-          newModel.tokens[index] = edited;
-          modelHandler.update(newModel);
-        });
+        }
+        if (index === undefined) {
+          console.log('Could not find token to update!');
+          return;
+        }
+        newModel.tokens[index] = edited;
+        modelHandler.update(newModel);
+      }
+    );
     form.show();
   }
 
   private constructor(
-      parent: HTMLElement,
-      token: TokenModel,
-      modelHandler: ModelHandler,
-      onInputComplete: (model: TokenModel) => any,
-      label: string = 'Edit Token') {
-    const nameEntry: TextInputEntry =
-        new TextInputEntry('Token Name', token.name);
-    const sizeEntry: NumberInputEntry =
-        new NumberInputEntry('Size (tiles)', {defaultValue: token.size});
-    const speedEntry: NumberInputEntry =
-        new NumberInputEntry(
-            'Speed (tiles / move)', {defaultValue: token.speed});
-    super(
-        parent, label, [nameEntry, sizeEntry, speedEntry],
-        () => {
-          const name = checkDefined(nameEntry.getResolved(), 'name');
-          const speed = checkDefined(speedEntry.getResolved(), 'speed');
-          const size = checkDefined(sizeEntry.getResolved(), 'size');
-
-          const collisions = modelHandler.collisionIds(token.location, size);
-          if (collisions.length > 1 ||
-              (collisions.length === 1 && collisions[0] !== token.id)) {
-            // TODO: Show the user this error.
-            console.log('Token would collide, ignoring request');
-            return;
-          }
-
-          const edited = token.mutableCopy();
-          edited.name = name;
-          edited.speed = speed;
-          edited.size = size;
-          console.log('Edited token: ' + JSON.stringify(edited));
-          onInputComplete(edited.freeze());
-        },
+    parent: HTMLElement,
+    token: TokenModel,
+    modelHandler: ModelHandler,
+    onInputComplete: (model: TokenModel) => any,
+    label: string = 'Edit Token'
+  ) {
+    const nameEntry: TextInputEntry = new TextInputEntry(
+      'Token Name',
+      token.name
     );
+    const sizeEntry: NumberInputEntry = new NumberInputEntry('Size (tiles)', {
+      defaultValue: token.size,
+    });
+    const speedEntry: NumberInputEntry = new NumberInputEntry(
+      'Speed (tiles / move)',
+      {defaultValue: token.speed}
+    );
+    super(parent, label, [nameEntry, sizeEntry, speedEntry], () => {
+      const name = checkDefined(nameEntry.getResolved(), 'name');
+      const speed = checkDefined(speedEntry.getResolved(), 'speed');
+      const size = checkDefined(sizeEntry.getResolved(), 'size');
+
+      const collisions = modelHandler.collisionIds(token.location, size);
+      if (
+        collisions.length > 1 ||
+        (collisions.length === 1 && collisions[0] !== token.id)
+      ) {
+        // TODO: Show the user this error.
+        console.log('Token would collide, ignoring request');
+        return;
+      }
+
+      const edited = token.mutableCopy();
+      edited.name = name;
+      edited.speed = speed;
+      edited.size = size;
+      console.log('Edited token: ' + JSON.stringify(edited));
+      onInputComplete(edited.freeze());
+    });
   }
 }

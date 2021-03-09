@@ -22,6 +22,10 @@
   },
   "author": "",
   "license": "ISC",
+  "prettier": {
+    "singleQuote": true,
+    "bracketSpacing": false
+  },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
     "@types/connect-ensure-login": "^0.1.5",
@@ -43,9 +47,13 @@
     "clean-webpack-plugin": "^3.0.0",
     "eslint": "^7.21.0",
     "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.1.0",
     "html-webpack-plugin": "^5.2.0",
+    "husky": "^4.3.8",
     "jest": "^26.6.3",
+    "lint-staged": "^10.5.4",
     "mock-fs": "^4.13.0",
+    "prettier": "2.2.1",
     "socket.io-client": "^3.1.2",
     "supertest": "^6.1.3",
     "ts-jest": "^26.5.2",
@@ -69,5 +77,14 @@
     "passport-local": "^1.0.0",
     "socket.io": "^3.1.2",
     "split.js": "^1.6.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*.{ts,css}": "prettier --write"
   }
 }

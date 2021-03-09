@@ -3,11 +3,9 @@ import {checkDefined} from '_common/preconditions';
 import {isStringArray} from '_common/verification';
 import {storageUtil} from '_server/storage/storage_util';
 
-
 const CACHE_SAVE_INTERNAL_MS = 60000;
 const ACTIVE_DB = 'active.db';
 const ALL_BOARD_DB = 'all_boards.db';
-
 
 /** Returns the file key to find the given board id. */
 function getBoardKey(boardId: string): string {
@@ -139,8 +137,8 @@ class GameCache {
 }
 
 class GameLoader {
-  private activeBoard: string|undefined;
-  private allBoardIds: string[]|undefined;
+  private activeBoard: string | undefined;
+  private allBoardIds: string[] | undefined;
   private gameCache = GameCache.create();
 
   /** Returns the ID of the active board. */
@@ -170,7 +168,7 @@ class GameLoader {
       return this.allBoardIds;
     }
     console.log('Reading all board ids from storage');
-    let allBoards: undefined|string = undefined;
+    let allBoards: undefined | string = undefined;
     try {
       allBoards = await storageUtil().loadFromFile(ALL_BOARD_DB);
     } catch {}
@@ -216,8 +214,7 @@ class GameLoader {
   }
 }
 
-
-let cachedGameLoader: GameLoader|undefined = undefined;
+let cachedGameLoader: GameLoader | undefined = undefined;
 
 export function gameLoader(): GameLoader {
   if (cachedGameLoader === undefined) {

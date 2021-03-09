@@ -1,6 +1,5 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 
-
 test('Autocompleter completes empty string with all options', () => {
   const completer = Autocompleter.create();
   const options = ['Diocletian', 'Farms', 'Cabbages'];

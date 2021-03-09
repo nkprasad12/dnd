@@ -24,7 +24,10 @@ function addDropdownContent(parent: HTMLElement): HTMLElement {
 }
 
 function addButtonItem(
-    parent: HTMLElement, className: string, label: string): HTMLElement {
+  parent: HTMLElement,
+  className: string,
+  label: string
+): HTMLElement {
   const item = document.createElement('button');
   item.type = 'button';
   item.className = className;
@@ -34,7 +37,9 @@ function addButtonItem(
 }
 
 function addSelectorItem(
-    parent: HTMLElement, model: BoardSelectorItem): HTMLElement {
+  parent: HTMLElement,
+  model: BoardSelectorItem
+): HTMLElement {
   const className = model.isSelected ? 'btn btn-primary' : 'btn';
   return addButtonItem(parent, className, model.boardId);
 }
@@ -45,12 +50,14 @@ class BoardSelectorItem {
 
 export class BoardSelectorModel {
   static async createForActiveSetting(
-      server: BoardServer,
-      boards: Promise<string[]>): Promise<BoardSelectorModel> {
+    server: BoardServer,
+    boards: Promise<string[]>
+  ): Promise<BoardSelectorModel> {
     const allBoards = await boards;
     const activeBoard = await server.requestActiveBoardId();
-    const items: BoardSelectorItem[] =
-        allBoards.map((id) => new BoardSelectorItem(id, id === activeBoard));
+    const items: BoardSelectorItem[] = allBoards.map(
+      (id) => new BoardSelectorItem(id, id === activeBoard)
+    );
     return new BoardSelectorModel(items);
   }
 
@@ -61,9 +68,10 @@ export class BoardSelectorView {
   private readonly content;
 
   constructor(
-      parent: HTMLElement,
-      label: string,
-      private readonly clickListener: (id: string) => any) {
+    parent: HTMLElement,
+    label: string,
+    private readonly clickListener: (id: string) => any
+  ) {
     parent.style.zIndex = '100';
     const root = addDropdown(parent);
     addDropdownButton(root, label);
@@ -90,40 +98,46 @@ export function removeChildrenOf(id: string) {
 
 export class BoardSelector {
   static createActiveBoardSelector(
-      parentId: string,
-      server: BoardServer,
-      boards: Promise<string[]>): BoardSelector {
+    parentId: string,
+    server: BoardServer,
+    boards: Promise<string[]>
+  ): BoardSelector {
     return new BoardSelector(
-        getElementById(parentId),
-        'Set Active',
-        (id) => server.setActiveBoard(id),
-        BoardSelectorModel.createForActiveSetting(server, boards));
+      getElementById(parentId),
+      'Set Active',
+      (id) => server.setActiveBoard(id),
+      BoardSelectorModel.createForActiveSetting(server, boards)
+    );
   }
 
   static createEditBoardSelector(
-      parentId: string,
-      onSelection: (id: string) => any,
-      boards: Promise<string[]>): BoardSelector {
-    const initialModel =
-        boards.then(
-            (ids) =>
-              new BoardSelectorModel(
-                  ids.map((id) => new BoardSelectorItem(id, false))));
+    parentId: string,
+    onSelection: (id: string) => any,
+    boards: Promise<string[]>
+  ): BoardSelector {
+    const initialModel = boards.then(
+      (ids) =>
+        new BoardSelectorModel(
+          ids.map((id) => new BoardSelectorItem(id, false))
+        )
+    );
     return new BoardSelector(
-        getElementById(parentId),
-        'Edit Existing',
-        onSelection,
-        initialModel);
+      getElementById(parentId),
+      'Edit Existing',
+      onSelection,
+      initialModel
+    );
   }
 
   private model: BoardSelectorModel = new BoardSelectorModel([]);
   private view: BoardSelectorView;
 
   private constructor(
-      private readonly parent: HTMLElement,
-      label: string,
-      onSelection: (id: string) => any,
-      initialModel: Promise<BoardSelectorModel>) {
+    private readonly parent: HTMLElement,
+    label: string,
+    onSelection: (id: string) => any,
+    initialModel: Promise<BoardSelectorModel>
+  ) {
     const listener = (id: string) => {
       for (const item of this.model.items) {
         item.isSelected = id === item.boardId;
@@ -132,11 +146,10 @@ export class BoardSelector {
       onSelection(id);
     };
     const view = new BoardSelectorView(this.parent, label, listener);
-    initialModel
-        .then((model) => {
-          this.model = model;
-          view.bind(this.model);
-        });
+    initialModel.then((model) => {
+      this.model = model;
+      view.bind(this.model);
+    });
     this.view = view;
   }
 

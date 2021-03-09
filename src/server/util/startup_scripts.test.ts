@@ -6,7 +6,6 @@ import {writeGoogleCredentials} from './startup_scripts';
 const EXPECTED_FILE = 'Hasdrubal.txt';
 const ORIGINAL_ENV = process.env;
 
-
 beforeEach(() => {
   jest.resetModules();
   process.env = {...ORIGINAL_ENV};
@@ -35,6 +34,7 @@ test('writeGoogleCredentials writes to file', () => {
   writeGoogleCredentials();
 
   expect(fs.existsSync(EXPECTED_FILE)).toBe(true);
-  expect(fs.readFileSync(EXPECTED_FILE).toString())
-      .toBe(process.env.GOOGLE_KEY);
+  expect(fs.readFileSync(EXPECTED_FILE).toString()).toBe(
+    process.env.GOOGLE_KEY
+  );
 });

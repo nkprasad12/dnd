@@ -12,14 +12,12 @@ export enum ContextMenuItem {
   EditToken = 'Edit Token',
   CopyToken = 'Copy Token',
   ZoomIn = 'Zoom In',
-  ZoomOut = 'Zoom Out'
+  ZoomOut = 'Zoom Out',
 }
 
 /** Data model for a context menu on the game board. */
 export class ContextMenuModel {
-  constructor(
-    public clickPoint: Point,
-    public isVisible: boolean) { }
+  constructor(public clickPoint: Point, public isVisible: boolean) {}
 
   deepCopy(): ContextMenuModel {
     return new ContextMenuModel(this.clickPoint, this.isVisible);

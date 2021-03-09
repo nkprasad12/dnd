@@ -25,9 +25,9 @@ export class CharacterResolver {
 
   complete(namePrefix: string): CharacterSheetData[] {
     return this.completer
-        .getOptions(namePrefix)
-        .map((name) => this.cache.getDataForName(name))
-        .filter(notUndefined);
+      .getOptions(namePrefix)
+      .map((name) => this.cache.getDataForName(name))
+      .filter(notUndefined);
   }
 }
 

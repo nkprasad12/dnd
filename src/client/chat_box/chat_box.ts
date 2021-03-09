@@ -9,8 +9,9 @@ export class ChatBox {
   private view: ChatBoxView;
 
   private constructor(client: ChatClient) {
-    this.view =
-        ChatBoxView.createDefault((message) => client.sendMessage(message));
+    this.view = ChatBoxView.createDefault((message) =>
+      client.sendMessage(message)
+    );
     client.getMessageUpdates((message) => this.view.addMessage(message));
   }
 }

@@ -1,4 +1,10 @@
-import {Location, areLocationsEqual, tileDistance, arePointsEqual, Point} from '_common/coordinates';
+import {
+  Location,
+  areLocationsEqual,
+  tileDistance,
+  arePointsEqual,
+  Point,
+} from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
@@ -13,7 +19,9 @@ const publicSelectionBlue: string = 'rgba(0, 0, 204, 0.20)';
 const publicSelectionOrange: string = 'rgba(255, 128, 0, 0.20)';
 
 function createBoardCanvas(
-    zIndex: string, parent: HTMLElement): HTMLCanvasElement {
+  zIndex: string,
+  parent: HTMLElement
+): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
 
   canvas.style.zIndex = zIndex;
@@ -44,8 +52,7 @@ export class BoardView {
     this.tokenCanvas = createBoardCanvas('2', parent);
     this.fogOfWarCanvas = createBoardCanvas('3', parent);
     this.publicSelectionCanvas = createBoardCanvas('4', parent);
-    this.localSelectionCanvas =
-        createBoardCanvas('5', parent);
+    this.localSelectionCanvas = createBoardCanvas('5', parent);
     this.gridCanvas = createBoardCanvas('6', parent);
     this.topCanvas = createBoardCanvas('7', parent);
     this.allCanvases = [
@@ -72,11 +79,15 @@ export class BoardView {
   }
 
   private handleGridParameterChange(
-      newModel: BoardModel, backgroundChange: boolean): void {
-    if (this.model !== undefined &&
-        !backgroundChange &&
-        newModel.tileSize === this.model.tileSize &&
-        arePointsEqual(newModel.gridOffset, this.model.gridOffset)) {
+    newModel: BoardModel,
+    backgroundChange: boolean
+  ): void {
+    if (
+      this.model !== undefined &&
+      !backgroundChange &&
+      newModel.tileSize === this.model.tileSize &&
+      arePointsEqual(newModel.gridOffset, this.model.gridOffset)
+    ) {
       return;
     }
     this.model = undefined;
@@ -93,7 +104,7 @@ export class BoardView {
   private bindBackgroundImage(newModel: BoardModel): boolean {
     const scaleChange = this.model?.scale !== newModel.scale;
     const backgroundChange =
-        this.model?.backgroundImage !== newModel.backgroundImage;
+      this.model?.backgroundImage !== newModel.backgroundImage;
     const needsUpdate =
       this.model === undefined || scaleChange || backgroundChange;
 
@@ -109,8 +120,11 @@ export class BoardView {
       canvas.height = newModel.height * newModel.scale;
       getContext(canvas).scale(newModel.scale, newModel.scale);
     }
-    getContext(this.backgroundCanvas)
-        .drawImage(newModel.backgroundImage.image, 0, 0);
+    getContext(this.backgroundCanvas).drawImage(
+      newModel.backgroundImage.image,
+      0,
+      0
+    );
     return true;
   }
 
@@ -118,9 +132,9 @@ export class BoardView {
     let needsUpdate = backgroundChange;
     if (this.model != undefined) {
       const model = this.model;
-      needsUpdate = needsUpdate || (model.cols != newModel.cols);
-      needsUpdate = needsUpdate || (model.rows != newModel.rows);
-      needsUpdate = needsUpdate || (model.tileSize != newModel.tileSize);
+      needsUpdate = needsUpdate || model.cols != newModel.cols;
+      needsUpdate = needsUpdate || model.rows != newModel.rows;
+      needsUpdate = needsUpdate || model.tileSize != newModel.tileSize;
     } else {
       needsUpdate = true;
     }
@@ -171,7 +185,9 @@ export class BoardView {
   }
 
   private bindFogOfWarState(
-      newModel: BoardModel, backgroundChange: boolean): void {
+    newModel: BoardModel,
+    backgroundChange: boolean
+  ): void {
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
         const tile = this.tiles[i][j];
@@ -181,7 +197,9 @@ export class BoardView {
   }
 
   private bindLocalSelection(
-      newModel: BoardModel, backgroundChange: boolean): void {
+    newModel: BoardModel,
+    backgroundChange: boolean
+  ): void {
     let oldSelection: Location[] = [];
     if (this.model != undefined) {
       oldSelection = this.model.localSelection;
@@ -218,12 +236,16 @@ export class BoardView {
   }
 
   private bindPublicSelection(
-      newModel: BoardModel, backgroundChange: boolean): void {
+    newModel: BoardModel,
+    backgroundChange: boolean
+  ): void {
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
         const tile = this.tiles[i][j];
         tile.bindPublicSelection(
-            newModel.publicSelection[i][j], backgroundChange);
+          newModel.publicSelection[i][j],
+          backgroundChange
+        );
       }
     }
   }
@@ -233,31 +255,40 @@ export class BoardView {
     for (let i = 0; i < model.cols; i++) {
       this.tiles.push([]);
       for (let j = 0; j < model.rows; j++) {
-        const startPoint =
-            getStartPoint({col: i, row: j}, model.gridOffset, model.tileSize);
+        const startPoint = getStartPoint(
+          {col: i, row: j},
+          model.gridOffset,
+          model.tileSize
+        );
         this.tiles[i].push(
-            new Tile(
-                model.tileSize,
-                startPoint.x,
-                startPoint.y,
-                this.fogOfWarCanvas,
-                this.localSelectionCanvas,
-                this.publicSelectionCanvas,
-                this.gridCanvas));
+          new Tile(
+            model.tileSize,
+            startPoint.x,
+            startPoint.y,
+            this.fogOfWarCanvas,
+            this.localSelectionCanvas,
+            this.publicSelectionCanvas,
+            this.gridCanvas
+          )
+        );
       }
     }
   }
 
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
     const tokenSize = tokenModel.size * newModel.tileSize;
-    const startPoint =
-        getStartPoint(
-            tokenModel.location, newModel.gridOffset, newModel.tileSize);
-    getContext(this.tokenCanvas)
-        .drawImage(tokenModel.image,
-            startPoint.x,
-            startPoint.y,
-            tokenSize, tokenSize);
+    const startPoint = getStartPoint(
+      tokenModel.location,
+      newModel.gridOffset,
+      newModel.tileSize
+    );
+    getContext(this.tokenCanvas).drawImage(
+      tokenModel.image,
+      startPoint.x,
+      startPoint.y,
+      tokenSize,
+      tokenSize
+    );
     if (tokenModel.isActive) {
       this.getTile(tokenModel.location).activeTokenGrid();
       for (const tile of this.getMovableTiles(tokenModel, newModel)) {
@@ -269,14 +300,17 @@ export class BoardView {
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
     const tokenSize = tokenModel.size * newModel.tileSize;
-    const startPoint =
-        getStartPoint(
-            tokenModel.location, newModel.gridOffset, newModel.tileSize);
-    getContext(this.tokenCanvas)
-        .clearRect(
-            startPoint.x - 1,
-            startPoint.y - 1,
-            tokenSize + 2, tokenSize + 2);
+    const startPoint = getStartPoint(
+      tokenModel.location,
+      newModel.gridOffset,
+      newModel.tileSize
+    );
+    getContext(this.tokenCanvas).clearRect(
+      startPoint.x - 1,
+      startPoint.y - 1,
+      tokenSize + 2,
+      tokenSize + 2
+    );
     this.getTile(tokenModel.location).defaultGrid();
     if (tokenModel.isActive) {
       for (const tile of this.getMovableTiles(tokenModel, newModel)) {
@@ -287,7 +321,9 @@ export class BoardView {
   }
 
   private getMovableTiles(
-      tokenModel: TokenModel, newModel: BoardModel): Tile[] {
+    tokenModel: TokenModel,
+    newModel: BoardModel
+  ): Tile[] {
     const result: Tile[] = [];
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
@@ -305,10 +341,7 @@ export class BoardView {
   }
 }
 
-function getStartPoint(
-    tile: Location,
-    offset: Point,
-    tileSize: number): Point {
+function getStartPoint(tile: Location, offset: Point, tileSize: number): Point {
   let startX = tile.col * tileSize;
   let startY = tile.row * tileSize;
   if (offset.x > 0) {
@@ -326,66 +359,88 @@ class Tile {
   publicSelectionState = '0';
 
   constructor(
-      private size: number,
-      private startX: number,
-      private startY: number,
-      private fogOfWarCanvas: HTMLCanvasElement,
-      private localSelectionCanvas: HTMLCanvasElement,
-      private publicSelectionCanvas: HTMLCanvasElement,
-      private gridCanvas: HTMLCanvasElement) {
+    private size: number,
+    private startX: number,
+    private startY: number,
+    private fogOfWarCanvas: HTMLCanvasElement,
+    private localSelectionCanvas: HTMLCanvasElement,
+    private publicSelectionCanvas: HTMLCanvasElement,
+    private gridCanvas: HTMLCanvasElement
+  ) {
     this.size = size;
     this.fogOfWarCanvas = fogOfWarCanvas;
     this.gridCanvas = gridCanvas;
   }
 
   private clearGrid(): void {
-    getContext(this.gridCanvas)
-        .clearRect(
-            this.startX - 1, this.startY - 1,
-            this.size + 2, this.size + 2);
+    getContext(this.gridCanvas).clearRect(
+      this.startX - 1,
+      this.startY - 1,
+      this.size + 2,
+      this.size + 2
+    );
   }
 
   defaultGrid(): void {
     this.clearGrid();
     drawCanvasTile(
-        this.startX, this.startY, this.size, defaultGridColor, this.gridCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      defaultGridColor,
+      this.gridCanvas
+    );
   }
 
   localSelectionOn(): void {
     fillCanvasTile(
-        this.startX, this.startY, this.size, selectedTileColor,
-        this.localSelectionCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      selectedTileColor,
+      this.localSelectionCanvas
+    );
   }
 
   selectionOff(): void {
-    getContext(this.localSelectionCanvas)
-        .clearRect(this.startX, this.startY, this.size, this.size);
+    getContext(this.localSelectionCanvas).clearRect(
+      this.startX,
+      this.startY,
+      this.size,
+      this.size
+    );
   }
 
   movableToSelectionOn(): void {
     fillCanvasTile(
-        this.startX, this.startY, this.size, movableToGridColor,
-        this.localSelectionCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      movableToGridColor,
+      this.localSelectionCanvas
+    );
   }
 
   selectedGrid(): void {
     this.clearGrid();
     drawCanvasTile(
-        this.startX,
-        this.startY,
-        this.size,
-        selectedGridColor,
-        this.gridCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      selectedGridColor,
+      this.gridCanvas
+    );
   }
 
   activeTokenGrid(): void {
     this.clearGrid();
     drawCanvasTile(
-        this.startX,
-        this.startY,
-        this.size,
-        activeTokenColor,
-        this.gridCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      activeTokenColor,
+      this.gridCanvas
+    );
   }
 
   movableToGrid(): void {
@@ -393,11 +448,12 @@ class Tile {
     // bring it back. Might be better to have movable on a different layer.
     this.clearGrid();
     drawCanvasTile(
-        this.startX,
-        this.startY,
-        this.size,
-        movableToTileColor,
-        this.gridCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      movableToTileColor,
+      this.gridCanvas
+    );
   }
 
   bindPublicSelection(selection: string, backgroundChange: boolean): void {
@@ -405,16 +461,25 @@ class Tile {
       return;
     }
     this.publicSelectionState = selection;
-    getContext(this.publicSelectionCanvas)
-        .clearRect(this.startX, this.startY, this.size, this.size);
+    getContext(this.publicSelectionCanvas).clearRect(
+      this.startX,
+      this.startY,
+      this.size,
+      this.size
+    );
     if (selection === '0') {
       // 0 is for no selection, so we're done.
       return;
     }
     const color =
-        selection === '1' ? publicSelectionBlue : publicSelectionOrange;
+      selection === '1' ? publicSelectionBlue : publicSelectionOrange;
     fillCanvasTile(
-        this.startX, this.startY, this.size, color, this.publicSelectionCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      color,
+      this.publicSelectionCanvas
+    );
   }
 
   bindFogOfWar(fogState: string, backgroundChange: boolean): void {
@@ -422,20 +487,28 @@ class Tile {
       return;
     }
     this.fogState = fogState;
-    getContext(this.fogOfWarCanvas)
-        .clearRect(this.startX, this.startY, this.size, this.size);
+    getContext(this.fogOfWarCanvas).clearRect(
+      this.startX,
+      this.startY,
+      this.size,
+      this.size
+    );
     if (fogState === '0') {
       // 0 is for no fog, so we're done.
       return;
     }
     const color = fogState === '1' ? fogColor : peekFogColor;
     fillCanvasTile(
-        this.startX, this.startY, this.size, color, this.fogOfWarCanvas);
+      this.startX,
+      this.startY,
+      this.size,
+      color,
+      this.fogOfWarCanvas
+    );
   }
 }
 
-export function addButton(
-    parent: HTMLElement, label: string): HTMLElement {
+export function addButton(parent: HTMLElement, label: string): HTMLElement {
   const item = document.createElement('button');
   item.type = 'button';
   item.innerHTML = label;
@@ -452,11 +525,12 @@ function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 function drawCanvasTile(
-    x: number,
-    y: number,
-    size: number,
-    color: string,
-    canvas: HTMLCanvasElement): void {
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  canvas: HTMLCanvasElement
+): void {
   const ctx = getContext(canvas);
 
   ctx.beginPath();
@@ -467,11 +541,12 @@ function drawCanvasTile(
 }
 
 function fillCanvasTile(
-    x: number,
-    y: number,
-    size: number,
-    color: string,
-    canvas: HTMLCanvasElement): void {
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  canvas: HTMLCanvasElement
+): void {
   const ctx = getContext(canvas);
 
   ctx.beginPath();

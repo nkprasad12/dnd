@@ -14,7 +14,7 @@ export class Autocompleter {
   private readonly root = new GraphNode('');
   private tokenMap: Map<string, string[]> = new Map<string, string[]>();
 
-  private constructor() { }
+  private constructor() {}
 
   /** Adds the option to the list of outputs to complete to. Ignores case. */
   addOption(option: string): void {
@@ -24,8 +24,9 @@ export class Autocompleter {
       const char = entry.charAt(i);
       const maybeChild = currentNode.getChild(char);
       currentNode =
-          maybeChild !== undefined ?
-            maybeChild : currentNode.addValueAsNeighbor(char);
+        maybeChild !== undefined
+          ? maybeChild
+          : currentNode.addValueAsNeighbor(char);
     }
 
     const tokens = option.split(' ');
@@ -63,8 +64,9 @@ export class Autocompleter {
     }
 
     if (!foundPrefixMatch) {
-      return this.tokenMap.has(input) ?
-        checkDefined(this.tokenMap.get(input)) : [];
+      return this.tokenMap.has(input)
+        ? checkDefined(this.tokenMap.get(input))
+        : [];
     }
 
     const start = prefix.substr(0, prefix.length - 1);
@@ -77,7 +79,7 @@ function completeFromNode(start: GraphNode<string>): string[] {
     return [start.value];
   }
   return start.neighbors
-      .map((node) => completeFromNode(node))
-      .reduce((collected, current) => collected.concat(current), [])
-      .map((suffix) => start.value + suffix);
+    .map((node) => completeFromNode(node))
+    .reduce((collected, current) => collected.concat(current), [])
+    .map((suffix) => start.value + suffix);
 }

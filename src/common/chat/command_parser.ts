@@ -49,12 +49,14 @@ export function processCommand(inputString: string): ProcessCommandResult {
   if (options.length === 0) {
     return {error: {commandAttempt: maybeCommand, possibleTypes: []}};
   }
-  const optionEnums =
-      options.map((str) => checkDefined(COMMAND_TYPE_LOOKUP.get(str)));
+  const optionEnums = options.map((str) =>
+    checkDefined(COMMAND_TYPE_LOOKUP.get(str))
+  );
   if (optionEnums.length === 1) {
-    const query =
-        spaceIndex === -1 ? '' : input.substring(spaceIndex).trim();
+    const query = spaceIndex === -1 ? '' : input.substring(spaceIndex).trim();
     return {command: {command: optionEnums[0], query: query}};
   }
-  return {error: {commandAttempt: maybeCommand, possibleTypes: optionEnums}};
+  return {
+    error: {commandAttempt: maybeCommand, possibleTypes: optionEnums},
+  };
 }

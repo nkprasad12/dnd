@@ -30,13 +30,12 @@ document.getElementsByTagName('body')[0].appendChild(listContainer);
 listContainer.appendChild(listElement);
 
 const socketPromise: Promise<Socket_> = connectTo('chat');
-socketPromise
-    .then((socket) => {
-      socket.emit('nitin', 'Connected from upload.ts');
-      socket.on('nitin', (message) => {
-        addToList(JSON.stringify(message));
-      });
-    });
+socketPromise.then((socket) => {
+  socket.emit('nitin', 'Connected from upload.ts');
+  socket.on('nitin', (message) => {
+    addToList(JSON.stringify(message));
+  });
+});
 
 /**  */
 function addToList(message: string) {

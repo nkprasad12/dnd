@@ -1,5 +1,7 @@
 export function rollDice(numSides: number, numDice: number = 1): number[] {
-  return Array(numDice).fill(0).map(() => rollDie(numSides));
+  return Array(numDice)
+    .fill(0)
+    .map(() => rollDie(numSides));
 }
 
 function rollDie(numSides: number): number {

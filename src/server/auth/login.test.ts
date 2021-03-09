@@ -3,7 +3,6 @@ import {setupLogin} from '_server/auth/login';
 import express from 'express';
 import passport from 'passport';
 
-
 const ORIGINAL_ENV = process.env;
 
 beforeEach(() => {

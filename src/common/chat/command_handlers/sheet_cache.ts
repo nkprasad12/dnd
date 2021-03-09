@@ -1,7 +1,6 @@
 import {checkDefined} from '_common/preconditions';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
-
 export type CharacterLoader = (id: string) => Promise<CharacterSheetData>;
 export type CacheListener = (update: LoadResult) => any;
 
@@ -33,7 +32,7 @@ export class CharacterSheetCache {
   }
 
   /** Returns the data for the character with the given name. */
-  getDataForName(name: string): CharacterSheetData|undefined {
+  getDataForName(name: string): CharacterSheetData | undefined {
     return this.nameDataMap.get(name.toLowerCase());
   }
 
@@ -48,7 +47,7 @@ export class CharacterSheetCache {
     if (hasSheet && !force) {
       return {loadedName: checkDefined(this.sheetNameMap.get(sheetId))};
     }
-    let removedName: string|undefined = undefined;
+    let removedName: string | undefined = undefined;
     if (hasSheet) {
       removedName = this.sheetNameMap.get(sheetId);
       if (removedName) {

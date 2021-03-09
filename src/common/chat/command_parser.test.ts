@@ -1,6 +1,5 @@
 import {CommandType, processCommand} from '_common/chat/command_parser';
 
-
 test('processCommand on non command gives error', () => {
   const result = processCommand('Restitutor Orbis Invictus');
 
@@ -14,8 +13,9 @@ test('processCommand on ambiguous command gives error', () => {
 
   expect(result.command).toBeUndefined();
   expect(result.error).toBeDefined();
-  expect(result.error?.possibleTypes.length)
-      .toBe(Object.keys(CommandType).length);
+  expect(result.error?.possibleTypes.length).toBe(
+    Object.keys(CommandType).length
+  );
 });
 
 test('processCommand on short input gives expected', () => {

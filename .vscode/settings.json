@@ -1,6 +1,4 @@
 {
-    "python.autoComplete.extraPaths": [
-        "./**"
-    ],
-    "python.formatting.provider": "yapf",
+  "python.autoComplete.extraPaths": ["./**"],
+  "python.formatting.provider": "yapf"
 }

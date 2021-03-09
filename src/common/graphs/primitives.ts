@@ -11,7 +11,7 @@ export class GraphNode<T> {
    * Returns the first neighbor with a value that matches the target value.
    * Returns undefined if no neighbors have the target value.
    */
-  getChild(searchValue: T): GraphNode<T>|undefined {
+  getChild(searchValue: T): GraphNode<T> | undefined {
     for (const neighbor of this.neighbors) {
       if (neighbor.value === searchValue) {
         return neighbor;

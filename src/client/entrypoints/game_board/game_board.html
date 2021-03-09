@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>DnD Game Board</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+      integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="./styles/navbar.css" />
+    <link rel="stylesheet" type="text/css" href="./styles/game_board.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8" />
-  <title>DnD Game Board</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
-    integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
-    crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="./styles/navbar.css">
-  <link rel="stylesheet" type="text/css" href="./styles/game_board.css">
-</head>
-
-<body style="background-color:rgb(39, 39, 39);">
-  <div id="panel1" class="split left">
-    <div id="canvasHolder" style="position:relative;"></div>
-    <div id="rightClickMenuStub"></div>
-    <div id="addNewIconFormStub" style="z-index: 30" style="display: top"></div>
-  </div>
-  <div id="panel2" class="split right">
-    <div style="background-color:rgb(69, 69, 69);">
-      <div class="topnav">
-        <a class="active" href="./gameBoard">Game Board</a>
-        <a href="./boardTools">Board Tools</a>
-        <a href="./sandbox">Sandbox</a>
-        <a href="./index">Index</a>
-      </div>
-      <div id="chatBoxStub">
-        <!-- <textarea placeholder="Roll via: [Name] [Command]" class="chat-input" rows="1"></textarea>
+  <body style="background-color: rgb(39, 39, 39)">
+    <div id="panel1" class="split left">
+      <div id="canvasHolder" style="position: relative"></div>
+      <div id="rightClickMenuStub"></div>
+      <div
+        id="addNewIconFormStub"
+        style="z-index: 30"
+        style="display: top"
+      ></div>
+    </div>
+    <div id="panel2" class="split right">
+      <div style="background-color: rgb(69, 69, 69)">
+        <div class="topnav">
+          <a class="active" href="./gameBoard">Game Board</a>
+          <a href="./boardTools">Board Tools</a>
+          <a href="./sandbox">Sandbox</a>
+          <a href="./index">Index</a>
+        </div>
+        <div id="chatBoxStub">
+          <!-- <textarea placeholder="Roll via: [Name] [Command]" class="chat-input" rows="1"></textarea>
         <div style="overflow-y: auto; height: 100%;">
           <div class="chat-text">
             <p>Here's a message</p>
@@ -34,9 +40,8 @@
               than the first.</p>
           </div>
         </div> -->
+        </div>
       </div>
     </div>
-  </div>
-</body>
-
+  </body>
 </html>

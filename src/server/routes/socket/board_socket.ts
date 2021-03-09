@@ -1,15 +1,17 @@
 import {Server, Socket} from 'socket.io';
 
 import * as Events from '_common/board/board_events';
-import {RemoteBoardDiff, RemoteBoardModel} from '_common/board/remote_board_model';
+import {
+  RemoteBoardDiff,
+  RemoteBoardModel,
+} from '_common/board/remote_board_model';
 import {gameLoader} from '_server/routes/socket/game_loader';
-
 
 export function registerBoardRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
   ioServer
-      .of('/board')
-      .on('connection', (socket) => BoardSocketServerConnection.create(socket));
+    .of('/board')
+    .on('connection', (socket) => BoardSocketServerConnection.create(socket));
 }
 
 class BoardSocketServerConnection {
@@ -42,14 +44,16 @@ class BoardSocketServerConnection {
   }
 
   private updateLocalBoard(
-      id: string, diff: RemoteBoardDiff): Promise<RemoteBoardModel> {
-    const updatedBoard =
-        this.loader.retrieveBoard(id)
-            .then((board) => RemoteBoardModel.mergedWith(board, diff))
-            .catch(() => {
-              console.log('TODO: If you see this, ask the client their board.');
-              throw new Error('Received update for non-existant board!');
-            });
+    id: string,
+    diff: RemoteBoardDiff
+  ): Promise<RemoteBoardModel> {
+    const updatedBoard = this.loader
+      .retrieveBoard(id)
+      .then((board) => RemoteBoardModel.mergedWith(board, diff))
+      .catch(() => {
+        console.log('TODO: If you see this, ask the client their board.');
+        throw new Error('Received update for non-existant board!');
+      });
     updatedBoard.then((board) => this.loader.saveBoard(board));
     return updatedBoard;
   }
@@ -69,36 +73,33 @@ class BoardSocketServerConnection {
 
   private handleGetRequests() {
     this.registerEventListener(Events.BOARD_GET_REQUEST, (message) => {
-      this.loader.retrieveBoard(message)
-          .then((board) => {
-            console.log(
-                `[${Events.BOARD_GET_RESPONSE}] board ${board?.id}`);
-            this.socket.emit(Events.BOARD_GET_RESPONSE, board);
-          });
+      this.loader.retrieveBoard(message).then((board) => {
+        console.log(`[${Events.BOARD_GET_RESPONSE}] board ${board?.id}`);
+        this.socket.emit(Events.BOARD_GET_RESPONSE, board);
+      });
     });
   }
 
   private handleGetAllRequests() {
     this.registerEventListener(Events.BOARD_GET_ALL_REQUEST, () => {
-      this.loader.retrieveAllBoardIds()
-          .then((boardList) => {
-            console.log(
-                `Sending [${Events.BOARD_GET_ALL_RESPONSE}] ${boardList}`);
-            this.socket.emit(Events.BOARD_GET_ALL_RESPONSE, boardList);
-          });
+      this.loader.retrieveAllBoardIds().then((boardList) => {
+        console.log(`Sending [${Events.BOARD_GET_ALL_RESPONSE}] ${boardList}`);
+        this.socket.emit(Events.BOARD_GET_ALL_RESPONSE, boardList);
+      });
     });
   }
 
   private handleGetActiveRequests() {
     this.registerEventListener(Events.BOARD_GET_ACTIVE_REQUEST, () => {
-      this.loader.getActiveBoard()
-          .catch(() => 'ERROR')
-          .then((activeBoard) => {
-            console.log(
-                `[${Events.BOARD_GET_ACTIVE_RESPONSE}] sending ${activeBoard}`);
-            this.socket.emit(
-                Events.BOARD_GET_ACTIVE_RESPONSE, activeBoard);
-          });
+      this.loader
+        .getActiveBoard()
+        .catch(() => 'ERROR')
+        .then((activeBoard) => {
+          console.log(
+            `[${Events.BOARD_GET_ACTIVE_RESPONSE}] sending ${activeBoard}`
+          );
+          this.socket.emit(Events.BOARD_GET_ACTIVE_RESPONSE, activeBoard);
+        });
     });
   }
 
@@ -109,7 +110,9 @@ class BoardSocketServerConnection {
   }
 
   private registerEventListener(
-      event: string, listener: (message: string) => any) {
+    event: string,
+    listener: (message: string) => any
+  ) {
     this.socket.on(event, (message) => {
       console.log(`[${event}] ${JSON.stringify(message)}`);
       listener(message);
