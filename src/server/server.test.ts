@@ -28,7 +28,7 @@ function request(): supertest.SuperTest<supertest.Test> {
 
 beforeAll(() => {
   jest.resetModules();
-  requestSingleton = supertest.agent(prepareServer()); // supertest(prepareServer());
+  requestSingleton = supertest.agent(prepareServer());
 });
 
 afterAll(() => {
@@ -77,7 +77,7 @@ test('Unauthenticated home route succeeds', async (done) => {
   const response = await request().get('/');
 
   expect(response.status).toBe(200);
-  expect(response.text).toBe('TODO: Find a better solution for this.');
+  expect(response.text).toBe('TODO: Find a better solution for this.\n');
   done();
 });
 
