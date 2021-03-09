@@ -1,5 +1,8 @@
 import {checkDefined} from '_common/preconditions';
-import {ContextMenuModel, ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
+import {
+  ContextMenuModel,
+  ContextMenuItem,
+} from '_client/game_board/context_menu/context_menu_model';
 import {addButton} from '_client/game_board/view/board_view';
 
 const SUPPORTED_MENU_ITEMS = [
@@ -48,13 +51,7 @@ const CATEGORY_ITEM_MAP = new Map([
       ContextMenuItem.OrangeHighlight,
     ],
   ],
-  [
-    CATEGORY_ZOOM,
-    [
-      ContextMenuItem.ZoomIn,
-      ContextMenuItem.ZoomOut,
-    ],
-  ],
+  [CATEGORY_ZOOM, [ContextMenuItem.ZoomIn, ContextMenuItem.ZoomOut]],
 ]);
 
 function addMenu(parent: HTMLElement): HTMLElement {
@@ -81,8 +78,9 @@ export class ContextMenuView {
   private readonly buttons: Map<ContextMenuItem, HTMLElement>;
 
   constructor(
-      parent: HTMLElement,
-      clickListener: (item: ContextMenuItem) => any) {
+    parent: HTMLElement,
+    clickListener: (item: ContextMenuItem) => any
+  ) {
     this.menu = addMenu(parent);
     this.categories = new Map();
     this.buttons = new Map();
@@ -100,12 +98,13 @@ export class ContextMenuView {
       const submenu = addMenu(categoryMenu);
       categoryMenu.onmouseenter = () => {
         submenu.style.top =
-            (categoryMenu.getBoundingClientRect().top -
-                this.menu.getBoundingClientRect().top) + 'px';
+          categoryMenu.getBoundingClientRect().top -
+          this.menu.getBoundingClientRect().top +
+          'px';
         submenu.style.left = this.menu.getBoundingClientRect().width + 'px';
         submenu.style.display = 'initial';
       };
-      categoryMenu.onmouseleave = () => submenu.style.display = 'none';
+      categoryMenu.onmouseleave = () => (submenu.style.display = 'none');
       this.categories.set(category, categoryMenu);
       for (const item of items) {
         const button = addButton(submenu, item);
@@ -127,8 +126,10 @@ export class ContextMenuView {
       this.menu.style.top = point.y + 'px';
       this.menu.style.left = point.x + 'px';
       for (const item of SUPPORTED_MENU_ITEMS) {
-        checkDefined(this.buttons.get(item), item).style.display =
-            invalidItems.includes(item) ? 'none' : 'initial';
+        checkDefined(
+          this.buttons.get(item),
+          item
+        ).style.display = invalidItems.includes(item) ? 'none' : 'initial';
       }
       this.categories.forEach((button, label) => {
         const items = CATEGORY_ITEM_MAP.get(label);
@@ -136,8 +137,9 @@ export class ContextMenuView {
           console.log('Category item map does not have label: ' + label);
           return;
         }
-        const itemsToShow =
-            items.filter((item) => !invalidItems.includes(item));
+        const itemsToShow = items.filter(
+          (item) => !invalidItems.includes(item)
+        );
         button.style.display = itemsToShow.length > 0 ? 'initial' : 'none';
       });
       this.menu.style.display = 'initial';

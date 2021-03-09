@@ -14,9 +14,10 @@ type ExpressFile = Express.Multer.File;
 
 const storage = new Storage();
 
-
 async function downloadFile(
-    remotePath: string, localPath: string): Promise<void> {
+  remotePath: string,
+  localPath: string
+): Promise<void> {
   console.log(`Attempting to download ${remotePath} to ${localPath}`);
   const blob = storage.bucket(GCS_BUCKET).file(remotePath);
   // TODO: Keep track of what we've already checked
@@ -35,18 +36,20 @@ async function downloadFile(
 }
 
 async function uploadFile(
-    localPath: string, remotePath: string): Promise<void> {
+  localPath: string,
+  remotePath: string
+): Promise<void> {
   console.log(`Attempting to upload ${localPath} to ${remotePath}`);
-  return storage.bucket(GCS_BUCKET).upload(
-      localPath,
-      {
-        destination: remotePath,
-        metadata: {
-          // TODO: figure out what cacheControl: 'public, max-age=31536000' does
-          cacheControl: 'no-cache',
-        },
-      })
-      .then(() => {});
+  return storage
+    .bucket(GCS_BUCKET)
+    .upload(localPath, {
+      destination: remotePath,
+      metadata: {
+        // TODO: figure out what cacheControl: 'public, max-age=31536000' does
+        cacheControl: 'no-cache',
+      },
+    })
+    .then(() => {});
 }
 
 class StorageUtil {
@@ -108,7 +111,7 @@ class StorageUtil {
   }
 }
 
-let cachedStorageUtil: StorageUtil|undefined = undefined;
+let cachedStorageUtil: StorageUtil | undefined = undefined;
 
 export function storageUtil(): StorageUtil {
   if (cachedStorageUtil === undefined) {

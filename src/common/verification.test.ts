@@ -1,6 +1,5 @@
 import {isGrid, isStringArray} from '_common/verification';
 
-
 test('isStringArray on empty array returns true', () => {
   expect(isStringArray([])).toBe(true);
 });
@@ -21,24 +20,39 @@ test('isStringArray on not strings returns false', () => {
   expect(isStringArray([['32'], ['43']])).toBe(false);
 });
 
-
 test('isStringArray isGrid with expected returns true', () => {
-  const grid = [[0, 0], [0, 0], [0, 0]];
+  const grid = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
   expect(isGrid(grid, 3, 2)).toBe(true);
 });
 
 test('isStringArray isGrid with incorrect rows returns false', () => {
-  const grid = [[0, 0], [0, 0], [0, 0]];
+  const grid = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
   expect(isGrid(grid, 3, 4)).toBe(false);
 });
 
 test('isStringArray isGrid with incorrect cols returns false', () => {
-  const grid = [[0, 0], [0, 0], [0, 0]];
+  const grid = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
   expect(isGrid(grid, 4, 2)).toBe(false);
 });
 
 test('isStringArray isGrid with variable cols returns false', () => {
-  const grid = [[0, 0], [0, 0, 0], [0, 0]];
+  const grid = [
+    [0, 0],
+    [0, 0, 0],
+    [0, 0],
+  ];
   expect(isGrid(grid, 3, 2)).toBe(false);
 });
 

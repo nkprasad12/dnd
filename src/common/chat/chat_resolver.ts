@@ -3,11 +3,10 @@ import {checkDefined} from '_common/preconditions';
 import {handleRollCommand} from '_common/chat/command_handlers/roll_command_handler';
 import {CommandType, processCommand} from '_common/chat/command_parser';
 
-
 const COMING_SOON = 'Not supported yet - coming soon!';
 
 export type CommandHandler = (input: string) => Promise<ChatMessage>;
-export type ResolvedCommand = Promise<ChatMessage|undefined>;
+export type ResolvedCommand = Promise<ChatMessage | undefined>;
 
 export class CommandResolver {
   private handlers: Map<CommandType, CommandHandler> = new Map();
@@ -28,7 +27,7 @@ export class CommandResolver {
       }
       const header = 'Got ambiguous command ' + result.error.commandAttempt;
       const body =
-          'Could be either ' + JSON.stringify(result.error.possibleTypes);
+        'Could be either ' + JSON.stringify(result.error.possibleTypes);
       return {header: header, body: body};
     }
 
@@ -56,7 +55,7 @@ async function handleHelpCommand(): Promise<ChatMessage> {
   return {header: header, body: body.join('<br>')};
 }
 
-let cachedResolver: CommandResolver|undefined = undefined;
+let cachedResolver: CommandResolver | undefined = undefined;
 
 export function commandResolver(): CommandResolver {
   if (cachedResolver === undefined) {
@@ -64,21 +63,15 @@ export function commandResolver(): CommandResolver {
     cachedResolver = new CommandResolver();
     cachedResolver.addCommandHandler(CommandType.Roll, handleRollCommand);
     cachedResolver.addCommandHandler(CommandType.Help, handleHelpCommand);
-    cachedResolver.addCommandHandler(
-        CommandType.Attack,
-        async () => {
-          return {header: CommandType.Attack, body: COMING_SOON};
-        });
-    cachedResolver.addCommandHandler(
-        CommandType.Check,
-        async () => {
-          return {header: CommandType.Check, body: COMING_SOON};
-        });
-    cachedResolver.addCommandHandler(
-        CommandType.Save,
-        async () => {
-          return {header: CommandType.Save, body: COMING_SOON};
-        });
+    cachedResolver.addCommandHandler(CommandType.Attack, async () => {
+      return {header: CommandType.Attack, body: COMING_SOON};
+    });
+    cachedResolver.addCommandHandler(CommandType.Check, async () => {
+      return {header: CommandType.Check, body: COMING_SOON};
+    });
+    cachedResolver.addCommandHandler(CommandType.Save, async () => {
+      return {header: CommandType.Save, body: COMING_SOON};
+    });
   }
   return cachedResolver;
 }

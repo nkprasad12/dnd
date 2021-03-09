@@ -1,6 +1,9 @@
 {
-    "python.autoComplete.extraPaths": [
-        "./**"
-    ],
-    "python.formatting.provider": "yapf",
+  "python.autoComplete.extraPaths": ["./**"],
+  "python.formatting.provider": "yapf",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
 }

@@ -1,8 +1,12 @@
 /* istanbul ignore file */
 import axios from 'axios';
 import {checkDefined} from '_common/preconditions';
-import {ABILITY_ORDER, AttackData, CharacterSheetData, SKILL_ORDER} from '_common/chat/command_handlers/types';
-
+import {
+  ABILITY_ORDER,
+  AttackData,
+  CharacterSheetData,
+  SKILL_ORDER,
+} from '_common/chat/command_handlers/types';
 
 namespace sheetsV4 {
   export interface Schema$ValueRange {
@@ -39,11 +43,13 @@ function processProficiency(data: sheetsV4.Schema$ValueRange): number {
     throw new Error('Invalid value range for proficiency.');
   }
   return Number.parseInt(
-      checkDefined(data.values, 'proficiency:data.values')[0][0]);
+    checkDefined(data.values, 'proficiency:data.values')[0][0]
+  );
 }
 
 function processAbilityBonuses(
-    data: sheetsV4.Schema$ValueRange): Map<string, number> {
+  data: sheetsV4.Schema$ValueRange
+): Map<string, number> {
   if (data.range !== RANGES[2]) {
     throw new Error('Invalid value range for abilities.');
   }
@@ -58,7 +64,8 @@ function processAbilityBonuses(
 }
 
 function processSaveBonuses(
-    data: sheetsV4.Schema$ValueRange): Map<string, number> {
+  data: sheetsV4.Schema$ValueRange
+): Map<string, number> {
   if (data.range !== RANGES[3]) {
     throw new Error('Invalid value range for saving throws.');
   }
@@ -72,7 +79,8 @@ function processSaveBonuses(
 }
 
 function processCheckBonuses(
-    data: sheetsV4.Schema$ValueRange): Map<string, number> {
+  data: sheetsV4.Schema$ValueRange
+): Map<string, number> {
   if (data.range !== RANGES[4]) {
     throw new Error('Invalid value range for skill checks.');
   }
@@ -86,7 +94,8 @@ function processCheckBonuses(
 }
 
 function processAttackBonuses(
-    data: sheetsV4.Schema$ValueRange): Map<string, AttackData> {
+  data: sheetsV4.Schema$ValueRange
+): Map<string, AttackData> {
   if (data.range !== RANGES[5]) {
     throw new Error('Invalid value range for attack checks.');
   }
@@ -97,13 +106,11 @@ function processAttackBonuses(
     if (!attackName || !(attackName as string).trim()) {
       break;
     }
-    result.set(
-        attackName,
-        {
-          toHit: Number.parseInt(values[7][i]),
-          damageRoll: values[11][i].split('[')[0],
-          info: values[11][i],
-        });
+    result.set(attackName, {
+      toHit: Number.parseInt(values[7][i]),
+      damageRoll: values[11][i].split('[')[0],
+      info: values[11][i],
+    });
   }
   return result;
 }
@@ -132,12 +139,12 @@ function processAttackBonuses(
 
 function buildSheetsQuery(sheetId: string) {
   const query =
-      'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetId +
-          '/values:batchGet' +
-          `?key=${process.env.GOOGLE_API_KEY}` +
-          `&majorDimension=COLUMNS` +
-          RANGES.map((range) => '&ranges=' + range).join('');
+    'https://sheets.googleapis.com/v4/spreadsheets/' +
+    sheetId +
+    '/values:batchGet' +
+    `?key=${process.env.GOOGLE_API_KEY}` +
+    `&majorDimension=COLUMNS` +
+    RANGES.map((range) => '&ranges=' + range).join('');
   console.log(query);
   return query;
 }
@@ -151,7 +158,8 @@ export async function requestFromAxios(sheetId: string) {
 }
 
 export async function extractSheetData(
-    sheetId: string): Promise<CharacterSheetData> {
+  sheetId: string
+): Promise<CharacterSheetData> {
   const data = await requestFromAxios(sheetId);
 
   return {

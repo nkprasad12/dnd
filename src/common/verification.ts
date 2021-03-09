@@ -11,7 +11,10 @@ export function isStringArray(input: any): input is string[] {
 }
 
 export function isGrid(
-    input: any, cols: number, rows: number): input is any[][] {
+  input: any,
+  cols: number,
+  rows: number
+): input is any[][] {
   if (!Array.isArray(input)) {
     return false;
   }

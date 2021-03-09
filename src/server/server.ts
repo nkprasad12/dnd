@@ -25,9 +25,12 @@ export function prepareServer(): http.Server {
   });
 
   app.post(
-      '/',
-      passport.authenticate(
-          'local', {successRedirect: '/gameBoard', failureRedirect: '/'}));
+    '/',
+    passport.authenticate('local', {
+      successRedirect: '/gameBoard',
+      failureRedirect: '/',
+    })
+  );
 
   app.use('/', imageRouter);
   app.use('/', contentRouter);

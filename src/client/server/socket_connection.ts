@@ -36,21 +36,20 @@ const baseUrl = getOrigin() + '/';
 
 class SocketConnection extends Socket_ {
   constructor(
-      private readonly socket: Socket_,
-      private readonly namespace: string) {
+    private readonly socket: Socket_,
+    private readonly namespace: string
+  ) {
     super();
   }
 
   on(event: string, listener: (message: any) => any): void {
     const namespaceStr = '[' + this.namespace + '] ';
-    this.socket.on(
-        event,
-        (message) => {
-          const eventStr = 'Received Event: ' + event + ', ';
-          const messageStr = 'message: ' + JSON.stringify(message);
-          console.log(namespaceStr + eventStr + messageStr);
-          listener(message);
-        });
+    this.socket.on(event, (message) => {
+      const eventStr = 'Received Event: ' + event + ', ';
+      const messageStr = 'message: ' + JSON.stringify(message);
+      console.log(namespaceStr + eventStr + messageStr);
+      listener(message);
+    });
   }
 
   emit(event: string, message: any): void {
@@ -66,7 +65,7 @@ export function connectTo(namespace: string): Promise<Socket_> {
   return new Promise((resolve) => {
     const io_ = new IO_();
     const socket = io_.connect(baseUrl + namespace);
-    socket.on('connect', function() {
+    socket.on('connect', function () {
       console.log('Connected to socket with namespace: ' + namespace);
       resolve(new SocketConnection(socket, namespace));
     });

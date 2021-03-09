@@ -3,10 +3,15 @@ import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {rollForString} from '_common/chat/command_handlers/roll_command_handler';
-import {ABILITY_ORDER, ADVANTAGE, CharacterSheetData, DISADVANTAGE, SKILL_ORDER} from '_common/chat/command_handlers/types';
+import {
+  ABILITY_ORDER,
+  ADVANTAGE,
+  CharacterSheetData,
+  DISADVANTAGE,
+  SKILL_ORDER,
+} from '_common/chat/command_handlers/types';
 import {rollDice} from '_common/chat/dice_roller';
 import {checkDefined} from '_common/preconditions';
-
 
 const AMBIGUOUS_CHARACTER = 'Multiple characters could match: ';
 const AMBIGUOUS_WEAPON = 'Multiple weapons could match: ';
@@ -25,7 +30,10 @@ interface ParseResult {
   error?: ChatMessage;
 }
 
-function getIgnoringCase<T>(map: Map<string, T>, target: string): T|undefined {
+function getIgnoringCase<T>(
+  map: Map<string, T>,
+  target: string
+): T | undefined {
   for (const [key, value] of map) {
     if (key.toLowerCase() === target.toLowerCase()) {
       return value;
@@ -49,8 +57,7 @@ function parseQuery(query: string, resolver: CharacterResolver): ParseResult {
   const base = parts[0].trim();
   let advantage = 0;
   if (hasAdv) {
-    const advOptions =
-        advantageCompleter.getOptions(parts[1].trim());
+    const advOptions = advantageCompleter.getOptions(parts[1].trim());
     if (advOptions.length === 1) {
       advantage = advOptions[0] === ADVANTAGE ? 1 : -1;
     }
@@ -63,11 +70,13 @@ function parseQuery(query: string, resolver: CharacterResolver): ParseResult {
 }
 
 function checkAmbiguousCharacter(
-    rollType: string, parsed: ParseResult): ChatMessage|undefined {
+  rollType: string,
+  parsed: ParseResult
+): ChatMessage | undefined {
   if (parsed.characters.length !== 1) {
     const body =
-            AMBIGUOUS_CHARACTER +
-                JSON.stringify(parsed.characters.map((c) => c.name));
+      AMBIGUOUS_CHARACTER +
+      JSON.stringify(parsed.characters.map((c) => c.name));
     return {
       header: rollType + AMBIGUOUS_HEADER,
       body: body,
@@ -77,7 +86,9 @@ function checkAmbiguousCharacter(
 }
 
 async function handleSaveCommand(
-    query: string, resolver: CharacterResolver): Promise<ChatMessage> {
+  query: string,
+  resolver: CharacterResolver
+): Promise<ChatMessage> {
   const parsed = parseQuery(query, resolver);
   if (parsed.error) {
     return parsed.error;
@@ -105,8 +116,7 @@ async function handleSaveCommand(
     };
   }
   const result =
-      modifier +
-          (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
+    modifier + (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
   const header = `${character.name} ${ability[0]} save throw: ${result}`;
   const body = `${result} = ${JSON.stringify(rolls)} + ${modifier}`;
   return {
@@ -116,7 +126,9 @@ async function handleSaveCommand(
 }
 
 async function handleCheckCommand(
-    query: string, resolver: CharacterResolver): Promise<ChatMessage> {
+  query: string,
+  resolver: CharacterResolver
+): Promise<ChatMessage> {
   const parsed = parseQuery(query, resolver);
   if (parsed.error) {
     return parsed.error;
@@ -144,8 +156,7 @@ async function handleCheckCommand(
     };
   }
   const result =
-      modifier +
-          (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
+    modifier + (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
   const header = `${character.name} ${skill[0]} check: ${result}`;
   const body = `${result} = ${JSON.stringify(rolls)} + ${modifier}`;
   return {
@@ -155,7 +166,9 @@ async function handleCheckCommand(
 }
 
 async function handleAttackCommand(
-    query: string, resolver: CharacterResolver): Promise<ChatMessage> {
+  query: string,
+  resolver: CharacterResolver
+): Promise<ChatMessage> {
   const parsed = parseQuery(query, resolver);
   if (parsed.error) {
     return parsed.error;
@@ -166,8 +179,9 @@ async function handleAttackCommand(
   }
   const character = parsed.characters[0];
 
-  const weaponCompleter =
-      Autocompleter.create(Array.from(character.attackBonuses.keys()));
+  const weaponCompleter = Autocompleter.create(
+    Array.from(character.attackBonuses.keys())
+  );
   const weapon = weaponCompleter.getOptions(parsed.queryBase);
   if (weapon.length !== 1) {
     return {
@@ -185,13 +199,14 @@ async function handleAttackCommand(
     };
   }
   const result =
-      attackData.toHit +
-          (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
+    attackData.toHit +
+    (parsed.advantage > 0 ? Math.max(...rolls) : Math.min(...rolls));
   const header = `${character.name} ${weapon[0]} attack roll: ${result}`;
   const damageRoll = rollForString(attackData.damageRoll);
 
-  let body = `<b>To hit:</b> ` +
-      `${result} = ${JSON.stringify(rolls)} + ${attackData.toHit}`;
+  let body =
+    `<b>To hit:</b> ` +
+    `${result} = ${JSON.stringify(rolls)} + ${attackData.toHit}`;
   if (!damageRoll.error) {
     const damage = checkDefined(damageRoll.result);
     body += `<br><b>Damage:</b> `;
@@ -204,16 +219,19 @@ async function handleAttackCommand(
 }
 
 export function saveCommandHandler(
-    resolver: CharacterResolver): CommandHandler {
+  resolver: CharacterResolver
+): CommandHandler {
   return (query) => handleSaveCommand(query, resolver);
 }
 
 export function checkCommandHandler(
-    resolver: CharacterResolver): CommandHandler {
+  resolver: CharacterResolver
+): CommandHandler {
   return (query) => handleCheckCommand(query, resolver);
 }
 
 export function attackCommandHandler(
-    resolver: CharacterResolver): CommandHandler {
+  resolver: CharacterResolver
+): CommandHandler {
   return (query) => handleAttackCommand(query, resolver);
 }

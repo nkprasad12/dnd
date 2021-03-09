@@ -1,14 +1,14 @@
 import * as UiUtil from '_client/common/ui_util';
 import {ChatMessage} from '_common/chat/chat_model';
 
-
 const INPUT_HINT = 'Type !help for commands';
 const CHAT_BOX_STUB = 'chatBoxStub';
 
 export class ChatBoxView {
   static create(
-      parent: HTMLElement,
-      listener: (message: ChatMessage) => any): ChatBoxView {
+    parent: HTMLElement,
+    listener: (message: ChatMessage) => any
+  ): ChatBoxView {
     return new ChatBoxView(parent, listener);
   }
 
@@ -20,8 +20,9 @@ export class ChatBoxView {
   private messages: HTMLDivElement;
 
   private constructor(
-      parent: HTMLElement,
-      listener: (message: ChatMessage) => any) {
+    parent: HTMLElement,
+    listener: (message: ChatMessage) => any
+  ) {
     this.input = UiUtil.addTextArea(parent, 'chat-input', INPUT_HINT, 1);
     this.messages = UiUtil.addDiv(parent);
     this.messages.style.overflowY = 'auto';

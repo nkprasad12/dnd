@@ -1,30 +1,46 @@
 import {CommandHandler} from '_common/chat/chat_resolver';
-import {attackCommandHandler, checkCommandHandler, saveCommandHandler} from '_common/chat/command_handlers/character_command_handlers';
+import {
+  attackCommandHandler,
+  checkCommandHandler,
+  saveCommandHandler,
+} from '_common/chat/command_handlers/character_command_handlers';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
-
 
 const BOBBY_SHEET = 'bobby.sheet';
 const BOBBY_DATA: CharacterSheetData = {
   name: 'Bobby Newport',
   proficiencyBonus: 3,
-  saveBonuses: new Map([['Dexterity', 0], ['Wisdom', -2]]),
+  saveBonuses: new Map([
+    ['Dexterity', 0],
+    ['Wisdom', -2],
+  ]),
   abilityBonuses: new Map(),
   attackBonuses: new Map([['Words', {toHit: 1, damageRoll: '1d8+2'}]]),
-  checkBonuses: new Map([['Perception', 0], ['Arcana', 1]]),
+  checkBonuses: new Map([
+    ['Perception', 0],
+    ['Arcana', 1],
+  ]),
 };
 
 const BRUTUS_SHEET = 'brutus.sheet';
 const BRUTUS_DATA: CharacterSheetData = {
   name: 'Brutus',
   proficiencyBonus: 2,
-  saveBonuses: new Map([['Dexterity', 3], ['Wisdom', -1]]),
+  saveBonuses: new Map([
+    ['Dexterity', 3],
+    ['Wisdom', -1],
+  ]),
   abilityBonuses: new Map(),
   attackBonuses: new Map([
     ['Longbow', {toHit: 8, damageRoll: '1d8+2'}],
-    ['Dagger', {toHit: 3, damageRoll: 'malformed'}]]),
-  checkBonuses: new Map([['Perception', 3], ['Arcana', 1]]),
+    ['Dagger', {toHit: 3, damageRoll: 'malformed'}],
+  ]),
+  checkBonuses: new Map([
+    ['Perception', 3],
+    ['Arcana', 1],
+  ]),
 };
 
 class FakeLoader {
@@ -65,7 +81,6 @@ async function attackHandler(): Promise<CommandHandler> {
   return attackCommandHandler(await getResolver());
 }
 
-
 test('saveHandler on invalid formatted input', async (done) => {
   const handler = await saveHandler();
 
@@ -89,7 +104,6 @@ test('attackHandler on invalid formatted input', async (done) => {
   expect(result.header).toContain('Invalid');
   done();
 });
-
 
 test('saveHandler on invalid character', async (done) => {
   const handler = await saveHandler();
@@ -118,7 +132,6 @@ test('attackHandler on invalid character', async (done) => {
   done();
 });
 
-
 test('saveHandler on ambiguous character', async (done) => {
   const handler = await saveHandler();
 
@@ -145,7 +158,6 @@ test('attackHandler on inambiguousvalid character', async (done) => {
   expect(result.body).toContain('characters');
   done();
 });
-
 
 test('saveHandler basic matching request', async (done) => {
   const handler = await saveHandler();
@@ -218,7 +230,6 @@ test('attackHandler short lower case base query', async (done) => {
   done();
 });
 
-
 test('saveHandler short lower case base query and name', async (done) => {
   const handler = await saveHandler();
 
@@ -246,7 +257,6 @@ test('attackHandler short lower case base query and name', async (done) => {
   done();
 });
 
-
 test('saveHandler advantage', async (done) => {
   const handler = await saveHandler();
 
@@ -273,7 +283,6 @@ test('attackHandler advantage', async (done) => {
   expect(result.header).toContain('Brutus');
   done();
 });
-
 
 test('saveHandler disadvantage', async (done) => {
   const handler = await saveHandler();

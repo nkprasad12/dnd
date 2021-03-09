@@ -36,3 +36,11 @@ To start the server, from the root directory run:
 
 `npm ci && npm run start:full`
 
+***
+
+**Setting up Prettier**
+
+After initial setup, run `npm install` to ensure you have the latest prettier config. Then, install the 
+[VS Code plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). 
+The project settings are already configured to use prettier as the default formatting for typescript,
+and to format typescript on save using prettier. 

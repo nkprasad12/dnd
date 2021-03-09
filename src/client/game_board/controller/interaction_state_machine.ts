@@ -37,24 +37,35 @@ function tilesInDrag(fromData: ClickData, toData: ClickData) {
 }
 
 abstract class InteractionState {
-  constructor(protected readonly modelHandler: ModelHandler) { }
+  constructor(protected readonly modelHandler: ModelHandler) {}
 
   protected abstract onLeftDrag(
-    fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult;
+    fromData: ClickData,
+    toData: ClickData,
+    model: BoardModel
+  ): ClickResult;
 
   protected abstract onRightDrag(
-    fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult;
+    fromData: ClickData,
+    toData: ClickData,
+    model: BoardModel
+  ): ClickResult;
 
   protected abstract onLeftClick(
-    clickData: ClickData, model: BoardModel): ClickResult;
+    clickData: ClickData,
+    model: BoardModel
+  ): ClickResult;
 
   protected abstract onRightClick(
-    clickData: ClickData, model: BoardModel): ClickResult;
+    clickData: ClickData,
+    model: BoardModel
+  ): ClickResult;
 
   onDragEvent(
-      fromPoint: BaseClickData,
-      toPoint: BaseClickData,
-      mouseButton: number): InteractionState {
+    fromPoint: BaseClickData,
+    toPoint: BaseClickData,
+    mouseButton: number
+  ): InteractionState {
     if (mouseButton != 0 && mouseButton != 2) {
       return this;
     }
@@ -84,7 +95,9 @@ abstract class InteractionState {
   }
 
   protected onContextMenuClickInternal(
-      action: ContextMenuItem, model: BoardModel): ClickResult {
+    action: ContextMenuItem,
+    model: BoardModel
+  ): ClickResult {
     console.log('Got click on board: ' + model.id + ', action: ' + action);
     throw new Error('Invalid state for onContextMenuClickInternal');
   }
@@ -101,7 +114,8 @@ abstract class InteractionState {
     return {
       clientPoint: point.clientPoint,
       pagePoint: point.pagePoint,
-      tile: this.modelHandler.tileForPoint(point.clientPoint)};
+      tile: this.modelHandler.tileForPoint(point.clientPoint),
+    };
   }
 }
 
@@ -111,18 +125,25 @@ class DefaultState extends InteractionState {
   }
 
   onLeftDrag(
-      fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     return this.onRightDrag(fromData, toData, model);
   }
 
   onRightDrag(
-      fromData: ClickData, toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     model.contextMenuState.isVisible = true;
     model.localSelection = tilesInDrag(fromData, toData);
     model.contextMenuState.clickPoint = toData.pagePoint;
     return {
       model: model,
-      newState: new ContextMenuOpenState(this.modelHandler)};
+      newState: new ContextMenuOpenState(this.modelHandler),
+    };
   }
 
   onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
@@ -137,7 +158,10 @@ class DefaultState extends InteractionState {
     const mutableToken = model.tokens[tokenIndex].mutableCopy();
     mutableToken.isActive = true;
     model.tokens[tokenIndex] = mutableToken.freeze();
-    return {model: model, newState: new PickedUpTokenState(this.modelHandler)};
+    return {
+      model: model,
+      newState: new PickedUpTokenState(this.modelHandler),
+    };
   }
 
   onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
@@ -146,7 +170,8 @@ class DefaultState extends InteractionState {
     model.contextMenuState.clickPoint = clickData.pagePoint;
     return {
       model: model,
-      newState: new ContextMenuOpenState(this.modelHandler)};
+      newState: new ContextMenuOpenState(this.modelHandler),
+    };
   }
 }
 
@@ -156,12 +181,18 @@ class PickedUpTokenState extends InteractionState {
   }
 
   onLeftDrag(
-      fromData: ClickData, _toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    _toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     return this.onRightClick(fromData, model);
   }
 
   onRightDrag(
-      fromData: ClickData, _toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    _toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     return this.onRightClick(fromData, model);
   }
 
@@ -171,10 +202,14 @@ class PickedUpTokenState extends InteractionState {
       throw new Error('No active token found in PickedUpTokenState');
     }
     const activeTokenSize = model.tokens[activeTokenIndex].size;
-    const collisions =
-        this.modelHandler.wouldCollide(clickData.tile, activeTokenSize);
-    if (collisions.length > 1 ||
-        (collisions.length === 1 && activeTokenIndex !== collisions[0])) {
+    const collisions = this.modelHandler.wouldCollide(
+      clickData.tile,
+      activeTokenSize
+    );
+    if (
+      collisions.length > 1 ||
+      (collisions.length === 1 && activeTokenIndex !== collisions[0])
+    ) {
       return this.onRightClick(clickData, model);
     }
     const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
@@ -202,12 +237,18 @@ class ContextMenuOpenState extends InteractionState {
   }
 
   onLeftDrag(
-      fromData: ClickData, _toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    _toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     return this.onRightClick(fromData, model);
   }
 
   onRightDrag(
-      fromData: ClickData, _toData: ClickData, model: BoardModel): ClickResult {
+    fromData: ClickData,
+    _toData: ClickData,
+    model: BoardModel
+  ): ClickResult {
     return this.onRightClick(fromData, model);
   }
 
@@ -223,7 +264,9 @@ class ContextMenuOpenState extends InteractionState {
   }
 
   onContextMenuClickInternal(
-      action: ContextMenuItem, model: BoardModel): ClickResult {
+    action: ContextMenuItem,
+    model: BoardModel
+  ): ClickResult {
     this.handleContextMenuAction(action, model);
     model.contextMenuState.isVisible = false;
     model.localSelection = [];
@@ -231,7 +274,9 @@ class ContextMenuOpenState extends InteractionState {
   }
 
   private handleContextMenuAction(
-      action: ContextMenuItem, model: BoardModel): void {
+    action: ContextMenuItem,
+    model: BoardModel
+  ): void {
     switch (action) {
       case ContextMenuItem.AddFog:
         for (const tile of model.localSelection) {
@@ -275,8 +320,7 @@ class ContextMenuOpenState extends InteractionState {
         }
         break;
       case ContextMenuItem.AddToken:
-        NewTokenForm.create(
-            model.localSelection[0], this.modelHandler);
+        NewTokenForm.create(model.localSelection[0], this.modelHandler);
         break;
       case ContextMenuItem.EditToken:
         this.handleEditToken(model);
@@ -295,7 +339,7 @@ class ContextMenuOpenState extends InteractionState {
     }
   }
 
-  private findTokenOnTile(tile: Location): number|undefined {
+  private findTokenOnTile(tile: Location): number | undefined {
     const collisions = this.modelHandler.wouldCollide(tile, 1);
     if (collisions.length === 0) {
       return undefined;
@@ -335,8 +379,8 @@ class ContextMenuOpenState extends InteractionState {
     }
     const selectedToken = model.tokens[tokenIndex];
 
-    const rowDir = tile.row < (model.rows / 2) ? 1 : -1;
-    const colDir = tile.col < (model.cols / 2) ? 1 : -1;
+    const rowDir = tile.row < model.rows / 2 ? 1 : -1;
+    const colDir = tile.col < model.cols / 2 ? 1 : -1;
     let i = 1;
     while (true) {
       const newRow = tile.row + rowDir * i;
@@ -357,8 +401,10 @@ class ContextMenuOpenState extends InteractionState {
         candidates.push(target);
       }
       for (const target of candidates) {
-        const collisions =
-            this.modelHandler.wouldCollide(target, selectedToken.size);
+        const collisions = this.modelHandler.wouldCollide(
+          target,
+          selectedToken.size
+        );
         if (collisions.length > 0) {
           continue;
         }
@@ -382,11 +428,15 @@ export class InteractionStateMachine {
   }
 
   onDragEvent(
-      fromPoint: BaseClickData,
-      toPoint: BaseClickData,
-      mouseButton: number): void {
-    const newState =
-        this.currentState.onDragEvent(fromPoint, toPoint, mouseButton);
+    fromPoint: BaseClickData,
+    toPoint: BaseClickData,
+    mouseButton: number
+  ): void {
+    const newState = this.currentState.onDragEvent(
+      fromPoint,
+      toPoint,
+      mouseButton
+    );
     this.currentState = newState;
   }
 

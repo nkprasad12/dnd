@@ -16,29 +16,24 @@ const upload = multer({
   dest: path.join(ROOT, 'data/images'),
 });
 
-imageRouter.get(
-    '/retrieve_image/:imageName',
-    (req, res) => {
-      const imageName = req.params.imageName;
-      if (imageName === undefined) {
-        res.status(403).end('Invalid image');
-        return;
-      }
-      storageUtil().getImagePath(imageName)
-          .then((imagePath) => res.sendFile(imagePath))
-          .catch(() => res.status(403).end('Error retrieving image'));
-    },
-);
+imageRouter.get('/retrieve_image/:imageName', (req, res) => {
+  const imageName = req.params.imageName;
+  if (imageName === undefined) {
+    res.status(403).end('Invalid image');
+    return;
+  }
+  storageUtil()
+    .getImagePath(imageName)
+    .then((imagePath) => res.sendFile(imagePath))
+    .catch(() => res.status(403).end('Error retrieving image'));
+});
 
-imageRouter.post(
-    '/uploadImage',
-    upload.single('file'),
-    (req, res) => {
-      const filePath = req.file.path;
-      if (!FileUtil.isImage(req.file)) {
-        fsPromises.unlink(filePath, () => {});
-        res.status(403).contentType('text/plain').end('Invalid file type');
-        return;
-      }
-      res.send({'path': storageUtil().saveImage(req.file)});
-    });
+imageRouter.post('/uploadImage', upload.single('file'), (req, res) => {
+  const filePath = req.file.path;
+  if (!FileUtil.isImage(req.file)) {
+    fsPromises.unlink(filePath, () => {});
+    res.status(403).contentType('text/plain').end('Invalid file type');
+    return;
+  }
+  res.send({path: storageUtil().saveImage(req.file)});
+});

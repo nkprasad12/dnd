@@ -13,7 +13,8 @@ export class ModelHandler {
     private model: BoardModel,
     private readonly remoteBoard: RemoteBoard,
     private readonly menu: ContextMenu,
-    private readonly local: boolean) {
+    private readonly local: boolean
+  ) {
     this.view.bind(this.model);
   }
 
@@ -46,8 +47,10 @@ export class ModelHandler {
   /** Returns the tile for the input client point, relative to the canvas. */
   tileForPoint(clientPoint: Point): Location {
     const rect = this.view.topCanvas.getBoundingClientRect();
-    const relativePoint =
-      {x: clientPoint.x - rect.left, y: clientPoint.y - rect.top};
+    const relativePoint = {
+      x: clientPoint.x - rect.left,
+      y: clientPoint.y - rect.top,
+    };
     const tileSize = this.model.tileSize;
     let baseX = relativePoint.x / this.model.scale;
     let baseY = relativePoint.y / this.model.scale;
@@ -58,7 +61,9 @@ export class ModelHandler {
       baseY = baseY + tileSize - this.model.gridOffset.y;
     }
     return {
-      col: Math.floor(baseX / tileSize), row: Math.floor(baseY / tileSize)};
+      col: Math.floor(baseX / tileSize),
+      row: Math.floor(baseY / tileSize),
+    };
   }
 
   activeTokenIndex(): number {
@@ -86,10 +91,8 @@ export class ModelHandler {
       const minRow = token.location.row;
       const maxRow = minRow + token.size;
 
-      const colsDisjoint =
-          (target.col >= maxCol) || (target.col + size <= minCol);
-      const rowsDisjoint =
-          (target.row >= maxRow) || (target.row + size <= minRow);
+      const colsDisjoint = target.col >= maxCol || target.col + size <= minCol;
+      const rowsDisjoint = target.row >= maxRow || target.row + size <= minRow;
       if (!colsDisjoint && !rowsDisjoint) {
         results.push(i);
       }
@@ -111,10 +114,8 @@ export class ModelHandler {
       const minRow = token.location.row;
       const maxRow = minRow + token.size;
 
-      const colsDisjoint =
-          (target.col >= maxCol) || (target.col + size <= minCol);
-      const rowsDisjoint =
-          (target.row >= maxRow) || (target.row + size <= minRow);
+      const colsDisjoint = target.col >= maxCol || target.col + size <= minCol;
+      const rowsDisjoint = target.row >= maxRow || target.row + size <= minRow;
       if (!colsDisjoint && !rowsDisjoint) {
         results.push(token.id);
       }

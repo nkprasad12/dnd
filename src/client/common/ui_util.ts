@@ -1,4 +1,3 @@
-
 export function getElementById(id: string): HTMLElement {
   const element = document.getElementById(id);
   if (element == null) {
@@ -8,9 +7,10 @@ export function getElementById(id: string): HTMLElement {
 }
 
 export function addParagraph(
-    parent: HTMLElement,
-    content: string,
-    className?: string): HTMLParagraphElement {
+  parent: HTMLElement,
+  content: string,
+  className?: string
+): HTMLParagraphElement {
   const paragraph = document.createElement('p');
   if (className) {
     paragraph.className = className;
@@ -21,7 +21,9 @@ export function addParagraph(
 }
 
 export function addDiv(
-    parent: HTMLElement, className?: string): HTMLDivElement {
+  parent: HTMLElement,
+  className?: string
+): HTMLDivElement {
   const element = document.createElement('div');
   if (className) {
     element.className = className;
@@ -31,7 +33,9 @@ export function addDiv(
 }
 
 export function prependDiv(
-    parent: HTMLElement, className?: string): HTMLDivElement {
+  parent: HTMLElement,
+  className?: string
+): HTMLDivElement {
   const element = document.createElement('div');
   if (className) {
     element.className = className;
@@ -41,10 +45,11 @@ export function prependDiv(
 }
 
 export function addTextArea(
-    parent: HTMLElement,
-    className?: string,
-    placeholder?: string,
-    rows?: number): HTMLTextAreaElement {
+  parent: HTMLElement,
+  className?: string,
+  placeholder?: string,
+  rows?: number
+): HTMLTextAreaElement {
   const element = document.createElement('textarea');
   if (className) {
     element.className = className;

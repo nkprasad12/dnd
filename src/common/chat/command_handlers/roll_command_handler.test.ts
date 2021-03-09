@@ -1,6 +1,5 @@
 import {handleRollCommand} from '_common/chat/command_handlers/roll_command_handler';
 
-
 test('handleRollCommand returns error on invalid input', async (done) => {
   const result = await handleRollCommand('1s20');
   expect(result.header).toContain('not a valid');

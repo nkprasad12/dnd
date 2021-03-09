@@ -1,6 +1,11 @@
 import deepEqual from 'deep-equal';
 
-import {areLocationsEqual, arePointsEqual, Location, Point} from '_common/coordinates';
+import {
+  areLocationsEqual,
+  arePointsEqual,
+  Location,
+  Point,
+} from '_common/coordinates';
 import {isGrid} from '_common/verification';
 
 const DEFAULT_SPEED = 6;
@@ -11,14 +16,14 @@ const DEFAULT_SPEED = 6;
  */
 export class RemoteTokenModel {
   static isValid(input: any): input is RemoteTokenModel {
-    const maybeToken = (input as RemoteTokenModel);
+    const maybeToken = input as RemoteTokenModel;
     const isValid =
-        maybeToken.id !== undefined &&
-        maybeToken.location !== undefined &&
-        maybeToken.name !== undefined &&
-        maybeToken.imageSource !== undefined &&
-        maybeToken.size !== undefined &&
-        maybeToken.speed !== undefined;
+      maybeToken.id !== undefined &&
+      maybeToken.location !== undefined &&
+      maybeToken.name !== undefined &&
+      maybeToken.imageSource !== undefined &&
+      maybeToken.size !== undefined &&
+      maybeToken.speed !== undefined;
     return isValid;
   }
 
@@ -30,53 +35,57 @@ export class RemoteTokenModel {
   }
 
   constructor(
-      readonly id: string,
-      readonly location: Location,
-      readonly name: string,
-      readonly imageSource: string,
-      readonly size: number,
-      readonly speed: number) { }
+    readonly id: string,
+    readonly location: Location,
+    readonly name: string,
+    readonly imageSource: string,
+    readonly size: number,
+    readonly speed: number
+  ) {}
 
   static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
     return deepEqual(first, other);
   }
 
   static mergedWith(
-      model: RemoteTokenModel,
-      diff: RemoteTokenDiff): RemoteTokenModel {
+    model: RemoteTokenModel,
+    diff: RemoteTokenDiff
+  ): RemoteTokenModel {
     if (diff.id !== model.id) {
       console.log('[RemoteTokenModel] Diff ID does not match current ID');
       return model;
     }
     return new RemoteTokenModel(
-        model.id,
-        diff.location === undefined ? model.location : diff.location,
-        diff.name === undefined ? model.name : diff.name,
-        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-        diff.size === undefined ? model.size : diff.size,
-        diff.speed === undefined ? model.speed : diff.speed,
+      model.id,
+      diff.location === undefined ? model.location : diff.location,
+      diff.name === undefined ? model.name : diff.name,
+      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+      diff.size === undefined ? model.size : diff.size,
+      diff.speed === undefined ? model.speed : diff.speed
     );
   }
 
   static computeDiff(
-      newModel: RemoteTokenModel,
-      oldModel: RemoteTokenModel): RemoteTokenDiff {
+    newModel: RemoteTokenModel,
+    oldModel: RemoteTokenModel
+  ): RemoteTokenDiff {
     if (newModel.id != oldModel.id) {
       throw new Error(
-          '[RemoteTokenModel computeDiff] Models have different IDs!');
+        '[RemoteTokenModel computeDiff] Models have different IDs!'
+      );
     }
     return {
       id: newModel.id,
-      location: areLocationsEqual(newModel.location, oldModel.location) ?
-          undefined : newModel.location,
-      name: newModel.name === oldModel.name ?
-          undefined : newModel.name,
-      imageSource: newModel.imageSource === oldModel.imageSource ?
-          undefined : newModel.imageSource,
-      size: newModel.size === oldModel.size ?
-          undefined : newModel.size,
-      speed: newModel.speed === oldModel.speed ?
-          undefined : newModel.speed,
+      location: areLocationsEqual(newModel.location, oldModel.location)
+        ? undefined
+        : newModel.location,
+      name: newModel.name === oldModel.name ? undefined : newModel.name,
+      imageSource:
+        newModel.imageSource === oldModel.imageSource
+          ? undefined
+          : newModel.imageSource,
+      size: newModel.size === oldModel.size ? undefined : newModel.size,
+      speed: newModel.speed === oldModel.speed ? undefined : newModel.speed,
     };
   }
 }
@@ -89,18 +98,18 @@ export type RemoteTokenDiff = Partial<RemoteTokenModel>;
  */
 export class RemoteBoardModel {
   static isValid(input: any): input is RemoteBoardModel {
-    const maybeModel = (input as RemoteBoardModel);
+    const maybeModel = input as RemoteBoardModel;
     const isValid =
-        maybeModel.id !== undefined &&
-        maybeModel.name !== undefined &&
-        maybeModel.imageSource !== undefined &&
-        maybeModel.tileSize != undefined &&
-        maybeModel.tokens !== undefined &&
-        maybeModel.fogOfWar !== undefined &&
-        maybeModel.publicSelection !== undefined &&
-        maybeModel.cols !== undefined &&
-        maybeModel.gridOffset !== undefined &&
-        maybeModel.rows !== undefined;
+      maybeModel.id !== undefined &&
+      maybeModel.name !== undefined &&
+      maybeModel.imageSource !== undefined &&
+      maybeModel.tileSize != undefined &&
+      maybeModel.tokens !== undefined &&
+      maybeModel.fogOfWar !== undefined &&
+      maybeModel.publicSelection !== undefined &&
+      maybeModel.cols !== undefined &&
+      maybeModel.gridOffset !== undefined &&
+      maybeModel.rows !== undefined;
     if (!isValid) {
       return false;
     }
@@ -135,8 +144,10 @@ export class RemoteBoardModel {
     if (input.gridOffset === undefined) {
       input.gridOffset = {x: 0, y: 0};
     }
-    if (input.fogOfWar === undefined ||
-        !isGrid(input.fogOfWar, input.cols, input.rows)) {
+    if (
+      input.fogOfWar === undefined ||
+      !isGrid(input.fogOfWar, input.cols, input.rows)
+    ) {
       input.fogOfWar = [];
       for (let i = 0; i < input.cols; i++) {
         input.fogOfWar.push([]);
@@ -159,8 +170,10 @@ export class RemoteBoardModel {
         }
       }
     }
-    if (input.publicSelection === undefined ||
-        !isGrid(input.publicSelection, input.cols, input.rows)) {
+    if (
+      input.publicSelection === undefined ||
+      !isGrid(input.publicSelection, input.cols, input.rows)
+    ) {
       input.publicSelection = [];
       for (let i = 0; i < input.cols; i++) {
         input.publicSelection.push([]);
@@ -182,13 +195,17 @@ export class RemoteBoardModel {
     readonly publicSelection: string[][],
     readonly gridOffset: Point,
     readonly cols: number,
-    readonly rows: number) { }
+    readonly rows: number
+  ) {}
 
   static mergedWith(
-      model: RemoteBoardModel, diff: RemoteBoardDiff): RemoteBoardModel {
+    model: RemoteBoardModel,
+    diff: RemoteBoardDiff
+  ): RemoteBoardModel {
     if (model.id != diff.id) {
       throw new Error(
-          '[RemoteBoardModel] mergedWith called with different ids');
+        '[RemoteBoardModel] mergedWith called with different ids'
+      );
     }
     let mergedTokens: RemoteTokenModel[] = [];
     mergedTokens = mergedTokens.concat(diff.newTokens);
@@ -218,16 +235,16 @@ export class RemoteBoardModel {
       }
     }
     return new RemoteBoardModel(
-        model.id,
-        diff.name === undefined ? model.name : diff.name,
-        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-        diff.tileSize === undefined ? model.tileSize : diff.tileSize,
-        mergedTokens,
-        fogOfWarState,
-        publicSelection,
-        model.gridOffset,
-        model.cols,
-        model.rows,
+      model.id,
+      diff.name === undefined ? model.name : diff.name,
+      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+      diff.tileSize === undefined ? model.tileSize : diff.tileSize,
+      mergedTokens,
+      fogOfWarState,
+      publicSelection,
+      model.gridOffset,
+      model.cols,
+      model.rows
     );
   }
 }
@@ -246,26 +263,26 @@ export interface PublicSelectionDiff {
 
 /** Represents a mutation of RemoteBoardModel. */
 export interface RemoteBoardDiff {
-    readonly id: string;
-    readonly name?: string;
-    readonly tokenDiffs: RemoteTokenDiff[];
-    readonly removedTokens: string[];
-    readonly newTokens: RemoteTokenModel[];
-    readonly publicSelectionDiffs: PublicSelectionDiff[];
-    readonly imageSource?: string;
-    readonly tileSize?: number;
-    readonly gridOffset?: Point;
-    readonly fogOfWarDiffs?: FogOfWarDiff[];
+  readonly id: string;
+  readonly name?: string;
+  readonly tokenDiffs: RemoteTokenDiff[];
+  readonly removedTokens: string[];
+  readonly newTokens: RemoteTokenModel[];
+  readonly publicSelectionDiffs: PublicSelectionDiff[];
+  readonly imageSource?: string;
+  readonly tileSize?: number;
+  readonly gridOffset?: Point;
+  readonly fogOfWarDiffs?: FogOfWarDiff[];
 }
 
 export namespace RemoteBoardDiff {
   export function isValid(input: any): input is RemoteBoardDiff {
-    const maybeDiff = (input as RemoteBoardDiff);
+    const maybeDiff = input as RemoteBoardDiff;
     const isValid =
-        maybeDiff.id !== undefined &&
-        maybeDiff.newTokens !== undefined &&
-        maybeDiff.removedTokens !== undefined &&
-        maybeDiff.tokenDiffs != undefined;
+      maybeDiff.id !== undefined &&
+      maybeDiff.newTokens !== undefined &&
+      maybeDiff.removedTokens !== undefined &&
+      maybeDiff.tokenDiffs != undefined;
     if (!isValid) {
       return false;
     }
@@ -283,11 +300,13 @@ export namespace RemoteBoardDiff {
   }
 
   export function computeBetween(
-      newModel: RemoteBoardModel,
-      oldModel: RemoteBoardModel): RemoteBoardDiff | undefined {
+    newModel: RemoteBoardModel,
+    oldModel: RemoteBoardModel
+  ): RemoteBoardDiff | undefined {
     if (newModel.id != oldModel.id) {
       throw new Error(
-          '[RemoteBoardDiff] computeBetween called with diferent ids');
+        '[RemoteBoardDiff] computeBetween called with diferent ids'
+      );
     }
     const newTokens: RemoteTokenModel[] = [];
     const modifiedTokens: RemoteTokenDiff[] = [];
@@ -328,8 +347,11 @@ export namespace RemoteBoardDiff {
       for (let i = 0; i < newModel.cols; i++) {
         for (let j = 0; j < newModel.rows; j++) {
           if (oldModel.fogOfWar[i][j] !== newModel.fogOfWar[i][j]) {
-            fogOfWarDiffs.push(
-                {col: i, row: j, isFogOn: newModel.fogOfWar[i][j] !== '0'});
+            fogOfWarDiffs.push({
+              col: i,
+              row: j,
+              isFogOn: newModel.fogOfWar[i][j] !== '0',
+            });
           }
           const newSelection = newModel.publicSelection[i][j];
           if (oldModel.publicSelection[i][j] !== newSelection) {
@@ -342,15 +364,19 @@ export namespace RemoteBoardDiff {
     }
 
     const diffImageSource =
-      newModel.imageSource === oldModel.imageSource ?
-          undefined : newModel.imageSource;
+      newModel.imageSource === oldModel.imageSource
+        ? undefined
+        : newModel.imageSource;
     const diffTileSize =
       newModel.tileSize === oldModel.tileSize ? undefined : newModel.tileSize;
     const diffName =
       newModel.name === oldModel.name ? undefined : newModel.name;
-    const diffGridOffset =
-        arePointsEqual(newModel.gridOffset, oldModel.gridOffset) ?
-            undefined : newModel.gridOffset;
+    const diffGridOffset = arePointsEqual(
+      newModel.gridOffset,
+      oldModel.gridOffset
+    )
+      ? undefined
+      : newModel.gridOffset;
 
     const isValidDiff =
       diffName != undefined ||

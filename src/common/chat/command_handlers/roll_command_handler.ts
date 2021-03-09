@@ -4,12 +4,11 @@ import {ADVANTAGE, DISADVANTAGE} from '_common/chat/command_handlers/types';
 import {rollDice} from '_common/chat/dice_roller';
 import {checkDefined} from '_common/preconditions';
 
-
 const advantageCompleter = Autocompleter.create([ADVANTAGE, DISADVANTAGE]);
 
 interface DiceResolution {
-  result?: DiceResult,
-  error?: ChatMessage,
+  result?: DiceResult;
+  error?: ChatMessage;
 }
 
 interface DiceResult {
@@ -43,7 +42,7 @@ function rollErrorMessage(input: string): ChatMessage {
   return {header: header, body: usage};
 }
 
-function resolveConstant(input: string): number|undefined {
+function resolveConstant(input: string): number | undefined {
   if (isNaN(+input)) {
     return undefined;
   }
@@ -99,7 +98,8 @@ function processQuery(query: string): DiceResolution {
         error: {
           header: 'Could not parse (dis)advantage part - see !help',
           body: `Query: ${query}`,
-        }};
+        },
+      };
     }
     const firstResolution = rollForString(parts[0]);
     const secondResolution = rollForString(parts[0]);
@@ -110,11 +110,11 @@ function processQuery(query: string): DiceResolution {
     const second = checkDefined(secondResolution.result);
     const values = [first.value, second.value];
     const finalValue =
-        adv[0] === ADVANTAGE ? Math.max(...values) : Math.min(...values);
+      adv[0] === ADVANTAGE ? Math.max(...values) : Math.min(...values);
     const advStr = adv[0] === ADVANTAGE ? 'max' : 'min';
     const finalText =
-        `${finalValue} = ${advStr}${JSON.stringify(values)} ` +
-            `(${first.text}, ${second.text})`;
+      `${finalValue} = ${advStr}${JSON.stringify(values)} ` +
+      `(${first.text}, ${second.text})`;
     return {result: {value: finalValue, text: finalText}};
   }
 }

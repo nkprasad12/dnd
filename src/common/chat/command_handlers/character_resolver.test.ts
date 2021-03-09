@@ -2,7 +2,6 @@ import {CharacterResolver} from '_common/chat/command_handlers/character_resolve
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
-
 const BOBBY_SHEET = 'bobby.sheet';
 const BOBBY_DATA: CharacterSheetData = {
   name: 'Bobby Newport',

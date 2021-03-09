@@ -27,16 +27,15 @@ function setLabel(message: string) {
   addLabel(getElementById(GAME_HOLDER_STUB), message, TEXT_COLOR);
 }
 
-const boardServerPromise =
-    connectTo('board').then((socket) => new BoardServer(socket));
-connectTo('chat')
-    .then((socket) => {
-      const client = new ChatClient(socket);
-      ChatBox.initialize(client);
-    });
+const boardServerPromise = connectTo('board').then(
+  (socket) => new BoardServer(socket)
+);
+connectTo('chat').then((socket) => {
+  const client = new ChatClient(socket);
+  ChatBox.initialize(client);
+});
 
-loadActiveBoard()
-    .catch((error) => {
-      console.log(error);
-      setLabel('An error occurred while loading the board... go check logs');
-    });
+loadActiveBoard().catch((error) => {
+  console.log(error);
+  setLabel('An error occurred while loading the board... go check logs');
+});

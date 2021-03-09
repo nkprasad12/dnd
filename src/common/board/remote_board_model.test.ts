@@ -1,4 +1,8 @@
-import {RemoteBoardDiff, RemoteBoardModel, RemoteTokenModel} from './remote_board_model';
+import {
+  RemoteBoardDiff,
+  RemoteBoardModel,
+  RemoteTokenModel,
+} from './remote_board_model';
 
 const DEFAULT_ID = '12345678';
 const DEFAULT_LOCATION = {row: 1, col: 7};
@@ -7,47 +11,57 @@ const DEFAULT_IMAGE_SOURCE = 'source@kingOfKings';
 const DEFAULT_SIZE = 2;
 const DEFAULT_SPEED = 6;
 
-const DEFAULT_TOKEN =
-    new RemoteTokenModel(
-        DEFAULT_ID,
-        DEFAULT_LOCATION,
-        DEFAULT_NAME,
-        DEFAULT_IMAGE_SOURCE,
-        DEFAULT_SIZE,
-        DEFAULT_SPEED);
+const DEFAULT_TOKEN = new RemoteTokenModel(
+  DEFAULT_ID,
+  DEFAULT_LOCATION,
+  DEFAULT_NAME,
+  DEFAULT_IMAGE_SOURCE,
+  DEFAULT_SIZE,
+  DEFAULT_SPEED
+);
 
-const ID_TOKEN =
-    new RemoteTokenModel(
-        '23456',
-        DEFAULT_LOCATION,
-        DEFAULT_NAME,
-        DEFAULT_IMAGE_SOURCE,
-        DEFAULT_SIZE,
-        DEFAULT_SPEED);
+const ID_TOKEN = new RemoteTokenModel(
+  '23456',
+  DEFAULT_LOCATION,
+  DEFAULT_NAME,
+  DEFAULT_IMAGE_SOURCE,
+  DEFAULT_SIZE,
+  DEFAULT_SPEED
+);
 
-const LOCATION_TOKEN =
-    new RemoteTokenModel(
-        DEFAULT_ID,
-        {row: 1, col: 6},
-        DEFAULT_NAME,
-        DEFAULT_IMAGE_SOURCE,
-        DEFAULT_SIZE,
-        DEFAULT_SPEED);
+const LOCATION_TOKEN = new RemoteTokenModel(
+  DEFAULT_ID,
+  {row: 1, col: 6},
+  DEFAULT_NAME,
+  DEFAULT_IMAGE_SOURCE,
+  DEFAULT_SIZE,
+  DEFAULT_SPEED
+);
 
 function defaultToken(): RemoteTokenModel {
   return new RemoteTokenModel(
-      DEFAULT_ID,
-      DEFAULT_LOCATION,
-      DEFAULT_NAME,
-      DEFAULT_IMAGE_SOURCE,
-      DEFAULT_SIZE,
-      DEFAULT_SPEED);
+    DEFAULT_ID,
+    DEFAULT_LOCATION,
+    DEFAULT_NAME,
+    DEFAULT_IMAGE_SOURCE,
+    DEFAULT_SIZE,
+    DEFAULT_SPEED
+  );
 }
 
 function defaultBoard(): RemoteBoardModel {
   return new RemoteBoardModel(
-      DEFAULT_ID, DEFAULT_NAME, DEFAULT_IMAGE_SOURCE,
-      57, [DEFAULT_TOKEN], [['0']], [['0']], {x: 57, y: 57}, 1, 1);
+    DEFAULT_ID,
+    DEFAULT_NAME,
+    DEFAULT_IMAGE_SOURCE,
+    57,
+    [DEFAULT_TOKEN],
+    [['0']],
+    [['0']],
+    {x: 57, y: 57},
+    1,
+    1
+  );
 }
 
 function defaultBoardDiff(): RemoteBoardDiff {
@@ -66,14 +80,14 @@ test('RemoteTokenModel equals returns false for different inputs', () => {
 });
 
 test('RemoteTokenModel equals returns true for same inputs', () => {
-  const copy =
-      new RemoteTokenModel(
-          DEFAULT_ID,
-          {row: 1, col: 7},
-          DEFAULT_NAME,
-          DEFAULT_IMAGE_SOURCE,
-          DEFAULT_SIZE,
-          DEFAULT_SPEED);
+  const copy = new RemoteTokenModel(
+    DEFAULT_ID,
+    {row: 1, col: 7},
+    DEFAULT_NAME,
+    DEFAULT_IMAGE_SOURCE,
+    DEFAULT_SIZE,
+    DEFAULT_SPEED
+  );
   expect(RemoteTokenModel.equals(DEFAULT_TOKEN, copy)).toBe(true);
 });
 
@@ -470,7 +484,7 @@ test('RemoteBoardModel mergedWith throws on bad id', () => {
   const board = defaultBoard();
   const diff = {id: 'whateverId'};
 
-  expect(() => RemoteBoardModel.mergedWith(board, (diff as any))).toThrow();
+  expect(() => RemoteBoardModel.mergedWith(board, diff as any)).toThrow();
 });
 
 test('RemoteBoardDiff isValid returns true on valid', () => {

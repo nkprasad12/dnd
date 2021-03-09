@@ -1,6 +1,5 @@
 import {rollDice} from '_common/chat/dice_roller';
 
-
 test('rollDice rolls expected number of dice', () => {
   expect(rollDice(5, 22).length).toBe(22);
 });

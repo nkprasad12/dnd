@@ -15,8 +15,10 @@ export function loadImage(source: string): Promise<LoadedImage> {
     const image = new Image();
     image.src = source.replace(SERVER_PREFIX, getOrigin());
     image.onload = (event: Event) => {
-      const loadedImage =
-          new LoadedImage(<CanvasImageSource>event.currentTarget, source);
+      const loadedImage = new LoadedImage(
+        <CanvasImageSource>event.currentTarget,
+        source
+      );
       resolve(loadedImage);
     };
     image.onerror = () => {
@@ -27,7 +29,8 @@ export function loadImage(source: string): Promise<LoadedImage> {
 
 /** Loads all the images requested in the URLs in the input array. */
 export async function loadImages(
-    sources: Array<string>): Promise<Map<string, CanvasImageSource>> {
+  sources: Array<string>
+): Promise<Map<string, CanvasImageSource>> {
   const promises = [];
   for (const source of sources) {
     promises.push(loadImage(source));

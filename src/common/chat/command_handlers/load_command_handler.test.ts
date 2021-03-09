@@ -3,7 +3,6 @@ import {loadCommandHandler} from '_common/chat/command_handlers/load_command_han
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
-
 const CALIGULA_SHEET = 'caligula.sheet';
 const CALIGULA_DATA: CharacterSheetData = {
   name: 'Caligula',

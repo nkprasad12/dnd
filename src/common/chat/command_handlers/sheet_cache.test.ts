@@ -1,6 +1,8 @@
-import {CharacterSheetCache, LoadResult} from '_common/chat/command_handlers/sheet_cache';
+import {
+  CharacterSheetCache,
+  LoadResult,
+} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
-
 
 const CALIGULA_SHEET = 'caligula.sheet';
 const CALIGULA_DATA: CharacterSheetData = {
@@ -53,7 +55,7 @@ class FakeLoader {
 }
 
 class FakeListener {
-  lastResult: LoadResult|undefined = undefined;
+  lastResult: LoadResult | undefined = undefined;
   listener(result: LoadResult): void {
     this.lastResult = result;
   }

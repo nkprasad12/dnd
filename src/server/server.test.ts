@@ -19,7 +19,8 @@ process.env.GCS_BUCKET = 'bucket';
 import {prepareServer} from './server';
 
 let requestSingleton:
-    supertest.SuperTest<supertest.Test>|undefined = undefined;
+  | supertest.SuperTest<supertest.Test>
+  | undefined = undefined;
 
 function request(): supertest.SuperTest<supertest.Test> {
   return checkDefined(requestSingleton);
@@ -27,8 +28,7 @@ function request(): supertest.SuperTest<supertest.Test> {
 
 beforeAll(() => {
   jest.resetModules();
-  requestSingleton = // supertest(prepareServer());
-  supertest.agent(prepareServer());
+  requestSingleton = supertest.agent(prepareServer());
 });
 
 afterAll(() => {
@@ -37,11 +37,9 @@ afterAll(() => {
   fs.rmdirSync(path.join(ROOT, 'data'));
 });
 
-beforeEach(() => {
-});
+beforeEach(() => {});
 
-afterEach(() => {
-});
+afterEach(() => {});
 
 test('Unauthenticated static request performs redirect', async (done) => {
   const response = await request().get('/templates/board_tools.html');
@@ -79,7 +77,7 @@ test('Unauthenticated home route succeeds', async (done) => {
   const response = await request().get('/');
 
   expect(response.status).toBe(200);
-  expect(response.text).toBe('TODO: Find a better solution for this.');
+  expect(response.text).toBe('TODO: Find a better solution for this.\n');
   done();
 });
 
