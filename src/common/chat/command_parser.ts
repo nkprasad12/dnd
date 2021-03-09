@@ -8,7 +8,7 @@ export enum CommandType {
   Attack = '!attack',
   Load = '!load',
   Help = '!help',
-};
+}
 
 const COMMAND_TYPE_LOOKUP: Map<string, CommandType> = new Map();
 COMMAND_TYPE_LOOKUP.set('!roll', CommandType.Roll);

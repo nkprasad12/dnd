@@ -4,6 +4,7 @@
       "es2021": true
   },
   "extends": [
+      "eslint:recommended",
       "google"
   ],
   "parser": "@typescript-eslint/parser",
@@ -23,6 +24,10 @@
     "max-len": [1, 80, 2, {
       "ignorePattern": "^import\\s.+\\sfrom\\s.+;$",
       "ignoreUrls": true
-    }]
+    }],
+    "no-undef": "off",
+    "no-redeclare": "off",
+    "no-constant-condition": "off",
+    "no-empty":"off"
   }
 }

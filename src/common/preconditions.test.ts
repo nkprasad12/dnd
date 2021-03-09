@@ -14,5 +14,5 @@ test('checkDefined throws on undefined', () => {
 });
 
 test('checkDefined throws on undefined with name', () => {
-  expect(() => checkDefined(undefined, 'Crassus')).toThrowError('Crassus'); ;
+  expect(() => checkDefined(undefined, 'Crassus')).toThrowError('Crassus');
 });

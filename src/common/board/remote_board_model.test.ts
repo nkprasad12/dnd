@@ -48,7 +48,7 @@ function defaultBoard(): RemoteBoardModel {
   return new RemoteBoardModel(
       DEFAULT_ID, DEFAULT_NAME, DEFAULT_IMAGE_SOURCE,
       57, [DEFAULT_TOKEN], [['0']], [['0']], {x: 57, y: 57}, 1, 1);
-};
+}
 
 function defaultBoardDiff(): RemoteBoardDiff {
   return {
@@ -58,7 +58,7 @@ function defaultBoardDiff(): RemoteBoardDiff {
     tokenDiffs: [{id: 'tokenDiffId', speed: 5}],
     publicSelectionDiffs: [],
   };
-};
+}
 
 test('RemoteTokenModel equals returns false for different inputs', () => {
   expect(RemoteTokenModel.equals(DEFAULT_TOKEN, ID_TOKEN)).toBe(false);
