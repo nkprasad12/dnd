@@ -5,3 +5,4 @@ google-credentials.json
 genfiles_static/
 data/
 coverage/
+.eslintcache
