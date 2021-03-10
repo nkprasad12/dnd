@@ -1,6 +1,7 @@
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {checkDefined} from '_common/preconditions';
 import {isStringArray} from '_common/verification';
+import {CacheItem, CacheItemFactory} from '_server/storage/cache_item';
 import {storageUtil} from '_server/storage/storage_util';
 
 const CACHE_SAVE_INTERNAL_MS = 60000;
@@ -12,57 +13,35 @@ function getBoardKey(boardId: string): string {
   return `${boardId}.txt`;
 }
 
-/** Loads a board from storage. */
-async function loadBoard(fileKey: string): Promise<RemoteBoardModel> {
-  const contents = await storageUtil().loadFromFile(fileKey);
-  const parsedContent = JSON.parse(contents);
-  if (!RemoteBoardModel.isValid(parsedContent)) {
-    RemoteBoardModel.fillDefaults(parsedContent);
-    if (!RemoteBoardModel.isValid(parsedContent)) {
-      throw new Error(`${fileKey} does not represent a valid board!`);
-    }
-  }
-  return parsedContent;
-}
-
 /** Saves a board to storage. */
 function saveBoard(fileKey: string, board: RemoteBoardModel): void {
   // Do we need to handle this further? (JSON.stringify)
   storageUtil().saveToFile(JSON.stringify(board), fileKey);
 }
 
-interface CachedGame {
-  fileKey: string;
-  updateTime: number;
-  saveTime: number;
-  gameData: RemoteBoardModel;
+type CachedGame = CacheItem<RemoteBoardModel>;
+
+class CachedGameFactory extends CacheItemFactory<RemoteBoardModel> {
+  constructor() {
+    super('CachedGameFactory', storageUtil().loadFromFile);
+  }
+  validate(item: any): item is RemoteBoardModel {
+    return RemoteBoardModel.isValid(item);
+  }
+  correct(item: any): void {
+    return RemoteBoardModel.fillDefaults(item);
+  }
 }
+
+const cachedGameFactory = new CachedGameFactory();
 
 async function loadFromDisk(boardId: string): Promise<CachedGame> {
   console.log('loadFromDisk called on id: ' + boardId);
-  const fileKey = getBoardKey(boardId);
-  const board = await loadBoard(fileKey);
-
-  const currentTime = Date.now();
-  // Make sure it's before the current time.
-  const updateTime = currentTime - 1;
-  return {
-    fileKey: fileKey,
-    updateTime: updateTime,
-    saveTime: currentTime,
-    gameData: board,
-  };
+  return cachedGameFactory.load(getBoardKey(boardId));
 }
 
 function newBoard(boardId: string, board: RemoteBoardModel): CachedGame {
-  const fileKey = getBoardKey(boardId);
-  const currentTime = Date.now();
-  return {
-    fileKey: fileKey,
-    updateTime: currentTime,
-    saveTime: -1,
-    gameData: board,
-  };
+  return cachedGameFactory.create(getBoardKey(boardId), board);
 }
 
 class GameCache {
@@ -96,7 +75,7 @@ class GameCache {
     console.log('Found an existing board with the given id');
     const cachedBoard = checkDefined(this.cache.get(id));
     const currentTime = Date.now();
-    cachedBoard.gameData = board;
+    cachedBoard.data = board;
     cachedBoard.updateTime = currentTime;
     return false;
   }
@@ -120,7 +99,7 @@ class GameCache {
       this.cache.set(id, loadedBoard);
       result = loadedBoard;
     }
-    return result.gameData;
+    return result.data;
   }
 
   /** Saves cache items to storage. */
@@ -129,7 +108,7 @@ class GameCache {
     this.cache.forEach((cachedGame) => {
       if (cachedGame.saveTime < cachedGame.updateTime) {
         cachedGame.saveTime = cachedGame.updateTime;
-        saveBoard(cachedGame.fileKey, cachedGame.gameData);
+        saveBoard(cachedGame.fileKey, cachedGame.data);
       }
     });
     setTimeout(() => this.save(), CACHE_SAVE_INTERNAL_MS);
