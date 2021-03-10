@@ -1,12 +1,7 @@
 import deepEqual from 'deep-equal';
-import {TokenData} from '_common/board/token_data';
+import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
-import {
-  areLocationsEqual,
-  arePointsEqual,
-  Location,
-  Point,
-} from '_common/coordinates';
+import {areLocationsEqual, arePointsEqual, Point} from '_common/coordinates';
 import {isGrid} from '_common/verification';
 
 const DEFAULT_SPEED = 6;
@@ -15,9 +10,7 @@ const DEFAULT_SPEED = 6;
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
-export interface RemoteTokenModel extends TokenData {
-  readonly location: Location;
-}
+export interface RemoteTokenModel extends TokenData, BoardOnlyTokenData {}
 
 export namespace RemoteTokenModel {
   export function isValid(input: any): input is RemoteTokenModel {
@@ -30,6 +23,21 @@ export namespace RemoteTokenModel {
       maybeToken.size !== undefined &&
       maybeToken.speed !== undefined;
     return isValid;
+  }
+
+  export function createFrom(
+    baseData: TokenData,
+    boardData: BoardOnlyTokenData
+  ): RemoteTokenModel {
+    if (baseData.id !== boardData.id) {
+      throw new Error('Trying to create from data with different ids!');
+    }
+    const result: any = baseData;
+    result.location = boardData.location;
+    if (!isValid(result)) {
+      throw new Error('Invalid token result created');
+    }
+    return result;
   }
 
   export function fillDefaults(input: any): any {

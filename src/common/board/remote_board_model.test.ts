@@ -1,3 +1,4 @@
+import {areLocationsEqual} from '_common/coordinates';
 import {
   RemoteBoardDiff,
   RemoteBoardModel,
@@ -219,6 +220,38 @@ test('RemoteTokenModel computeDiff different locations', () => {
 
   const diff = RemoteTokenModel.computeDiff(defaultToken(), differentLocation);
   expect(diff).toEqual({id: DEFAULT_ID, location: DEFAULT_LOCATION});
+});
+
+test('RemoteTokenModel createFrom uses location from boardData', () => {
+  const newLocation = {col: 4242, row: 5757};
+  const result = RemoteTokenModel.createFrom(defaultToken(), {
+    id: DEFAULT_ID,
+    location: newLocation,
+  });
+
+  expect(areLocationsEqual(newLocation, result.location)).toBe(true);
+});
+
+test('RemoteTokenModel createFrom invalid result throws', () => {
+  const baseToken = Object.assign(defaultToken());
+  baseToken.location = undefined;
+  const boardData = {id: 'whateverNewId'};
+
+  expect(() =>
+    RemoteTokenModel.createFrom(defaultToken(), boardData as any)
+  ).toThrow();
+});
+
+test('RemoteTokenModel createFrom different ids throws', () => {
+  const newLocation = {col: 4242, row: 5757};
+  const boardData = {
+    id: 'whateverNewId',
+    location: newLocation,
+  };
+
+  expect(() =>
+    RemoteTokenModel.createFrom(defaultToken(), boardData)
+  ).toThrow();
 });
 
 test('RemoteBoardModel isValid true on valid model', () => {
