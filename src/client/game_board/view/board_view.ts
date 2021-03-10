@@ -6,6 +6,7 @@ import {
   Point,
 } from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
+import {checkDefined} from '_common/preconditions';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
@@ -17,6 +18,13 @@ const peekFogColor: string = 'rgba(0, 0, 0, 0.5)';
 const selectedTileColor: string = 'rgba(200, 255, 200, 0.25)';
 const publicSelectionBlue: string = 'rgba(0, 0, 204, 0.20)';
 const publicSelectionOrange: string = 'rgba(255, 128, 0, 0.20)';
+const publicSelectionGreen: string = 'rgba(50, 255, 100, 0.25)';
+
+const colorMap: Map<string, string> = new Map([
+  ['1', publicSelectionBlue],
+  ['2', publicSelectionOrange],
+  ['3', publicSelectionGreen],
+]);
 
 function createBoardCanvas(
   zIndex: string,
@@ -471,8 +479,7 @@ class Tile {
       // 0 is for no selection, so we're done.
       return;
     }
-    const color =
-      selection === '1' ? publicSelectionBlue : publicSelectionOrange;
+    const color = checkDefined(colorMap.get(selection));
     fillCanvasTile(
       this.startX,
       this.startY,
