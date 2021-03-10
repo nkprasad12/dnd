@@ -319,6 +319,11 @@ class ContextMenuOpenState extends InteractionState {
           model.publicSelection[tile.col][tile.row] = '2';
         }
         break;
+      case ContextMenuItem.GreenHighlight:
+        for (const tile of model.localSelection) {
+          model.publicSelection[tile.col][tile.row] = '3';
+        }
+        break;
       case ContextMenuItem.AddToken:
         NewTokenForm.create(model.localSelection[0], this.modelHandler);
         break;
