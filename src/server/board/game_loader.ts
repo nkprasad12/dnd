@@ -1,10 +1,10 @@
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {checkDefined} from '_common/preconditions';
 import {isStringArray} from '_common/verification';
-import {CacheItem, CacheItemFactory} from '_server/storage/cache_item';
+import {StorageCache} from '_server/storage/cache';
+import {CacheItemFactory} from '_server/storage/cache_item';
 import {storageUtil} from '_server/storage/storage_util';
 
-const CACHE_SAVE_INTERNAL_MS = 60000;
 const ACTIVE_DB = 'active.db';
 const ALL_BOARD_DB = 'all_boards.db';
 
@@ -15,11 +15,8 @@ function getBoardKey(boardId: string): string {
 
 /** Saves a board to storage. */
 function saveBoard(fileKey: string, board: RemoteBoardModel): void {
-  // Do we need to handle this further? (JSON.stringify)
   storageUtil().saveToFile(JSON.stringify(board), fileKey);
 }
-
-type CachedGame = CacheItem<RemoteBoardModel>;
 
 class CachedGameFactory extends CacheItemFactory<RemoteBoardModel> {
   constructor() {
@@ -35,90 +32,14 @@ class CachedGameFactory extends CacheItemFactory<RemoteBoardModel> {
 
 const cachedGameFactory = new CachedGameFactory();
 
-async function loadFromDisk(boardId: string): Promise<CachedGame> {
-  console.log('loadFromDisk called on id: ' + boardId);
-  return cachedGameFactory.load(getBoardKey(boardId));
-}
-
-function newBoard(boardId: string, board: RemoteBoardModel): CachedGame {
-  return cachedGameFactory.create(getBoardKey(boardId), board);
-}
-
-class GameCache {
-  static create(): GameCache {
-    const cache = new GameCache();
-    console.log('Created new game cache, setting timeout');
-    setTimeout(() => cache.save(), CACHE_SAVE_INTERNAL_MS);
-    return cache;
-  }
-
-  private readonly cache: Map<string, CachedGame> = new Map();
-
-  private constructor() {}
-
-  /**
-   * Updates the cache with the board with given ID and data.
-   *
-   * @param id the board ID to update.
-   * @param board the board data to update.
-   *
-   * @returns whether a new board was created.
-   */
-  async updateBoard(id: string, board: RemoteBoardModel): Promise<boolean> {
-    console.log('updateBoard called on id: ' + id);
-    try {
-      await this.getBoard(id);
-    } catch {
-      this.cache.set(id, newBoard(id, board));
-      return true;
-    }
-    console.log('Found an existing board with the given id');
-    const cachedBoard = checkDefined(this.cache.get(id));
-    const currentTime = Date.now();
-    cachedBoard.data = board;
-    cachedBoard.updateTime = currentTime;
-    return false;
-  }
-
-  async addNewBoard(board: RemoteBoardModel): Promise<void> {
-    this.cache.set(board.id, newBoard(board.id, board));
-  }
-
-  /**
-   * Returns the board with the given ID.
-   *
-   * If it is not in the cache, try to load it from storage.
-   * If is is not storage, returns a rejected promise.
-   */
-  async getBoard(id: string): Promise<RemoteBoardModel> {
-    console.log('getBoard called on id ' + id);
-    let result = this.cache.get(id);
-    if (result === undefined) {
-      console.log('did not find board in cache');
-      const loadedBoard = await loadFromDisk(id);
-      this.cache.set(id, loadedBoard);
-      result = loadedBoard;
-    }
-    return result.data;
-  }
-
-  /** Saves cache items to storage. */
-  private save(): void {
-    console.log('Checking cache for items that need to be saved.');
-    this.cache.forEach((cachedGame) => {
-      if (cachedGame.saveTime < cachedGame.updateTime) {
-        cachedGame.saveTime = cachedGame.updateTime;
-        saveBoard(cachedGame.fileKey, cachedGame.data);
-      }
-    });
-    setTimeout(() => this.save(), CACHE_SAVE_INTERNAL_MS);
-  }
-}
-
 class GameLoader {
   private activeBoard: string | undefined;
   private allBoardIds: string[] | undefined;
-  private gameCache = GameCache.create();
+  private gameCache = StorageCache.create<RemoteBoardModel>(
+    'RemoteBoardModel',
+    cachedGameFactory,
+    saveBoard
+  );
 
   /** Returns the ID of the active board. */
   async getActiveBoard(): Promise<string> {
@@ -179,17 +100,17 @@ class GameLoader {
    * If there is an existing board with the same id, overwrites it.
    */
   async saveBoard(board: RemoteBoardModel): Promise<void> {
-    await this.gameCache.updateBoard(board.id, board);
+    await this.gameCache.update(getBoardKey(board.id), board);
     await this.updateAllBoardIds(board.id);
   }
 
   async createNewBoard(board: RemoteBoardModel): Promise<void> {
-    this.gameCache.addNewBoard(board);
+    this.gameCache.addNew(getBoardKey(board.id), board);
     await this.updateAllBoardIds(board.id);
   }
 
   async retrieveBoard(boardId: string): Promise<RemoteBoardModel> {
-    return this.gameCache.getBoard(boardId);
+    return this.gameCache.get(getBoardKey(boardId));
   }
 }
 
