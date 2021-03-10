@@ -8,6 +8,7 @@ export enum ContextMenuItem {
   ClearHighlight = 'Clear Highlight',
   OrangeHighlight = 'Highlight Orange',
   BlueHighlight = 'Highlight Blue',
+  GreenHighlight = 'Highlight Green',
   AddToken = 'Add Token',
   EditToken = 'Edit Token',
   CopyToken = 'Copy Token',
