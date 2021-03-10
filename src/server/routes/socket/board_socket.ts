@@ -5,7 +5,7 @@ import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {gameLoader} from '_server/routes/socket/game_loader';
+import {gameLoader} from '_server/board/game_loader';
 
 export function registerBoardRoutes(ioServer: Server): void {
   // TODO: Look into express-socket.io-session for security.
