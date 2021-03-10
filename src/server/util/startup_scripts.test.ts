@@ -1,7 +1,7 @@
 import mockfs from 'mock-fs';
 import fs from 'fs';
 
-import {writeGoogleCredentials} from './startup_scripts';
+import {createDataDirectories, writeGoogleCredentials} from './startup_scripts';
 
 const EXPECTED_FILE = 'Hasdrubal.txt';
 const ORIGINAL_ENV = process.env;
@@ -37,4 +37,12 @@ test('writeGoogleCredentials writes to file', () => {
   expect(fs.readFileSync(EXPECTED_FILE).toString()).toBe(
     process.env.GOOGLE_KEY
   );
+});
+
+test('createDataDirectories creates directories', () => {
+  createDataDirectories();
+
+  expect(fs.existsSync('data/images')).toBe(true);
+  expect(fs.existsSync('data/server_db')).toBe(true);
+  expect(fs.existsSync('data/server_db/tokens')).toBe(true);
 });
