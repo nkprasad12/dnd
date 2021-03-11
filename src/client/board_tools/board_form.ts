@@ -169,17 +169,22 @@ function createSubmitButton(label: string): HTMLButtonElement {
   return item;
 }
 
+interface InputSection {
+  label: HTMLElement;
+  input: HTMLInputElement;
+}
+
 function addInputSection(
   parent: HTMLElement,
   label: string,
   inputType: InputType,
   color?: string
-): HTMLInputElement {
-  addLabel(parent, label, color);
+): InputSection {
+  const labelView = addLabel(parent, label, color);
   addBreak(parent, 1);
   const inputField = addInput(parent, inputType);
   addBreak(parent, 2);
-  return inputField;
+  return {label: labelView, input: inputField};
 }
 
 function addNumberInputSection(
@@ -192,7 +197,7 @@ function addNumberInputSection(
     label,
     InputType.NUMBER_INPUT,
     options?.textColor
-  );
+  ).input;
   if (options?.min !== undefined) {
     inputField.min = String(options.min);
   }
@@ -227,11 +232,7 @@ export class TextInputEntry extends FormInputEntry<string> {
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
     this.listener = listener;
-    this.view = addInputSection(
-      parent,
-      this.label,
-      InputType.TEXT_INPUT
-    ) as HTMLInputElement;
+    this.view = addInputSection(parent, this.label, InputType.TEXT_INPUT).input;
     if (this.defaultValue !== undefined) {
       this.view.defaultValue = this.defaultValue;
       this.result = this.defaultValue;
@@ -248,10 +249,10 @@ export class TextInputEntry extends FormInputEntry<string> {
   resolve(data: string): void {
     this.result = data;
     if (this.listener) {
-      this.listener(this.result !== undefined);
+      this.listener(data !== undefined);
     }
     if (this.view) {
-      this.view.setRangeText(this.result);
+      this.view.value = data;
     }
   }
 
@@ -300,7 +301,7 @@ export class NumberInputEntry extends FormInputEntry<number> {
       this.listener(this.result !== undefined);
     }
     if (this.view) {
-      this.view.setRangeText(this.result.toString());
+      this.view.value = data.toString();
     }
   }
 
@@ -311,7 +312,7 @@ export class NumberInputEntry extends FormInputEntry<number> {
 
 export class ImageInputEntry extends FormInputEntry<LoadedImage> {
   private result?: LoadedImage;
-  private view?: HTMLInputElement;
+  private view?: InputSection;
   private listener?: ResolvedListener;
 
   constructor(private readonly label: string) {
@@ -321,7 +322,7 @@ export class ImageInputEntry extends FormInputEntry<LoadedImage> {
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
     this.listener = listener;
     this.view = addInputSection(parent, this.label, InputType.IMAGE_INPUT);
-    this.view.onchange = (event) => {
+    this.view.input.onchange = (event) => {
       handleImageUpload(event as HTMLInputEvent).then((imageSource) => {
         this.result = imageSource;
         listener(true);
@@ -338,6 +339,13 @@ export class ImageInputEntry extends FormInputEntry<LoadedImage> {
 
   getResolved(): LoadedImage | undefined {
     return this.result;
+  }
+
+  hide(): void {
+    if (this.view) {
+      this.view.input.style.display = 'none';
+      this.view.label.style.display = 'none';
+    }
   }
 }
 
@@ -569,9 +577,19 @@ export class NewTokenForm extends BaseDialogForm {
       getElementById(TOKEN_FORM_STUB),
       tile,
       (token) => {
-        console.log('NewTokenForm onNewToken');
+        console.log('NewTokenForm onNewToken: ' + token.id);
         const newModel = modelHandler.copyModel();
-        newModel.tokens.push(token);
+        let addedToken = false;
+        for (let i = 0; i < newModel.tokens.length; i++) {
+          if (newModel.tokens[i].id !== token.id) {
+            continue;
+          }
+          newModel.tokens[i] = token;
+          addedToken = false;
+        }
+        if (!addedToken) {
+          newModel.tokens.push(token);
+        }
         modelHandler.update(newModel);
       },
       new TokenFormDefaults(),
@@ -586,7 +604,7 @@ export class NewTokenForm extends BaseDialogForm {
     onNewToken: (model: TokenModel) => any,
     defaults: TokenFormDefaults,
     existingTokens: Promise<TokenData[]>,
-    label: string = 'Create a new token'
+    label: string = 'Enter attributes'
   ) {
     const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
     const sizeEntry: NumberInputEntry = new NumberInputEntry('Size (tiles)', {
@@ -597,12 +615,25 @@ export class NewTokenForm extends BaseDialogForm {
       {defaultValue: defaults.speed}
     );
     const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
+    let tokenId: string | undefined = undefined;
     super(parent, label, [nameEntry, sizeEntry, speedEntry, iconEntry], () => {
       const name = checkDefined(nameEntry.getResolved(), 'name');
       const icon = checkDefined(iconEntry.getResolved(), 'icon');
       const speed = checkDefined(speedEntry.getResolved(), 'speed');
       const size = checkDefined(sizeEntry.getResolved(), 'size');
-      const token = TokenModel.create(name, icon, size, tile, false, speed);
+      const token =
+        tokenId === undefined
+          ? TokenModel.create(name, icon, size, tile, false, speed)
+          : new TokenModel(
+              tokenId,
+              name,
+              icon.source,
+              icon.image,
+              size,
+              tile,
+              false,
+              speed
+            );
       console.log(token);
       onNewToken(token);
     });
@@ -616,6 +647,8 @@ export class NewTokenForm extends BaseDialogForm {
         loadImage(data.imageSource).then((image) => iconEntry.resolve(image));
         speedEntry.resolve(data.speed);
         sizeEntry.resolve(1);
+        tokenId = data.id;
+        iconEntry.hide();
       },
       existingTokens.then((tokens) =>
         tokens.map((token) =>
