@@ -2,7 +2,7 @@ import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {Socket_} from '_client/server/socket_connection';
+import {Socket} from '_client/server/socket_connection';
 import * as Events from '_common/board/board_events';
 import {TokenData} from '_common/board/token_data';
 
@@ -10,7 +10,7 @@ export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
 /** Sends and receives game board messages to the server. */
 export class BoardClient {
-  constructor(private readonly socket: Socket_) {}
+  constructor(private readonly socket: Socket) {}
 
   updateBoard(diff: RemoteBoardDiff): void {
     this.socket.emit(Events.BOARD_UPDATE, diff);

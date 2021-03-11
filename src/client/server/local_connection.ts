@@ -1,8 +1,8 @@
-import {Socket_} from '_client/server/socket_connection';
+import {Socket} from '_client/server/socket_connection';
 
 const TAG = '[LocalConnection]';
 
-export class LocalConnection extends Socket_ {
+export class LocalConnection extends Socket {
   on(namespace: string): void {
     console.log('%s [%s] Unexpected message received!', TAG, namespace);
   }
