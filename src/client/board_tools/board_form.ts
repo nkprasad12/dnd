@@ -5,6 +5,8 @@ import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 import {LoadedImage} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
+import {TokenData} from '_common/board/token_data';
+import {RemoteCache} from '_client/game_board/remote/remote_cache';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
 
@@ -530,26 +532,10 @@ export class NewTokenForm extends BaseDialogForm {
         newModel.tokens.push(token);
         modelHandler.update(newModel);
       },
-      new TokenFormDefaults()
+      new TokenFormDefaults(),
+      RemoteCache.get().getAllTokens()
     );
     form.show();
-  }
-
-  static createOnClick(
-    bindingElementId: string,
-    parentId: string,
-    tile: Location,
-    onNewToken: (model: TokenModel) => any
-  ): void {
-    const boardForm = new NewTokenForm(
-      getElementById(parentId),
-      tile,
-      onNewToken,
-      new TokenFormDefaults()
-    );
-    getElementById(bindingElementId).onclick = () => {
-      boardForm.show();
-    };
   }
 
   private constructor(
@@ -557,6 +543,7 @@ export class NewTokenForm extends BaseDialogForm {
     tile: Location,
     onNewToken: (model: TokenModel) => any,
     defaults: TokenFormDefaults,
+    existingTokens: Promise<TokenData[]>,
     label: string = 'Create a new token'
   ) {
     const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
@@ -567,6 +554,7 @@ export class NewTokenForm extends BaseDialogForm {
       'Speed (tiles / move)',
       {defaultValue: defaults.speed}
     );
+    existingTokens.then(console.log);
     const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
     super(parent, label, [nameEntry, sizeEntry, speedEntry, iconEntry], () => {
       const name = checkDefined(nameEntry.getResolved(), 'name');

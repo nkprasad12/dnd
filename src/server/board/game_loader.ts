@@ -135,7 +135,9 @@ class GameLoader {
 
   async getAllTokens(): Promise<TokenData[]> {
     const tokenFiles = await storageUtil().filesInRemoteDir('tokens');
-    const keys = tokenFiles.map((tokenFile) => path.join('tokens', tokenFile));
+    const keys = tokenFiles.map((tokenFile) =>
+      path.join('tokens', path.basename(tokenFile))
+    );
     const allData = keys.map((key) => this.tokenCache.get(key));
     return Promise.all(allData);
   }
