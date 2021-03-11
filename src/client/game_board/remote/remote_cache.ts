@@ -1,4 +1,5 @@
 import {BoardClient} from '_client/game_board/remote/board_client';
+import {RemoteTokenModel} from '_common/board/remote_board_model';
 import {TokenData} from '_common/board/token_data';
 
 export class RemoteCache {
@@ -20,5 +21,21 @@ export class RemoteCache {
       this.cachedTokens = client.requestAllTokens();
     }
     return this.cachedTokens;
+  }
+
+  async updateTokens(updateTokens: RemoteTokenModel[]): Promise<void> {
+    if (this.cachedTokens === undefined) {
+      // No-op in this case. When we eventually fetch all tokens,
+      // these new tokens should also be included in the
+      return;
+    }
+    const tokenMap: Map<string, TokenData> = new Map();
+    for (const token of await this.cachedTokens) {
+      tokenMap.set(token.id, token);
+    }
+    for (const token of updateTokens) {
+      tokenMap.set(token.id, token);
+    }
+    this.cachedTokens = Promise.resolve(Array.from(tokenMap.values()));
   }
 }
