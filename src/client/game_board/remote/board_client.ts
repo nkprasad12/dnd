@@ -2,15 +2,30 @@ import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {Socket} from '_client/server/socket_connection';
+import {connectTo, Socket} from '_client/server/socket_connection';
 import * as Events from '_common/board/board_events';
 import {TokenData} from '_common/board/token_data';
+import {LocalConnection} from '_client/server/local_connection';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
 /** Sends and receives game board messages to the server. */
 export class BoardClient {
-  constructor(private readonly socket: Socket) {}
+  private static client: Promise<BoardClient> | undefined;
+  static get(): Promise<BoardClient> {
+    if (this.client === undefined) {
+      this.client = connectTo('board').then(
+        (socket) => new BoardClient(socket)
+      );
+    }
+    return this.client;
+  }
+
+  static getLocal(): BoardClient {
+    return new BoardClient(new LocalConnection());
+  }
+
+  private constructor(private readonly socket: Socket) {}
 
   updateBoard(diff: RemoteBoardDiff): void {
     this.socket.emit(Events.BOARD_UPDATE, diff);

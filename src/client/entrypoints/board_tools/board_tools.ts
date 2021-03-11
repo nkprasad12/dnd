@@ -8,7 +8,6 @@ import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
-import {connectTo} from '_client/server/socket_connection';
 
 const NEW_BOARD_BUTTON = 'createNewBoard';
 const SAVE_BOARD_BUTTON = 'saveNewBoard';
@@ -32,9 +31,7 @@ class BoardSelectors {
   }
 }
 
-const serverPromise = connectTo('board').then(
-  (socket) => new BoardClient(socket)
-);
+const serverPromise = BoardClient.get();
 
 async function saveBoard(model: RemoteBoardModel): Promise<void> {
   const server = await serverPromise;

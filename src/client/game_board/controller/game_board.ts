@@ -8,19 +8,13 @@ import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
-import {LocalConnection} from '_client/server/local_connection';
 import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 
 export class GameBoard {
   static createLocal(parentId: string, model: BoardModel): GameBoard {
-    return new GameBoard(
-      parentId,
-      model,
-      new BoardClient(new LocalConnection()),
-      true
-    );
+    return new GameBoard(parentId, model, BoardClient.getLocal(), true);
   }
 
   private readonly view: BoardView;

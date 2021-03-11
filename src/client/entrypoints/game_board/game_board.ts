@@ -12,7 +12,7 @@ const GAME_HOLDER_STUB = 'canvasHolder';
 
 async function loadActiveBoard(): Promise<GameBoard> {
   setLabel('Connecting to game server');
-  const server = await BoardClientPromise;
+  const server = await boardClientPromise;
   const boardId = await server.requestActiveBoardId();
   setLabel('Retrieving active board data');
   const remoteModel = await server.requestBoard(boardId);
@@ -27,9 +27,8 @@ function setLabel(message: string) {
   addLabel(getElementById(GAME_HOLDER_STUB), message, TEXT_COLOR);
 }
 
-const BoardClientPromise = connectTo('board').then(
-  (socket) => new BoardClient(socket)
-);
+const boardClientPromise = BoardClient.get();
+
 connectTo('chat').then((socket) => {
   const client = new ChatClient(socket);
   ChatBox.initialize(client);
