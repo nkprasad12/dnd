@@ -3,8 +3,14 @@ import {getOrigin} from '_client/common/get_origin';
 import {getElementById} from '_client/common/ui_util';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
-import {LoadedImage} from '_client/utils/image_utils';
+import {LoadedImage, loadImage} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
+import {TokenData} from '_common/board/token_data';
+import {RemoteCache} from '_client/game_board/remote/remote_cache';
+import {
+  DropdownSelector,
+  SelectorItem,
+} from '_client/common/ui_components/dropdown';
 
 const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
 
@@ -163,30 +169,35 @@ function createSubmitButton(label: string): HTMLButtonElement {
   return item;
 }
 
+interface InputSection {
+  label: HTMLElement;
+  input: HTMLInputElement;
+}
+
 function addInputSection(
   parent: HTMLElement,
   label: string,
   inputType: InputType,
   color?: string
-): HTMLInputElement {
-  addLabel(parent, label, color);
+): InputSection {
+  const labelView = addLabel(parent, label, color);
   addBreak(parent, 1);
   const inputField = addInput(parent, inputType);
   addBreak(parent, 2);
-  return inputField;
+  return {label: labelView, input: inputField};
 }
 
 function addNumberInputSection(
   parent: HTMLElement,
   label: string,
   options?: NumberInputEntryOptions
-): HTMLElement {
+): HTMLInputElement {
   const inputField = addInputSection(
     parent,
     label,
     InputType.NUMBER_INPUT,
     options?.textColor
-  );
+  ).input;
   if (options?.min !== undefined) {
     inputField.min = String(options.min);
   }
@@ -204,10 +215,13 @@ type ResolvedListener = (resolved: boolean) => any;
 abstract class FormInputEntry<T> {
   abstract addToParent(parent: HTMLElement, listener: ResolvedListener): void;
   abstract getResolved(): T | undefined;
+  abstract resolve(data: T): void;
 }
 
 export class TextInputEntry extends FormInputEntry<string> {
   private result?: string;
+  private view?: HTMLInputElement;
+  private listener?: ResolvedListener;
 
   constructor(
     private readonly label: string,
@@ -217,22 +231,29 @@ export class TextInputEntry extends FormInputEntry<string> {
   }
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField = addInputSection(
-      parent,
-      this.label,
-      InputType.TEXT_INPUT
-    );
+    this.listener = listener;
+    this.view = addInputSection(parent, this.label, InputType.TEXT_INPUT).input;
     if (this.defaultValue !== undefined) {
-      inputField.defaultValue = this.defaultValue;
+      this.view.defaultValue = this.defaultValue;
       this.result = this.defaultValue;
       listener(true);
     }
-    inputField.oninput = (event) => {
+    this.view.oninput = (event) => {
       // @ts-ignore
       const target = event.target as HTMLTextAreaElement;
       this.result = target.value.length === 0 ? undefined : target.value;
       listener(this.result != undefined);
     };
+  }
+
+  resolve(data: string): void {
+    this.result = data;
+    if (this.listener) {
+      this.listener(data !== undefined);
+    }
+    if (this.view) {
+      this.view.value = data;
+    }
   }
 
   getResolved(): string | undefined {
@@ -249,6 +270,8 @@ export interface NumberInputEntryOptions {
 
 export class NumberInputEntry extends FormInputEntry<number> {
   private result?: number;
+  private view?: HTMLInputElement;
+  private listener?: ResolvedListener;
 
   constructor(
     private readonly label: string,
@@ -258,17 +281,28 @@ export class NumberInputEntry extends FormInputEntry<number> {
   }
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField = addNumberInputSection(parent, this.label, this.options);
+    this.listener = listener;
+    this.view = addNumberInputSection(parent, this.label, this.options);
     if (this.options?.defaultValue !== undefined) {
       this.result = this.options.defaultValue;
       listener(true);
     }
-    inputField.oninput = (event) => {
+    this.view.oninput = (event) => {
       const target = event.target as HTMLTextAreaElement;
       this.result =
         target.value.length === 0 ? undefined : parseInt(target.value);
       listener(this.result != undefined);
     };
+  }
+
+  resolve(data: number): void {
+    this.result = data;
+    if (this.listener) {
+      this.listener(this.result !== undefined);
+    }
+    if (this.view) {
+      this.view.value = data.toString();
+    }
   }
 
   getResolved(): number | undefined {
@@ -278,18 +312,17 @@ export class NumberInputEntry extends FormInputEntry<number> {
 
 export class ImageInputEntry extends FormInputEntry<LoadedImage> {
   private result?: LoadedImage;
+  private view?: InputSection;
+  private listener?: ResolvedListener;
 
   constructor(private readonly label: string) {
     super();
   }
 
   addToParent(parent: HTMLElement, listener: ResolvedListener): void {
-    const inputField = addInputSection(
-      parent,
-      this.label,
-      InputType.IMAGE_INPUT
-    );
-    inputField.onchange = (event) => {
+    this.listener = listener;
+    this.view = addInputSection(parent, this.label, InputType.IMAGE_INPUT);
+    this.view.input.onchange = (event) => {
       handleImageUpload(event as HTMLInputEvent).then((imageSource) => {
         this.result = imageSource;
         listener(true);
@@ -297,8 +330,22 @@ export class ImageInputEntry extends FormInputEntry<LoadedImage> {
     };
   }
 
+  resolve(data: LoadedImage): void {
+    this.result = data;
+    if (this.listener) {
+      this.listener(this.result !== undefined);
+    }
+  }
+
   getResolved(): LoadedImage | undefined {
     return this.result;
+  }
+
+  hide(): void {
+    if (this.view) {
+      this.view.input.style.display = 'none';
+      this.view.label.style.display = 'none';
+    }
   }
 }
 
@@ -403,6 +450,7 @@ abstract class BaseDialogForm {
   private readonly modal: HTMLElement;
   private readonly modalContent: HTMLElement;
   private readonly submitButton: HTMLElement;
+  private readonly titleView: HTMLElement;
   private readonly error: HTMLSpanElement;
 
   protected constructor(
@@ -417,7 +465,7 @@ abstract class BaseDialogForm {
     closeSpan.addEventListener('click', () => {
       this.hide();
     });
-    addParagraph(this.modalContent, title);
+    this.titleView = addParagraph(this.modalContent, title);
     this.submitButton = createSubmitButton('Create');
     this.submitButton.style.display = 'none';
     this.submitButton.onclick = () => {
@@ -445,6 +493,10 @@ abstract class BaseDialogForm {
 
   protected showError(message: string): void {
     this.error.textContent = message;
+  }
+
+  protected addElement(element: HTMLElement): void {
+    this.modalContent.insertBefore(element, this.titleView);
   }
 }
 
@@ -525,31 +577,25 @@ export class NewTokenForm extends BaseDialogForm {
       getElementById(TOKEN_FORM_STUB),
       tile,
       (token) => {
-        console.log('NewTokenForm onNewToken');
+        console.log('NewTokenForm onNewToken: ' + token.id);
         const newModel = modelHandler.copyModel();
-        newModel.tokens.push(token);
+        let addedToken = false;
+        for (let i = 0; i < newModel.tokens.length; i++) {
+          if (newModel.tokens[i].id !== token.id) {
+            continue;
+          }
+          newModel.tokens[i] = token;
+          addedToken = false;
+        }
+        if (!addedToken) {
+          newModel.tokens.push(token);
+        }
         modelHandler.update(newModel);
       },
-      new TokenFormDefaults()
+      new TokenFormDefaults(),
+      RemoteCache.get().getAllTokens()
     );
     form.show();
-  }
-
-  static createOnClick(
-    bindingElementId: string,
-    parentId: string,
-    tile: Location,
-    onNewToken: (model: TokenModel) => any
-  ): void {
-    const boardForm = new NewTokenForm(
-      getElementById(parentId),
-      tile,
-      onNewToken,
-      new TokenFormDefaults()
-    );
-    getElementById(bindingElementId).onclick = () => {
-      boardForm.show();
-    };
   }
 
   private constructor(
@@ -557,7 +603,8 @@ export class NewTokenForm extends BaseDialogForm {
     tile: Location,
     onNewToken: (model: TokenModel) => any,
     defaults: TokenFormDefaults,
-    label: string = 'Create a new token'
+    existingTokens: Promise<TokenData[]>,
+    label: string = 'Enter attributes'
   ) {
     const nameEntry: TextInputEntry = new TextInputEntry('Token Name');
     const sizeEntry: NumberInputEntry = new NumberInputEntry('Size (tiles)', {
@@ -568,15 +615,47 @@ export class NewTokenForm extends BaseDialogForm {
       {defaultValue: defaults.speed}
     );
     const iconEntry: ImageInputEntry = new ImageInputEntry('Icon');
+    let tokenId: string | undefined = undefined;
     super(parent, label, [nameEntry, sizeEntry, speedEntry, iconEntry], () => {
       const name = checkDefined(nameEntry.getResolved(), 'name');
       const icon = checkDefined(iconEntry.getResolved(), 'icon');
       const speed = checkDefined(speedEntry.getResolved(), 'speed');
       const size = checkDefined(sizeEntry.getResolved(), 'size');
-      const token = TokenModel.create(name, icon, size, tile, false, speed);
+      const token =
+        tokenId === undefined
+          ? TokenModel.create(name, icon, size, tile, false, speed)
+          : new TokenModel(
+              tokenId,
+              name,
+              icon.source,
+              icon.image,
+              size,
+              tile,
+              false,
+              speed
+            );
       console.log(token);
       onNewToken(token);
     });
+    const selectorHolder = document.createElement('div');
+    this.addElement(selectorHolder);
+    new DropdownSelector<TokenData>(
+      selectorHolder,
+      'Existing Tokens',
+      (data) => {
+        nameEntry.resolve(data.name);
+        loadImage(data.imageSource).then((image) => iconEntry.resolve(image));
+        speedEntry.resolve(data.speed);
+        sizeEntry.resolve(1);
+        tokenId = data.id;
+        iconEntry.hide();
+      },
+      existingTokens.then((tokens) =>
+        tokens.map((token) =>
+          SelectorItem.create<TokenData>(token.id, token.name, false, token)
+        )
+      )
+    );
   }
 }
 

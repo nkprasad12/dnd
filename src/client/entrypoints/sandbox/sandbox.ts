@@ -1,6 +1,6 @@
 import Split from 'split.js';
 
-import {Socket_, connectTo} from '_client/server/socket_connection';
+import {Socket, connectTo} from '_client/server/socket_connection';
 import {saveImageToServer} from '_client/board_tools/board_form';
 
 interface HTMLInputEvent extends Event {
@@ -29,7 +29,7 @@ const listElement = document.createElement('ul');
 document.getElementsByTagName('body')[0].appendChild(listContainer);
 listContainer.appendChild(listElement);
 
-const socketPromise: Promise<Socket_> = connectTo('chat');
+const socketPromise: Promise<Socket> = connectTo('chat');
 socketPromise.then((socket) => {
   socket.emit('nitin', 'Connected from upload.ts');
   socket.on('nitin', (message) => {

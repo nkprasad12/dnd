@@ -2,17 +2,7 @@ import io from 'socket.io-client';
 
 import {getOrigin} from '_client/common/get_origin';
 
-/**
- * Represents a SocketIO io object. Must have run the SocketIO script:
- *
- * <script
- *    src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"
- *    crossorigin="anonymous">
- * </script>
- *
- * in any template that directly or indrectly uses this class.
- */
-export abstract class Socket_ {
+export abstract class Socket {
   /** Represents socket.on */
   abstract on(namespace: string, callback: (arg: any) => any): void;
 
@@ -20,23 +10,11 @@ export abstract class Socket_ {
   abstract emit(namespace: string, message: any): void;
 }
 
-/** Wrapper around socket.io io variable. */
-class IO_ {
-  /**
-   * Wrapper around io.connect
-   * @param address: address to try to connect to.
-   */
-  connect(address: string): Socket_ {
-    console.log('Trying to connect to: ' + address);
-    return io(address);
-  }
-}
-
 const baseUrl = getOrigin() + '/';
 
-class SocketConnection extends Socket_ {
+class SocketConnection extends Socket {
   constructor(
-    private readonly socket: Socket_,
+    private readonly socket: Socket,
     private readonly namespace: string
   ) {
     super();
@@ -61,10 +39,10 @@ class SocketConnection extends Socket_ {
   }
 }
 
-export function connectTo(namespace: string): Promise<Socket_> {
+export function connectTo(namespace: string): Promise<Socket> {
   return new Promise((resolve) => {
-    const io_ = new IO_();
-    const socket = io_.connect(baseUrl + namespace);
+    console.log('Trying to connect to: ' + namespace);
+    const socket = io(baseUrl + namespace);
     socket.on('connect', function () {
       console.log('Connected to socket with namespace: ' + namespace);
       resolve(new SocketConnection(socket, namespace));

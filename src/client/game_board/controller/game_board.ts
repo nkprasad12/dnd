@@ -8,33 +8,18 @@ import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
-import {LocalConnection} from '_client/server/local_connection';
 import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 
 export class GameBoard {
-  static createLocal(parentId: string, model: BoardModel): GameBoard {
-    return new GameBoard(
-      parentId,
-      model,
-      new BoardClient(new LocalConnection()),
-      true
-    );
-  }
-
   private readonly view: BoardView;
   private readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
   private readonly remoteBoard: RemoteBoard;
 
-  constructor(
-    parentId: string,
-    model: BoardModel,
-    server: BoardClient,
-    private readonly local: boolean = false
-  ) {
+  constructor(parentId: string, model: BoardModel, server: BoardClient) {
     this.view = new BoardView(getElementById(parentId));
     const menu = ContextMenu.create(
       getElementById('rightClickMenuStub'),
@@ -51,8 +36,7 @@ export class GameBoard {
       this.view,
       model,
       this.remoteBoard,
-      menu,
-      this.local
+      menu
     );
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
@@ -61,10 +45,7 @@ export class GameBoard {
     );
   }
 
-  updateForEditor(options: BoardUpdateData): void {
-    if (!this.local) {
-      console.log('Attempting updateForEditor in non-local board, ignoring');
-    }
+  updateGridParameters(options: BoardUpdateData): void {
     const model = this.modelHandler.copyModel();
     model.tileSize = options.tileSize;
     model.gridOffset = options.offset;

@@ -3,6 +3,7 @@ import {
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
+import {RemoteCache} from '_client/game_board/remote/remote_cache';
 
 /** Represents a remote board state synced with the user's. */
 export class RemoteBoard {
@@ -28,6 +29,7 @@ export class RemoteBoard {
     if (diff === undefined) {
       return;
     }
+    RemoteCache.get().updateTokens(newRemoteModel.tokens);
     this.remoteModel = newRemoteModel;
     console.log('Updated remote model');
     console.log(this.remoteModel);
