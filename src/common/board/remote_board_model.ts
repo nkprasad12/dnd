@@ -4,8 +4,6 @@ import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 import {areLocationsEqual, arePointsEqual, Point} from '_common/coordinates';
 import {isGrid} from '_common/verification';
 
-const DEFAULT_SPEED = 6;
-
 /**
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
@@ -14,15 +12,7 @@ export interface RemoteTokenModel extends TokenData, BoardOnlyTokenData {}
 
 export namespace RemoteTokenModel {
   export function isValid(input: any): input is RemoteTokenModel {
-    const maybeToken = input as RemoteTokenModel;
-    const isValid =
-      maybeToken.id !== undefined &&
-      maybeToken.location !== undefined &&
-      maybeToken.name !== undefined &&
-      maybeToken.imageSource !== undefined &&
-      maybeToken.size !== undefined &&
-      maybeToken.speed !== undefined;
-    return isValid;
+    return TokenData.isValid(input) && BoardOnlyTokenData.isValid(input);
   }
 
   export function createFrom(
@@ -41,10 +31,7 @@ export namespace RemoteTokenModel {
   }
 
   export function fillDefaults(input: any): any {
-    if (input.speed === undefined) {
-      input.speed = DEFAULT_SPEED;
-    }
-    return input;
+    return TokenData.fillDefaults(input);
   }
 
   export function equals(

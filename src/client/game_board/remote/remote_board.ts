@@ -2,13 +2,13 @@ import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {BoardServer} from '_client/game_board/remote/board_server';
+import {BoardClient} from '_client/game_board/remote/board_client';
 
 /** Represents a remote board state synced with the user's. */
 export class RemoteBoard {
   constructor(
     private remoteModel: RemoteBoardModel,
-    private readonly server: BoardServer,
+    private readonly server: BoardClient,
     private readonly onUpdate: (remoteDiff: RemoteBoardDiff) => any
   ) {
     console.log('Updated remote model');

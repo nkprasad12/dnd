@@ -1,4 +1,4 @@
-import {checkDefined, checkState} from '_common/preconditions';
+import {checkDefined} from '_common/preconditions';
 import {CacheItem, CacheItemFactory} from '_server/storage/cache_item';
 
 const CACHE_SAVE_INTERNAL_MS = 60000;
@@ -26,7 +26,8 @@ export class StorageCache<T> {
   ) {}
 
   /**
-   * Updates the cache with the data at the given file key.
+   * Updates the cache with the data at the given file key. Creates a new
+   * key-data association if none exists already.
    *
    * @param key the file key to update.
    * @param data the data to update.
@@ -40,7 +41,7 @@ export class StorageCache<T> {
     }
     console.log(`Cache::update found an existing ${this.typeName}`);
     const cacheData = checkDefined(this.cache.get(key));
-    const currentTime = Date.now();
+    const currentTime = Math.max(Date.now(), cacheData.saveTime + 1);
     cacheData.data = data;
     cacheData.updateTime = currentTime;
   }
@@ -51,10 +52,6 @@ export class StorageCache<T> {
    * Throws if an item with that key is already in the cache.
    */
   async addNew(key: string, data: T): Promise<void> {
-    checkState(
-      this.cache.get(key) === undefined,
-      `Item with key ${key} is already in the cache!`
-    );
     this.cache.set(key, this.factory.create(key, data));
   }
 

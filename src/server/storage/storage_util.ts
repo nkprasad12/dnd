@@ -14,6 +14,11 @@ type ExpressFile = Express.Multer.File;
 
 const storage = new Storage();
 
+async function filesInDir(remotePath: string): Promise<string[]> {
+  const files = await storage.bucket(GCS_BUCKET).getFiles({prefix: remotePath});
+  return files[0].map((file) => file.name);
+}
+
 async function downloadFile(
   remotePath: string,
   localPath: string
@@ -108,6 +113,11 @@ class StorageUtil {
     const result = buffer.toString();
     console.log(`Loaded ${fileKey} successfully`);
     return result;
+  }
+
+  async filesInRemoteDir(dirPath: string): Promise<string[]> {
+    const remoteDir = path.join(GCS_ROOT, DB_FOLDER, dirPath);
+    return filesInDir(remoteDir);
   }
 }
 
