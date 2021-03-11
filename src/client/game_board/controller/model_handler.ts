@@ -12,8 +12,7 @@ export class ModelHandler {
     readonly view: BoardView,
     private model: BoardModel,
     private readonly remoteBoard: RemoteBoard,
-    private readonly menu: ContextMenu,
-    private readonly local: boolean
+    private readonly menu: ContextMenu
   ) {
     this.view.bind(this.model);
   }
@@ -23,9 +22,7 @@ export class ModelHandler {
     const modelCopy = this.copyModel();
     this.view.bind(modelCopy);
     this.menu.onNewModel(modelCopy);
-    if (!this.local) {
-      this.remoteBoard.onLocalUpdate(BoardModel.createRemote(this.model));
-    }
+    this.remoteBoard.onLocalUpdate(BoardModel.createRemote(this.model));
   }
 
   async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {

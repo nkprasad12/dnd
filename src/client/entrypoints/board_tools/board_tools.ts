@@ -66,9 +66,9 @@ NewBoardForm.createOnClick(NEW_BOARD_BUTTON, BOARD_FORM_STUB, (model) => {
   setupEditing(model);
 });
 
-function setupEditing(model: BoardModel): void {
+async function setupEditing(model: BoardModel): Promise<void> {
   removeChildrenOf(PREVIEW_BOARD_STUB);
-  const board = GameBoard.createLocal(PREVIEW_BOARD_STUB, model);
+  const board = new GameBoard(PREVIEW_BOARD_STUB, model, await serverPromise);
   const saveButton = getElementById(SAVE_BOARD_BUTTON);
   saveButton.style.display = 'initial';
   saveButton.onclick = () => {
@@ -78,6 +78,6 @@ function setupEditing(model: BoardModel): void {
   };
   removeChildrenOf(EDITING_AREA_STUB);
   BoardUpdateForm.create(EDITING_AREA_STUB, (data) => {
-    board.updateForEditor(data);
+    board.updateGridParameters(data);
   });
 }
