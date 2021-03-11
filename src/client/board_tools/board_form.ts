@@ -585,7 +585,7 @@ export class NewTokenForm extends BaseDialogForm {
             continue;
           }
           newModel.tokens[i] = token;
-          addedToken = false;
+          addedToken = true;
         }
         if (!addedToken) {
           newModel.tokens.push(token);
