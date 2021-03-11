@@ -93,20 +93,6 @@ test('timer repeats', () => {
   expect(setTimeout).toHaveBeenCalledTimes(3);
 });
 
-test('addNew with existing key fails', async (done) => {
-  const {cache} = setupTest();
-  cache.addNew(KEY, ZERO);
-
-  let threw = false;
-  try {
-    await cache.addNew(KEY, ZERO);
-  } catch {
-    threw = true;
-  }
-  expect(threw).toBe(true);
-  done();
-});
-
 test('addNew then get returns added item', async (done) => {
   const {storageMap, cache} = setupTest();
   cache.addNew(KEY, ZERO);

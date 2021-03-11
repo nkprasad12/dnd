@@ -11,3 +11,6 @@ export const BOARD_GET_ACTIVE_REQUEST = 'board-get-active-request';
 export const BOARD_GET_ACTIVE_RESPONSE = 'board-get-active-response';
 
 export const BOARD_SET_ACTIVE = 'board-set-active';
+
+export const TOKENS_GET_ALL_REQUEST = 'tokens-get-all-request';
+export const TOKENS_GET_ALL_RESPONSE = 'tokens-get-all-response';

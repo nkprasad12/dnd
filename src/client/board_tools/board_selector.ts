@@ -1,5 +1,5 @@
 import {getElementById} from '_client/common/ui_util';
-import {BoardServer} from '_client/game_board/remote/board_server';
+import {BoardClient} from '_client/game_board/remote/board_client';
 
 function addDropdown(parent: HTMLElement): HTMLElement {
   const item = document.createElement('div');
@@ -50,7 +50,7 @@ class BoardSelectorItem {
 
 export class BoardSelectorModel {
   static async createForActiveSetting(
-    server: BoardServer,
+    server: BoardClient,
     boards: Promise<string[]>
   ): Promise<BoardSelectorModel> {
     const allBoards = await boards;
@@ -99,7 +99,7 @@ export function removeChildrenOf(id: string) {
 export class BoardSelector {
   static createActiveBoardSelector(
     parentId: string,
-    server: BoardServer,
+    server: BoardClient,
     boards: Promise<string[]>
   ): BoardSelector {
     return new BoardSelector(

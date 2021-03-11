@@ -1,4 +1,4 @@
-import {checkDefined, checkState} from '_common/preconditions';
+import {checkDefined} from '_common/preconditions';
 import {CacheItem, CacheItemFactory} from '_server/storage/cache_item';
 
 const CACHE_SAVE_INTERNAL_MS = 60000;
@@ -52,10 +52,6 @@ export class StorageCache<T> {
    * Throws if an item with that key is already in the cache.
    */
   async addNew(key: string, data: T): Promise<void> {
-    checkState(
-      this.cache.get(key) === undefined,
-      `Item with key ${key} is already in the cache!`
-    );
     this.cache.set(key, this.factory.create(key, data));
   }
 

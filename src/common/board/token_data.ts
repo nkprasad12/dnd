@@ -7,7 +7,6 @@ export interface TokenData {
   readonly id: string;
   readonly name: string;
   readonly imageSource: string;
-  readonly size: number;
   readonly speed: number;
 }
 
@@ -18,7 +17,6 @@ export namespace TokenData {
       maybeToken.id !== undefined &&
       maybeToken.name !== undefined &&
       maybeToken.imageSource !== undefined &&
-      maybeToken.size !== undefined &&
       maybeToken.speed !== undefined;
     return isValid;
   }
@@ -36,13 +34,16 @@ export namespace TokenData {
 export interface BoardOnlyTokenData {
   readonly id: string;
   readonly location: Location;
+  readonly size: number;
 }
 
 export namespace BoardOnlyTokenData {
   export function isValid(input: any): input is BoardOnlyTokenData {
     const maybeToken = input as BoardOnlyTokenData;
     const isValid =
-      maybeToken.id !== undefined && maybeToken.location !== undefined;
+      maybeToken.id !== undefined &&
+      maybeToken.location !== undefined &&
+      maybeToken.size !== undefined;
     return isValid;
   }
 }

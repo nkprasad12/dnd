@@ -11,7 +11,6 @@ function defaultToken(): TokenData {
     id: DEFAULT_ID,
     name: DEFAULT_NAME,
     imageSource: DEFAULT_IMAGE_SOURCE,
-    size: DEFAULT_SIZE,
     speed: DEFAULT_SPEED,
   };
 }
@@ -20,6 +19,7 @@ function defaultBoardOnlyData(): BoardOnlyTokenData {
   return {
     id: DEFAULT_ID,
     location: {row: 1, col: 1},
+    size: DEFAULT_SIZE,
   };
 }
 
@@ -43,12 +43,6 @@ test('TokenData isValid returns false without name', () => {
 test('TokenData isValid returns false without imageSource', () => {
   const modified = Object.assign(defaultToken());
   modified.imageSource = undefined;
-  expect(TokenData.isValid(modified)).toBe(false);
-});
-
-test('TokenData isValid returns false without size', () => {
-  const modified = Object.assign(defaultToken());
-  modified.size = undefined;
   expect(TokenData.isValid(modified)).toBe(false);
 });
 
@@ -77,5 +71,11 @@ test('BoardOnlyTokenData isValid returns false without id', () => {
 test('BoardOnlyTokenData isValid returns false without location', () => {
   const modified = Object.assign(defaultBoardOnlyData());
   modified.location = undefined;
+  expect(BoardOnlyTokenData.isValid(modified)).toBe(false);
+});
+
+test('BoardOnlyTokenData isValid returns false without size', () => {
+  const modified = Object.assign(defaultBoardOnlyData());
+  modified.size = undefined;
   expect(BoardOnlyTokenData.isValid(modified)).toBe(false);
 });

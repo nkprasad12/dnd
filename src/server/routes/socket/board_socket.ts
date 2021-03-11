@@ -23,6 +23,7 @@ class BoardSocketServerConnection {
     connection.handleGetAllRequests();
     connection.handleGetActiveRequests();
     connection.handleSetActiveRequests();
+    connection.handleGetAllTokens();
     return connection;
   }
 
@@ -107,6 +108,22 @@ class BoardSocketServerConnection {
     this.registerEventListener(Events.BOARD_SET_ACTIVE, (message) => {
       this.loader.setActiveBoard(message);
     });
+  }
+
+  private handleGetAllTokens() {
+    this.registerEventListener(Events.TOKENS_GET_ALL_REQUEST, () => {
+      this.loader
+        .getAllTokens()
+        .catch(() => [])
+        .then((tokens) => {
+          this.emitAndLog(Events.TOKENS_GET_ALL_RESPONSE, tokens);
+        });
+    });
+  }
+
+  private emitAndLog(event: string, message: any): void {
+    console.log(`[${event}] sending ${JSON.stringify(message)}`);
+    this.socket.emit(event, message);
   }
 
   private registerEventListener(

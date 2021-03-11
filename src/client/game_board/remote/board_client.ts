@@ -4,11 +4,12 @@ import {
 } from '_common/board/remote_board_model';
 import {Socket_} from '_client/server/socket_connection';
 import * as Events from '_common/board/board_events';
+import {TokenData} from '_common/board/token_data';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
 /** Sends and receives game board messages to the server. */
-export class BoardServer {
+export class BoardClient {
   constructor(private readonly socket: Socket_) {}
 
   updateBoard(diff: RemoteBoardDiff): void {
@@ -81,6 +82,30 @@ export class BoardServer {
           }
         }
         resolve(response as string[]);
+      });
+    });
+  }
+
+  async requestAllTokens(): Promise<TokenData[]> {
+    return new Promise((resolve, reject) => {
+      this.socket.emit(Events.TOKENS_GET_ALL_REQUEST, 'pls');
+      this.socket.on(Events.TOKENS_GET_ALL_RESPONSE, (response) => {
+        if (!Array.isArray(response)) {
+          reject(new Error('requestAllTokens received non-array response!'));
+          return;
+        }
+        const data: TokenData[] = [];
+        for (const item of response) {
+          if (TokenData.isValid(item)) {
+            data.push(item);
+          } else {
+            TokenData.fillDefaults(item);
+            if (TokenData.isValid(item)) {
+              data.push(item);
+            }
+          }
+        }
+        resolve(data);
       });
     });
   }

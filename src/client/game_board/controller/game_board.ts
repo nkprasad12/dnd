@@ -7,7 +7,7 @@ import {ModelHandler} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
-import {BoardServer} from '_client/game_board/remote/board_server';
+import {BoardClient} from '_client/game_board/remote/board_client';
 import {LocalConnection} from '_client/server/local_connection';
 import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
@@ -18,7 +18,7 @@ export class GameBoard {
     return new GameBoard(
       parentId,
       model,
-      new BoardServer(new LocalConnection()),
+      new BoardClient(new LocalConnection()),
       true
     );
   }
@@ -32,7 +32,7 @@ export class GameBoard {
   constructor(
     parentId: string,
     model: BoardModel,
-    server: BoardServer,
+    server: BoardClient,
     private readonly local: boolean = false
   ) {
     this.view = new BoardView(getElementById(parentId));

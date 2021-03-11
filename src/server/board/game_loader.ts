@@ -3,6 +3,7 @@ import {
   RemoteBoardModel,
   RemoteTokenModel,
 } from '_common/board/remote_board_model';
+import {TokenData} from '_common/board/token_data';
 import {checkDefined} from '_common/preconditions';
 import {isStringArray} from '_common/verification';
 import {createTokenCache} from '_server/board/token_loader';
@@ -130,6 +131,13 @@ class GameLoader {
       baseBoard.tokens[i] = RemoteTokenModel.createFrom(tokenData, token);
     }
     return baseBoard;
+  }
+
+  async getAllTokens(): Promise<TokenData[]> {
+    const tokenFiles = await storageUtil().filesInRemoteDir('tokens');
+    const keys = tokenFiles.map((tokenFile) => path.join('tokens', tokenFile));
+    const allData = keys.map((key) => this.tokenCache.get(key));
+    return Promise.all(allData);
   }
 
   private async saveTokens(board: RemoteBoardModel): Promise<void> {
