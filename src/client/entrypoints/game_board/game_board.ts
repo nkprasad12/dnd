@@ -35,5 +35,5 @@ connectTo('chat').then((socket) => {
 
 loadActiveBoard().catch((error) => {
   console.log(error);
-  setLabel('An error occurred while loading the board... go check logs');
+  setLabel('Either there is no active board, or an error occurred.');
 });
