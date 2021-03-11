@@ -41,7 +41,7 @@ export class StorageCache<T> {
     }
     console.log(`Cache::update found an existing ${this.typeName}`);
     const cacheData = checkDefined(this.cache.get(key));
-    const currentTime = Date.now();
+    const currentTime = Math.max(Date.now(), cacheData.saveTime + 1);
     cacheData.data = data;
     cacheData.updateTime = currentTime;
   }
