@@ -227,6 +227,7 @@ test('RemoteTokenModel createFrom uses location from boardData', () => {
   const result = RemoteTokenModel.createFrom(defaultToken(), {
     id: DEFAULT_ID,
     location: newLocation,
+    size: DEFAULT_SIZE,
   });
 
   expect(areLocationsEqual(newLocation, result.location)).toBe(true);
@@ -247,6 +248,7 @@ test('RemoteTokenModel createFrom different ids throws', () => {
   const boardData = {
     id: 'whateverNewId',
     location: newLocation,
+    size: DEFAULT_SIZE,
   };
 
   expect(() =>
