@@ -1,14 +1,12 @@
 import {BoardUpdateForm, NewBoardForm} from '_client/board_tools/board_form';
 import {BoardSelector, idSelector} from '_client/board_tools/board_selector';
-import {getElementById, removeChildrenOf} from '_client/common/ui_util';
+import {removeChildrenOf} from '_client/common/ui_util';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
-import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {DropdownSelector} from '_client/common/ui_components/dropdown';
 
 const NEW_BOARD_BUTTON = 'createNewBoard';
-const SAVE_BOARD_BUTTON = 'saveNewBoard';
 const BOARD_FORM_STUB = 'createNewBoardFormStub';
 
 const PREVIEW_BOARD_STUB = 'previewBoardStub';
@@ -30,11 +28,6 @@ class BoardSelectors {
 }
 
 const serverPromise = BoardClient.get();
-
-async function saveBoard(model: RemoteBoardModel): Promise<void> {
-  const server = await serverPromise;
-  server.createBoard(model);
-}
 
 async function loadBoard(boardId: string): Promise<BoardModel> {
   const server = await serverPromise;
@@ -69,13 +62,8 @@ NewBoardForm.createOnClick(NEW_BOARD_BUTTON, BOARD_FORM_STUB, (model) => {
 async function setupEditing(model: BoardModel): Promise<void> {
   removeChildrenOf(PREVIEW_BOARD_STUB);
   const board = new GameBoard(PREVIEW_BOARD_STUB, model, await serverPromise);
-  const saveButton = getElementById(SAVE_BOARD_BUTTON);
-  saveButton.style.display = 'initial';
-  saveButton.onclick = () => {
-    const remoteModel = board.getRemoteModel();
-    saveBoard(remoteModel);
-    selectorsPromise.then((selectors) => selectors.add(remoteModel.id));
-  };
+  (await serverPromise).createBoard(board.getRemoteModel());
+  selectorsPromise.then((selectors) => selectors.add(model.id));
   removeChildrenOf(EDITING_AREA_STUB);
   BoardUpdateForm.create(EDITING_AREA_STUB, (data) => {
     board.updateGridParameters(data);
