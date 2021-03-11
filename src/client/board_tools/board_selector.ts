@@ -1,51 +1,15 @@
+import {
+  DropdownSelector,
+  SelectorItem,
+} from '_client/common/ui_components/dropdown';
 import {getElementById} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
 
-function addDropdown(parent: HTMLElement): HTMLElement {
-  const item = document.createElement('div');
-  item.className = 'dropdown';
-  parent.appendChild(item);
-  return item;
-}
-
-function addDropdownButton(parent: HTMLElement, label: string): HTMLElement {
-  const item = document.createElement('button');
-  item.className = 'dropbtn';
-  item.innerHTML = label;
-  parent.appendChild(item);
-  return item;
-}
-
-function addDropdownContent(parent: HTMLElement): HTMLElement {
-  const item = document.createElement('div');
-  item.className = 'dropdown-content';
-  parent.appendChild(item);
-  return item;
-}
-
-function addButtonItem(
-  parent: HTMLElement,
-  className: string,
-  label: string
-): HTMLElement {
-  const item = document.createElement('button');
-  item.type = 'button';
-  item.className = className;
-  item.innerHTML = label;
-  parent.appendChild(item);
-  return item;
-}
-
-function addSelectorItem(
-  parent: HTMLElement,
-  model: BoardSelectorItem
-): HTMLElement {
-  const className = model.isSelected ? 'btn btn-primary' : 'btn';
-  return addButtonItem(parent, className, model.boardId);
-}
-
-class BoardSelectorItem {
-  constructor(public readonly boardId: string, public isSelected: boolean) {}
+export function idSelector(
+  id: string,
+  isSelected: boolean
+): SelectorItem<string> {
+  return SelectorItem.create(id, id, isSelected, id);
 }
 
 export class BoardSelectorModel {
@@ -55,111 +19,44 @@ export class BoardSelectorModel {
   ): Promise<BoardSelectorModel> {
     const allBoards = await boards;
     const activeBoard = await server.requestActiveBoardId();
-    const items: BoardSelectorItem[] = allBoards.map(
-      (id) => new BoardSelectorItem(id, id === activeBoard)
+    const items: SelectorItem<string>[] = allBoards.map((id) =>
+      idSelector(id, id === activeBoard)
     );
     return new BoardSelectorModel(items);
   }
 
-  constructor(readonly items: BoardSelectorItem[]) {}
+  constructor(readonly items: SelectorItem<string>[]) {}
 }
 
-export class BoardSelectorView {
-  private readonly content;
-
-  constructor(
-    parent: HTMLElement,
-    label: string,
-    private readonly clickListener: (id: string) => any
-  ) {
-    parent.style.zIndex = '100';
-    const root = addDropdown(parent);
-    addDropdownButton(root, label);
-    this.content = addDropdownContent(root);
-  }
-
-  bind(model: BoardSelectorModel) {
-    while (this.content.firstChild) {
-      this.content.removeChild(this.content.firstChild);
-    }
-    for (const item of model.items) {
-      const button = addSelectorItem(this.content, item);
-      button.onclick = () => this.clickListener(item.boardId);
-    }
-  }
-}
-
-export function removeChildrenOf(id: string) {
-  const item = getElementById(id);
-  while (item.firstChild) {
-    item.removeChild(item.firstChild);
-  }
-}
-
-export class BoardSelector {
-  static createActiveBoardSelector(
+export namespace BoardSelector {
+  export function createActiveBoardSelector(
     parentId: string,
     server: BoardClient,
     boards: Promise<string[]>
-  ): BoardSelector {
-    return new BoardSelector(
+  ): DropdownSelector<string> {
+    return new DropdownSelector(
       getElementById(parentId),
       'Set Active',
       (id) => server.setActiveBoard(id),
-      BoardSelectorModel.createForActiveSetting(server, boards)
+      BoardSelectorModel.createForActiveSetting(server, boards).then(
+        (model) => model.items
+      )
     );
   }
 
-  static createEditBoardSelector(
+  export function createEditBoardSelector(
     parentId: string,
     onSelection: (id: string) => any,
     boards: Promise<string[]>
-  ): BoardSelector {
+  ): DropdownSelector<string> {
     const initialModel = boards.then(
-      (ids) =>
-        new BoardSelectorModel(
-          ids.map((id) => new BoardSelectorItem(id, false))
-        )
+      (ids) => new BoardSelectorModel(ids.map((id) => idSelector(id, false)))
     );
-    return new BoardSelector(
+    return new DropdownSelector(
       getElementById(parentId),
       'Edit Existing',
       onSelection,
-      initialModel
+      initialModel.then((model) => model.items)
     );
-  }
-
-  private model: BoardSelectorModel = new BoardSelectorModel([]);
-  private view: BoardSelectorView;
-
-  private constructor(
-    private readonly parent: HTMLElement,
-    label: string,
-    onSelection: (id: string) => any,
-    initialModel: Promise<BoardSelectorModel>
-  ) {
-    const listener = (id: string) => {
-      for (const item of this.model.items) {
-        item.isSelected = id === item.boardId;
-      }
-      view.bind(this.model);
-      onSelection(id);
-    };
-    const view = new BoardSelectorView(this.parent, label, listener);
-    initialModel.then((model) => {
-      this.model = model;
-      view.bind(this.model);
-    });
-    this.view = view;
-  }
-
-  add(id: string, isSelected: boolean): void {
-    for (const items of this.model.items) {
-      if (items.boardId === id) {
-        return;
-      }
-    }
-    this.model.items.push(new BoardSelectorItem(id, isSelected));
-    this.view.bind(this.model);
   }
 }

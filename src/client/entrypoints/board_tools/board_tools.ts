@@ -1,13 +1,11 @@
 import {BoardUpdateForm, NewBoardForm} from '_client/board_tools/board_form';
-import {
-  BoardSelector,
-  removeChildrenOf,
-} from '_client/board_tools/board_selector';
-import {getElementById} from '_client/common/ui_util';
+import {BoardSelector, idSelector} from '_client/board_tools/board_selector';
+import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
+import {DropdownSelector} from '_client/common/ui_components/dropdown';
 
 const NEW_BOARD_BUTTON = 'createNewBoard';
 const SAVE_BOARD_BUTTON = 'saveNewBoard';
@@ -21,13 +19,13 @@ const EDITING_AREA_STUB = 'editingAreaStub';
 
 class BoardSelectors {
   constructor(
-    private readonly activeSelector: BoardSelector,
-    private readonly editSelector: BoardSelector
+    private readonly activeSelector: DropdownSelector<string>,
+    private readonly editSelector: DropdownSelector<string>
   ) {}
 
   add(id: string): void {
-    this.activeSelector.add(id, false);
-    this.editSelector.add(id, true);
+    this.activeSelector.add(idSelector(id, false));
+    this.editSelector.add(idSelector(id, true));
   }
 }
 

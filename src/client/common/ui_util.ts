@@ -63,3 +63,10 @@ export function addTextArea(
   parent.appendChild(element);
   return element;
 }
+
+export function removeChildrenOf(id: string) {
+  const item = getElementById(id);
+  while (item.firstChild) {
+    item.removeChild(item.firstChild);
+  }
+}
