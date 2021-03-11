@@ -1,6 +1,11 @@
-import {RemoteBoardModel} from '_common/board/remote_board_model';
+import path from 'path';
+import {
+  RemoteBoardModel,
+  RemoteTokenModel,
+} from '_common/board/remote_board_model';
 import {checkDefined} from '_common/preconditions';
 import {isStringArray} from '_common/verification';
+import {createTokenCache} from '_server/board/token_loader';
 import {StorageCache} from '_server/storage/cache';
 import {CacheItemFactory} from '_server/storage/cache_item';
 import {storageUtil} from '_server/storage/storage_util';
@@ -8,9 +13,14 @@ import {storageUtil} from '_server/storage/storage_util';
 const ACTIVE_DB = 'active.db';
 const ALL_BOARD_DB = 'all_boards.db';
 
-/** Returns the file key to find the given board id. */
+/** Returns the file key for the given board id. */
 function getBoardKey(boardId: string): string {
   return `${boardId}.txt`;
+}
+
+/** Returns the file key to find the given token id. */
+function getTokenKey(tokenId: string): string {
+  return path.join('tokens', `${tokenId}.txt`);
 }
 
 /** Saves a board to storage. */
@@ -40,6 +50,7 @@ class GameLoader {
     cachedGameFactory,
     saveBoard
   );
+  private tokenCache = createTokenCache();
 
   /** Returns the ID of the active board. */
   async getActiveBoard(): Promise<string> {
@@ -101,16 +112,34 @@ class GameLoader {
    */
   async saveBoard(board: RemoteBoardModel): Promise<void> {
     await this.gameCache.update(getBoardKey(board.id), board);
+    this.saveTokens(board);
     await this.updateAllBoardIds(board.id);
   }
 
   async createNewBoard(board: RemoteBoardModel): Promise<void> {
     this.gameCache.addNew(getBoardKey(board.id), board);
+    this.saveTokens(board);
     await this.updateAllBoardIds(board.id);
   }
 
   async retrieveBoard(boardId: string): Promise<RemoteBoardModel> {
-    return this.gameCache.get(getBoardKey(boardId));
+    const baseBoard = await this.gameCache.get(getBoardKey(boardId));
+    for (let i = 0; i < baseBoard.tokens.length; i++) {
+      const token = baseBoard.tokens[i];
+      const tokenData = await this.tokenCache.get(getTokenKey(token.id));
+      baseBoard.tokens[i] = RemoteTokenModel.createFrom(tokenData, token);
+    }
+    return baseBoard;
+  }
+
+  private async saveTokens(board: RemoteBoardModel): Promise<void> {
+    for (const token of board.tokens) {
+      try {
+        await this.tokenCache.update(getTokenKey(token.id), token);
+      } catch {
+        console.log('Failed to save token ' + token.id);
+      }
+    }
   }
 }
 

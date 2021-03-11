@@ -26,7 +26,8 @@ export class StorageCache<T> {
   ) {}
 
   /**
-   * Updates the cache with the data at the given file key.
+   * Updates the cache with the data at the given file key. Creates a new
+   * key-data association if none exists already.
    *
    * @param key the file key to update.
    * @param data the data to update.
