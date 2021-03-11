@@ -9,16 +9,20 @@ import {ChatBox} from '_client/chat_box/chat_box';
 
 const GAME_HOLDER_STUB = 'canvasHolder';
 
-async function loadActiveBoard(): Promise<GameBoard> {
+async function loadActiveBoard(): Promise<void> {
   setLabel('Connecting to game server');
   const server = await boardClientPromise;
   const boardId = await server.requestActiveBoardId();
+  if (boardId === undefined) {
+    setLabel('Either there is no active board, or an error occurred.');
+    return;
+  }
   setLabel('Retrieving active board data');
   const remoteModel = await server.requestBoard(boardId);
   setLabel('Loading images (may take a few moments)');
   const model = await BoardModel.createFromRemote(remoteModel);
   removeChildrenOf(GAME_HOLDER_STUB);
-  return new GameBoard(GAME_HOLDER_STUB, model, server);
+  new GameBoard(GAME_HOLDER_STUB, model, server);
 }
 
 function setLabel(message: string) {
@@ -33,7 +37,4 @@ connectTo('chat').then((socket) => {
   ChatBox.initialize(client);
 });
 
-loadActiveBoard().catch((error) => {
-  console.log(error);
-  setLabel('An error occurred while loading the board... go check logs');
-});
+loadActiveBoard();

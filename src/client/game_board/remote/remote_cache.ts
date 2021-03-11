@@ -24,13 +24,9 @@ export class RemoteCache {
   }
 
   async updateTokens(updateTokens: RemoteTokenModel[]): Promise<void> {
-    if (this.cachedTokens === undefined) {
-      // No-op in this case. When we eventually fetch all tokens,
-      // these new tokens should also be included in the
-      return;
-    }
+    const cacheTokens = await this.getAllTokens();
     const tokenMap: Map<string, TokenData> = new Map();
-    for (const token of await this.cachedTokens) {
+    for (const token of cacheTokens) {
       tokenMap.set(token.id, token);
     }
     for (const token of updateTokens) {

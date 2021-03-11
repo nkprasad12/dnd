@@ -125,12 +125,13 @@ export class BoardClient {
     });
   }
 
-  async requestActiveBoardId(): Promise<string> {
-    return new Promise((resolve, reject) => {
+  async requestActiveBoardId(): Promise<string | undefined> {
+    return new Promise((resolve) => {
       this.socket.emit(Events.BOARD_GET_ACTIVE_REQUEST, 'pls');
       this.socket.on(Events.BOARD_GET_ACTIVE_RESPONSE, (response) => {
         if (response === 'ERROR') {
-          reject(new Error('Server error on requestActiveBoardId'));
+          resolve(undefined);
+          return;
         }
         resolve(response as string);
       });
