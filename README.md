@@ -1,4 +1,4 @@
-![Test Status](https://github.com/nkprasad12/dnd/actions/workflows/client-tests.yaml/badge.svg)
+![Test Status](https://github.com/nkprasad12/dnd/actions/workflows/ci-workflow.yaml/badge.svg)
 [![codecov](https://codecov.io/gh/nkprasad12/dnd/branch/main/graph/badge.svg?token=S5UQEM5QI1)](https://codecov.io/gh/nkprasad12/dnd)
 
 ***
