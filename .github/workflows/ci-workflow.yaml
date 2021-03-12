@@ -3,7 +3,7 @@ name: DnD Testing
 on: [push]
 
 jobs:
-  build:
+  ci-workflow:
     runs-on: ubuntu-latest
 
     steps:
