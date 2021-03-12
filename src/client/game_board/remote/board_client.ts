@@ -5,7 +5,6 @@ import {
 import {connectTo, Socket} from '_client/server/socket_connection';
 import * as Events from '_common/board/board_events';
 import {TokenData} from '_common/board/token_data';
-import {LocalConnection} from '_client/server/local_connection';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
@@ -19,10 +18,6 @@ export class BoardClient {
       );
     }
     return this.client;
-  }
-
-  static getLocal(): BoardClient {
-    return new BoardClient(new LocalConnection());
   }
 
   private constructor(private readonly socket: Socket) {}
