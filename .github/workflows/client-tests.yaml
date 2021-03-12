@@ -8,9 +8,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm run build
+      - name: Installing dependencies
+        run: npm ci
+      - name: Building deploy artifacts
+        run: npm run build
         env:
           GOOGLE_KEY: google-key
           GOOGLE_APPLICATION_CREDENTIALS: google-credentials.json
-      - run: npm run test
+      - name: Running tests
+        run: npm run test
+      - name: Generating coverage report
+        run: num run coverage
+      - name: Uploading coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          directory: ./coverage
