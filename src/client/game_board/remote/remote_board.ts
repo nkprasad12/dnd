@@ -4,6 +4,7 @@ import {
 } from '_common/board/remote_board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {RemoteCache} from '_client/game_board/remote/remote_cache';
+import {BoardModel} from '_client/game_board/model/board_model';
 
 /** Represents a remote board state synced with the user's. */
 export class RemoteBoard {
@@ -19,7 +20,10 @@ export class RemoteBoard {
     });
   }
 
-  onLocalUpdate(newRemoteModel: RemoteBoardModel): void {
+  /** Updates state for a local update. */
+  // TODO: Should this take a RemoteBoardModel instead?
+  onLocalUpdate(newModel: BoardModel): void {
+    const newRemoteModel = BoardModel.createRemote(newModel);
     console.log('Computing remote model diff, new model: ');
     console.log(newRemoteModel);
     const diff = RemoteBoardDiff.computeBetween(
