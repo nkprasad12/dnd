@@ -15,9 +15,7 @@ jobs:
         env:
           GOOGLE_KEY: google-key
           GOOGLE_APPLICATION_CREDENTIALS: google-credentials.json
-      # - name: Running tests
-      #   run: npm run test
-      - name: Generating coverage report
+      - name: Running tests
         run: npm run coverage
       - name: Uploading coverage report
         uses: codecov/codecov-action@v1

@@ -49,7 +49,7 @@ test('loadImage produces expected result on success', () => {
 
   const imagePromise = loadImage(source);
 
-  expect(imageInstances.length).toBe(2);
+  expect(imageInstances.length).toBe(1);
   imageInstances[0].onload(event);
   return expect(imagePromise).resolves.toEqual({
     source: source,
