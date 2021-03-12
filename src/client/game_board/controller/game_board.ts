@@ -3,7 +3,7 @@ import {BoardView} from '_client/game_board/view/board_view';
 
 import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
-import {ModelHandler} from './model_handler';
+import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
@@ -17,7 +17,6 @@ export class GameBoard {
   private readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
-  private readonly remoteBoard: RemoteBoard;
 
   constructor(parentId: string, model: BoardModel, server: BoardClient) {
     this.view = new BoardView(getElementById(parentId));
@@ -25,7 +24,7 @@ export class GameBoard {
       getElementById('rightClickMenuStub'),
       (item) => this.onContextMenuClick(item)
     );
-    this.remoteBoard = new RemoteBoard(
+    const remoteBoard = new RemoteBoard(
       BoardModel.createRemote(model),
       server,
       (remoteDiff) => {
@@ -33,10 +32,13 @@ export class GameBoard {
       }
     );
     this.modelHandler = new ModelHandler(
-      this.view,
       model,
-      this.remoteBoard,
-      menu
+      [
+        UpdateListener.forAll((update) => this.view.bind(update)),
+        UpdateListener.forLocal((update) => menu.onNewModel(update)),
+        UpdateListener.forLocal((update) => remoteBoard.onLocalUpdate(update)),
+      ],
+      this.view
     );
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(

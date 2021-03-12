@@ -1,28 +1,58 @@
 import {RemoteBoardDiff} from '_common/board/remote_board_model';
-import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {Location, Point} from '_common/coordinates';
 import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
-import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 
 export const INVALID_INDEX: number = -1;
 
+export interface UpdateListener {
+  listener: (newModel: BoardModel) => any;
+  updateOnLocal: boolean;
+  updateOnRemote: boolean;
+}
+
+export namespace UpdateListener {
+  /**
+   * Creates a listener that will be notified on changes triggered by local
+   * actions, but not from remote actions.
+   */
+  export function forLocal(listener: (newModel: BoardModel) => any) {
+    return {
+      listener: listener,
+      updateOnLocal: true,
+      updateOnRemote: false,
+    };
+  }
+
+  /**
+   * Creates a listener that will be notified on changes triggered by local
+   * actions and remote actions.
+   */
+  export function forAll(listener: (newModel: BoardModel) => any) {
+    return {
+      listener: listener,
+      updateOnLocal: true,
+      updateOnRemote: true,
+    };
+  }
+}
+
 export class ModelHandler {
   constructor(
-    readonly view: BoardView,
     private model: BoardModel,
-    private readonly remoteBoard: RemoteBoard,
-    private readonly menu: ContextMenu
+    private readonly listeners: UpdateListener[],
+    // TODO: Remove this once we figure out where to put tileForPoint.
+    private readonly view: BoardView
   ) {
-    this.view.bind(this.model);
+    this.update(this.model);
   }
 
   update(newModel: BoardModel): void {
     this.model = newModel;
-    const modelCopy = this.copyModel();
-    this.view.bind(modelCopy);
-    this.menu.onNewModel(modelCopy);
-    this.remoteBoard.onLocalUpdate(BoardModel.createRemote(this.model));
+    const copy = this.copyModel();
+    this.listeners
+      .filter((listener) => listener.updateOnLocal === true)
+      .forEach((listener) => listener.listener(copy));
   }
 
   async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {
@@ -30,7 +60,10 @@ export class ModelHandler {
     this.model = newModel;
     console.log('New merged model from remote diff');
     console.log(this.model);
-    this.view.bind(this.copyModel());
+    const copy = this.copyModel();
+    this.listeners
+      .filter((listener) => listener.updateOnRemote === true)
+      .forEach((listener) => listener.listener(copy));
   }
 
   copyModel(): BoardModel {
@@ -42,6 +75,7 @@ export class ModelHandler {
   }
 
   /** Returns the tile for the input client point, relative to the canvas. */
+  // TODO: Move this somewhere else. Maybe to inputListener?
   tileForPoint(clientPoint: Point): Location {
     const rect = this.view.topCanvas.getBoundingClientRect();
     const relativePoint = {
