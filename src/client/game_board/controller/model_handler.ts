@@ -1,6 +1,6 @@
 import {RemoteBoardDiff} from '_common/board/remote_board_model';
 import {Location, Point} from '_common/coordinates';
-import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
+import {BoardModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
 
 export const INVALID_INDEX: number = -1;
@@ -70,10 +70,6 @@ export class ModelHandler {
     return this.model.deepCopy();
   }
 
-  tokens(): Array<TokenModel> {
-    return this.model.tokens;
-  }
-
   /** Returns the tile for the input client point, relative to the canvas. */
   // TODO: Move this somewhere else. Maybe to inputListener?
   tileForPoint(clientPoint: Point): Location {
@@ -98,7 +94,7 @@ export class ModelHandler {
   }
 
   activeTokenIndex(): number {
-    const tokens = this.tokens();
+    const tokens = this.model.tokens;
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       if (token.isActive) {
