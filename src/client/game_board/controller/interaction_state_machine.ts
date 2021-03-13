@@ -9,7 +9,6 @@ import {getId} from '_client/common/id_generator';
 
 interface ClickData extends BaseClickData {
   tile: Location;
-  // point: Point;
 }
 
 interface ClickResult {
