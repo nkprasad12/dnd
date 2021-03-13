@@ -1,16 +1,25 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
-import {LOOKUP_ORDER, Spell} from '_common/chat/command_handlers/types';
+import {Spell} from '_common/chat/command_handlers/types';
 import {checkDefined} from '_common/preconditions';
 
-const spellCompleter = Autocompleter.create(LOOKUP_ORDER);
+let spellCompleter: Autocompleter | undefined = undefined;
 
 /** Handles a lookup query. If the input was !r 1d20, '1d20' is the query. */
 async function handleLookupCommand(
   query: string,
   spells: Spell[]
 ): Promise<ChatMessage> {
+  if (!spellCompleter) {
+    const lookupNames: string[] = [];
+
+    spells.forEach((spell: Spell) => {
+      lookupNames.push(spell['name']);
+    });
+
+    spellCompleter = Autocompleter.create(lookupNames);
+  }
   const spell = spellCompleter.getOptions(query);
   if (spell.length !== 1) {
     return {
