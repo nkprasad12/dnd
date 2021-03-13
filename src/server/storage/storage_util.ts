@@ -1,4 +1,4 @@
-import fsPromises from 'fs';
+import fs from 'fs';
 import path from 'path';
 import {BackupStorage} from '_server/storage/backup_storage';
 import {GoogleCloudStorage} from '_server/storage/google_cloud_storage';
@@ -11,28 +11,36 @@ const GCS_ROOT = 'DenJonver/';
 
 type ExpressFile = Express.Multer.File;
 
+/** The result of a saveImage request. */
+export interface SaveImageResult {
+  /** The name of the saved image file. */
+  imageName: string;
+  /** Promise that resolves when the image has been backed up. */
+  backupStatus: Promise<void>;
+}
+
 export class StorageUtil {
   constructor(private readonly backup: BackupStorage) {}
 
   private newFiles: Map<string, string> = new Map();
 
-  /** Saves the input image file with the given key. */
-  saveImage(file: ExpressFile): string {
+  /** Saves the input image file. */
+  saveImage(file: ExpressFile): SaveImageResult {
     const imageKey = file.originalname;
     const dest = path.join(ROOT, UPLOAD_FOLDER, imageKey);
     const gcsDest = path.join(GCS_ROOT, UPLOAD_FOLDER, imageKey);
-    fsPromises.renameSync(file.path, dest);
+    fs.renameSync(file.path, dest);
     this.newFiles.set(dest, gcsDest);
     // TODO: Do this once requests have stopped
-    this.backup.uploadFile(dest, gcsDest);
-    return imageKey;
+    const backupStatus = this.backup.uploadFile(dest, gcsDest);
+    return {imageName: imageKey, backupStatus: backupStatus};
   }
 
   /** Returns the path of the image with the given key. */
   async getImagePath(imageKey: string): Promise<string> {
     const dest = path.join(ROOT, UPLOAD_FOLDER, imageKey);
     // TODO: Make this check async.
-    if (!fsPromises.existsSync(dest)) {
+    if (!fs.existsSync(dest)) {
       const gcsDest = path.join(GCS_ROOT, UPLOAD_FOLDER, imageKey);
       try {
         await this.backup.downloadFile(gcsDest, dest);
@@ -45,20 +53,21 @@ export class StorageUtil {
   }
 
   /** Saves the given contents to the input file key. */
-  saveToFile(contents: string, fileKey: string): void {
+  async saveToFile(contents: string, fileKey: string): Promise<void> {
+    console.log('saveToFile: ' + fileKey);
     const dest = path.join(ROOT, DB_FOLDER, fileKey);
-    // TODO: Should this be async?
-    fsPromises.writeFileSync(dest, contents);
+    await fs.promises.mkdir(path.dirname(dest), {recursive: true});
+    await fs.promises.writeFile(dest, contents);
     const gcsDest = path.join(GCS_ROOT, DB_FOLDER, fileKey);
     this.newFiles.set(dest, gcsDest);
-    this.backup.uploadFile(dest, gcsDest);
+    return this.backup.uploadFile(dest, gcsDest);
   }
 
   /** Returns the contents from the input file key. */
   async loadFromFile(fileKey: string): Promise<string> {
     console.log('loadFromFile: ' + fileKey);
     const dest = path.join(ROOT, DB_FOLDER, fileKey);
-    if (!fsPromises.existsSync(dest)) {
+    if (!fs.existsSync(dest)) {
       const gcsDest = path.join(GCS_ROOT, DB_FOLDER, fileKey);
       try {
         await this.backup.downloadFile(gcsDest, dest);
@@ -66,7 +75,7 @@ export class StorageUtil {
         return Promise.reject(error);
       }
     }
-    const buffer = await fsPromises.promises.readFile(dest);
+    const buffer = await fs.promises.readFile(dest);
     const result = buffer.toString();
     console.log(`Loaded ${fileKey} successfully`);
     return result;
@@ -80,7 +89,6 @@ export class StorageUtil {
 
 let cachedStorageUtil: StorageUtil | undefined = undefined;
 
-/* istanbul ignore next */
 export function storageUtil(): StorageUtil {
   if (cachedStorageUtil === undefined) {
     console.log('Creating new storage util');

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import mockfs from 'mock-fs';
+import {DirectoryItems} from 'mock-fs/lib/filesystem';
 import path from 'path';
 import {
   BACKUP_DIR,
@@ -14,18 +15,34 @@ afterEach(() => {
   mockfs.restore();
 });
 
-test('filesInDir ', async (done) => {
-  mockfs({[`${BACKUP_DIR}/dir`]: {foo1: 'bar1', foo2: 'bar2'}});
-  const backup = new FakeBackupStorage();
+describe('filesInDir', () => {
+  const MOCK_FILES: DirectoryItems = {
+    [`${BACKUP_DIR}/dir`]: {foo1: 'bar1', foo2: 'bar2'},
+    [`${BACKUP_DIR}/dir/subdir`]: {},
+  };
 
-  const files = await backup.filesInDir('dir');
-  expect(files.length).toBe(2);
-  expect(files).toContain('foo1');
-  expect(files).toContain('foo2');
-  done();
+  it('returns all files', async (done) => {
+    mockfs(MOCK_FILES);
+    const backup = new FakeBackupStorage();
+
+    const files = await backup.filesInDir('dir');
+    expect(files.length).toBe(2);
+    expect(files).toContain('foo1');
+    expect(files).toContain('foo2');
+    done();
+  });
+
+  it('does not return directories', async (done) => {
+    mockfs(MOCK_FILES);
+    const backup = new FakeBackupStorage();
+
+    const files = await backup.filesInDir('dir');
+    expect(files.includes('subdir')).toBe(false);
+    done();
+  });
 });
 
-test('filesInDir ', async (done) => {
+test('downloadFile writes from remote', async (done) => {
   mockfs({
     [`${BACKUP_DIR}/dir`]: {foo1: 'bar1', foo2: 'bar2'},
   });
@@ -38,7 +55,7 @@ test('filesInDir ', async (done) => {
   done();
 });
 
-test('filesInDir ', async (done) => {
+test('uploadFile writes to remote ', async (done) => {
   mockfs({
     'local/dir': {foo1: 'bar1'},
   });
