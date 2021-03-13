@@ -151,13 +151,11 @@ test('RemoteTokenModel isValid with missing speed returns false', () => {
   expect(RemoteTokenModel.isValid(almostModel)).toBe(false);
 });
 
-test('RemoteTokenModel mergeWith different IDs ignores', () => {
+test('RemoteTokenModel mergeWith different IDs throws', () => {
   const diff = {id: '56970'};
   const token = defaultToken();
-  const mergeResult = RemoteTokenModel.mergedWith(token, diff);
 
-  expect(mergeResult.id).toStrictEqual(token.id);
-  expect(mergeResult === token).toBe(true);
+  expect(() => RemoteTokenModel.mergedWith(token, diff)).toThrow();
 });
 
 test('RemoteTokenModel mergeWith overwrites name', () => {
