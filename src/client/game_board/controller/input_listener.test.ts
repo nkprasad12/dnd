@@ -1,10 +1,3 @@
-// function clickData(event: MouseEvent): BaseClickData {
-//   return {
-//     clientPoint: {x: event.clientX, y: event.clientY},
-//     pagePoint: {x: event.offsetX, y: event.offsetY},
-//   };
-// }
-
 import {
   BaseClickData,
   DragCallback,
