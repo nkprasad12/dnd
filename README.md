@@ -40,9 +40,14 @@ To start the server, from the root directory run:
 
 ***
 
-**Setting up Prettier**
+**VS Code - Setting up Prettier**
 
 After initial setup, run `npm install` to ensure you have the latest prettier config. Then, install the 
-[VS Code plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). 
+[Prettier VS Code plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). 
 The project settings are already configured to use prettier as the default formatting for typescript,
 and to format typescript on save using prettier. 
+
+**VS Code - Integrating Jest**
+
+After initial setup, install the [Jest Runner VS Code plugin](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner).
+This will allow you to run and debug unit tests from within the VS Code UI when browsing a test file.
