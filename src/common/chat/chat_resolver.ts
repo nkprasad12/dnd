@@ -3,8 +3,6 @@ import {checkDefined} from '_common/preconditions';
 import {handleRollCommand} from '_common/chat/command_handlers/roll_command_handler';
 import {CommandType, processCommand} from '_common/chat/command_parser';
 
-const COMING_SOON = 'Not supported yet - coming soon!';
-
 export type CommandHandler = (input: string) => Promise<ChatMessage>;
 export type ResolvedCommand = Promise<ChatMessage | undefined>;
 
@@ -14,6 +12,7 @@ export class CommandResolver {
   constructor() {}
 
   /** Overrides existing handling for the type, if any. */
+  // TODO: Make command handlers come with their own help messages.
   addCommandHandler(command: CommandType, handler: CommandHandler) {
     this.handlers.set(command, handler);
   }
@@ -63,15 +62,6 @@ export function commandResolver(): CommandResolver {
     cachedResolver = new CommandResolver();
     cachedResolver.addCommandHandler(CommandType.Roll, handleRollCommand);
     cachedResolver.addCommandHandler(CommandType.Help, handleHelpCommand);
-    cachedResolver.addCommandHandler(CommandType.Attack, async () => {
-      return {header: CommandType.Attack, body: COMING_SOON};
-    });
-    cachedResolver.addCommandHandler(CommandType.Check, async () => {
-      return {header: CommandType.Check, body: COMING_SOON};
-    });
-    cachedResolver.addCommandHandler(CommandType.Save, async () => {
-      return {header: CommandType.Save, body: COMING_SOON};
-    });
   }
   return cachedResolver;
 }
