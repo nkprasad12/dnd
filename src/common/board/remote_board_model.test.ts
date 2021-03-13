@@ -1,3 +1,12 @@
+import {
+  DEFAULT_ID,
+  DEFAULT_NAME,
+  DEFAULT_IMAGE_SOURCE,
+  defaultRemoteToken,
+  DEFAULT_LOCATION,
+  DEFAULT_SIZE,
+  DEFAULT_SPEED,
+} from '_common/board/test_constants';
 import {areLocationsEqual} from '_common/coordinates';
 import {
   RemoteBoardDiff,
@@ -5,31 +14,13 @@ import {
   RemoteTokenModel,
 } from './remote_board_model';
 
-const DEFAULT_ID = '12345678';
-const DEFAULT_LOCATION = {row: 1, col: 7};
-const DEFAULT_NAME = 'Ozymandias';
-const DEFAULT_IMAGE_SOURCE = 'source@kingOfKings';
-const DEFAULT_SIZE = 2;
-const DEFAULT_SPEED = 6;
-
-function defaultToken(): RemoteTokenModel {
-  return {
-    id: DEFAULT_ID,
-    location: DEFAULT_LOCATION,
-    name: DEFAULT_NAME,
-    imageSource: DEFAULT_IMAGE_SOURCE,
-    size: DEFAULT_SIZE,
-    speed: DEFAULT_SPEED,
-  };
-}
-
 function defaultBoard(): RemoteBoardModel {
   return new RemoteBoardModel(
     DEFAULT_ID,
     DEFAULT_NAME,
     DEFAULT_IMAGE_SOURCE,
     57,
-    [defaultToken()],
+    [defaultRemoteToken()],
     [['0']],
     [['0']],
     {x: 57, y: 57},
@@ -41,7 +32,7 @@ function defaultBoard(): RemoteBoardModel {
 function defaultBoardDiff(): RemoteBoardDiff {
   return {
     id: DEFAULT_ID,
-    newTokens: [defaultToken()],
+    newTokens: [defaultRemoteToken()],
     removedTokens: ['removedId'],
     tokenDiffs: [{id: 'tokenDiffId', speed: 5}],
     publicSelectionDiffs: [],
@@ -49,20 +40,24 @@ function defaultBoardDiff(): RemoteBoardDiff {
 }
 
 test('RemoteTokenModel equals returns false for different id', () => {
-  const differentToken = Object.assign(defaultToken());
+  const differentToken = Object.assign(defaultRemoteToken());
   differentToken.id = 'whateverMadeUpIdBlah';
-  expect(RemoteTokenModel.equals(defaultToken(), differentToken)).toBe(false);
+  expect(RemoteTokenModel.equals(defaultRemoteToken(), differentToken)).toBe(
+    false
+  );
 });
 
 test('RemoteTokenModel equals returns false for different location', () => {
-  const differentToken = Object.assign(defaultToken());
+  const differentToken = Object.assign(defaultRemoteToken());
   differentToken.location = {col: 42, row: 42};
-  expect(RemoteTokenModel.equals(defaultToken(), differentToken)).toBe(false);
+  expect(RemoteTokenModel.equals(defaultRemoteToken(), differentToken)).toBe(
+    false
+  );
 });
 
 test('RemoteTokenModel equals returns true for same inputs', () => {
-  const copy = Object.assign(defaultToken());
-  expect(RemoteTokenModel.equals(defaultToken(), copy)).toBe(true);
+  const copy = Object.assign(defaultRemoteToken());
+  expect(RemoteTokenModel.equals(defaultRemoteToken(), copy)).toBe(true);
 });
 
 test('RemoteTokenModel fillDefaults adds speed', () => {
@@ -82,7 +77,7 @@ test('RemoteTokenModel isValid with valid returns true', () => {
     speed: DEFAULT_SPEED,
   };
   expect(RemoteTokenModel.isValid(validModel)).toBe(true);
-  expect(RemoteTokenModel.isValid(defaultToken())).toBe(true);
+  expect(RemoteTokenModel.isValid(defaultRemoteToken())).toBe(true);
 });
 
 test('RemoteTokenModel isValid with missing id returns false', () => {
@@ -153,7 +148,7 @@ test('RemoteTokenModel isValid with missing speed returns false', () => {
 
 test('RemoteTokenModel mergeWith different IDs throws', () => {
   const diff = {id: '56970'};
-  const token = defaultToken();
+  const token = defaultRemoteToken();
 
   expect(() => RemoteTokenModel.mergedWith(token, diff)).toThrow();
 });
@@ -161,68 +156,71 @@ test('RemoteTokenModel mergeWith different IDs throws', () => {
 test('RemoteTokenModel mergeWith overwrites name', () => {
   const newName = 'Marcus Aurelius';
   const diff = {id: DEFAULT_ID, name: newName};
-  const mergeResult = RemoteTokenModel.mergedWith(defaultToken(), diff);
+  const mergeResult = RemoteTokenModel.mergedWith(defaultRemoteToken(), diff);
 
   expect(mergeResult.name).toStrictEqual(newName);
-  expect(mergeResult === defaultToken()).toBe(false);
+  expect(mergeResult === defaultRemoteToken()).toBe(false);
 });
 
 test('RemoteTokenModel mergeWith overwrites location', () => {
   const newLocation = {col: 99, row: 199};
   const diff = {id: DEFAULT_ID, location: newLocation};
-  const mergeResult = RemoteTokenModel.mergedWith(defaultToken(), diff);
+  const mergeResult = RemoteTokenModel.mergedWith(defaultRemoteToken(), diff);
 
   expect(mergeResult.location).toStrictEqual(newLocation);
-  expect(mergeResult === defaultToken()).toBe(false);
+  expect(mergeResult === defaultRemoteToken()).toBe(false);
 });
 
 test('RemoteTokenModel mergeWith overwrites location', () => {
   const newSource = 'source@/Imperator Caesar Divi Filius Augustus';
   const diff = {id: DEFAULT_ID, imageSource: newSource};
-  const mergeResult = RemoteTokenModel.mergedWith(defaultToken(), diff);
+  const mergeResult = RemoteTokenModel.mergedWith(defaultRemoteToken(), diff);
 
   expect(mergeResult.imageSource).toStrictEqual(newSource);
-  expect(mergeResult === defaultToken()).toBe(false);
+  expect(mergeResult === defaultRemoteToken()).toBe(false);
 });
 
 test('RemoteTokenModel mergeWith overwrites size', () => {
   const newSize = 55555;
   const diff = {id: DEFAULT_ID, size: newSize};
-  const mergeResult = RemoteTokenModel.mergedWith(defaultToken(), diff);
+  const mergeResult = RemoteTokenModel.mergedWith(defaultRemoteToken(), diff);
 
   expect(mergeResult.size).toStrictEqual(newSize);
-  expect(mergeResult === defaultToken()).toBe(false);
+  expect(mergeResult === defaultRemoteToken()).toBe(false);
 });
 
 test('RemoteTokenModel mergeWith overwrites speed', () => {
   const newSpeed = 55555;
   const diff = {id: DEFAULT_ID, speed: newSpeed};
-  const mergeResult = RemoteTokenModel.mergedWith(defaultToken(), diff);
+  const mergeResult = RemoteTokenModel.mergedWith(defaultRemoteToken(), diff);
 
   expect(mergeResult.speed).toStrictEqual(newSpeed);
-  expect(mergeResult === defaultToken()).toBe(false);
+  expect(mergeResult === defaultRemoteToken()).toBe(false);
 });
 
 test('RemoteTokenModel computeDiff different ids throws', () => {
-  const differentId = Object.assign(defaultToken());
+  const differentId = Object.assign(defaultRemoteToken());
   differentId.id = 'definitelyNotTheSameId';
 
   expect(() =>
-    RemoteTokenModel.computeDiff(defaultToken(), differentId)
+    RemoteTokenModel.computeDiff(defaultRemoteToken(), differentId)
   ).toThrow();
 });
 
 test('RemoteTokenModel computeDiff different locations', () => {
-  const differentLocation = Object.assign(defaultToken());
+  const differentLocation = Object.assign(defaultRemoteToken());
   differentLocation.location = {col: 57, row: 57575757};
 
-  const diff = RemoteTokenModel.computeDiff(defaultToken(), differentLocation);
+  const diff = RemoteTokenModel.computeDiff(
+    defaultRemoteToken(),
+    differentLocation
+  );
   expect(diff).toEqual({id: DEFAULT_ID, location: DEFAULT_LOCATION});
 });
 
 test('RemoteTokenModel createFrom uses location from boardData', () => {
   const newLocation = {col: 4242, row: 5757};
-  const result = RemoteTokenModel.createFrom(defaultToken(), {
+  const result = RemoteTokenModel.createFrom(defaultRemoteToken(), {
     id: DEFAULT_ID,
     location: newLocation,
     size: DEFAULT_SIZE,
@@ -232,12 +230,12 @@ test('RemoteTokenModel createFrom uses location from boardData', () => {
 });
 
 test('RemoteTokenModel createFrom invalid result throws', () => {
-  const baseToken = Object.assign(defaultToken());
+  const baseToken = Object.assign(defaultRemoteToken());
   baseToken.location = undefined;
   const boardData = {id: 'whateverNewId'};
 
   expect(() =>
-    RemoteTokenModel.createFrom(defaultToken(), boardData as any)
+    RemoteTokenModel.createFrom(defaultRemoteToken(), boardData as any)
   ).toThrow();
 });
 
@@ -250,7 +248,7 @@ test('RemoteTokenModel createFrom different ids throws', () => {
   };
 
   expect(() =>
-    RemoteTokenModel.createFrom(defaultToken(), boardData)
+    RemoteTokenModel.createFrom(defaultRemoteToken(), boardData)
   ).toThrow();
 });
 
@@ -368,7 +366,7 @@ test('RemoteBoardModel fillDefaults adds empty token', () => {
 
 test('RemoteBoardModel fillDefaults corrects tokens', () => {
   const copy = Object.assign(defaultBoard());
-  const token = Object.assign(defaultToken());
+  const token = Object.assign(defaultRemoteToken());
   token.speed = undefined;
 
   expect(RemoteTokenModel.isValid(token)).toBe(false);

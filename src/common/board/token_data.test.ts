@@ -1,12 +1,13 @@
+import {
+  DEFAULT_ID,
+  DEFAULT_NAME,
+  DEFAULT_IMAGE_SOURCE,
+  DEFAULT_SPEED,
+  DEFAULT_SIZE,
+} from '_common/board/test_constants';
 import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
-const DEFAULT_ID = '12345678';
-const DEFAULT_NAME = 'Ozymandias';
-const DEFAULT_IMAGE_SOURCE = 'source@kingOfKings';
-const DEFAULT_SIZE = 2;
-const DEFAULT_SPEED = 6;
-
-function defaultToken(): TokenData {
+function defaultTokenData(): TokenData {
   return {
     id: DEFAULT_ID,
     name: DEFAULT_NAME,
@@ -24,30 +25,30 @@ function defaultBoardOnlyData(): BoardOnlyTokenData {
 }
 
 test('TokenData isValid returns true on copy', () => {
-  const copy = Object.assign(defaultToken());
+  const copy = Object.assign(defaultTokenData());
   expect(TokenData.isValid(copy)).toBe(true);
 });
 
 test('TokenData isValid returns false without id', () => {
-  const modified = Object.assign(defaultToken());
+  const modified = Object.assign(defaultTokenData());
   modified.id = undefined;
   expect(TokenData.isValid(modified)).toBe(false);
 });
 
 test('TokenData isValid returns false without name', () => {
-  const modified = Object.assign(defaultToken());
+  const modified = Object.assign(defaultTokenData());
   modified.name = undefined;
   expect(TokenData.isValid(modified)).toBe(false);
 });
 
 test('TokenData isValid returns false without imageSource', () => {
-  const modified = Object.assign(defaultToken());
+  const modified = Object.assign(defaultTokenData());
   modified.imageSource = undefined;
   expect(TokenData.isValid(modified)).toBe(false);
 });
 
 test('TokenData isValid returns false without speed', () => {
-  const modified = Object.assign(defaultToken());
+  const modified = Object.assign(defaultTokenData());
   modified.speed = undefined;
   expect(TokenData.isValid(modified)).toBe(false);
 });
