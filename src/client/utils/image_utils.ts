@@ -1,4 +1,5 @@
 import {getOrigin} from '_client/common/get_origin';
+import {checkState} from '_common/preconditions';
 
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
@@ -11,9 +12,12 @@ export class LoadedImage {
 const SERVER_PREFIX = 'server@';
 
 export function loadImage(source: string): Promise<LoadedImage> {
+  checkState(
+    source.startsWith(SERVER_PREFIX),
+    'loadImage called with invalid source!'
+  );
   return new Promise((resolve, reject) => {
     const image = new Image();
-    image.src = source.replace(SERVER_PREFIX, getOrigin());
     image.onload = (event: Event) => {
       const loadedImage = new LoadedImage(
         <CanvasImageSource>event.currentTarget,
@@ -24,6 +28,7 @@ export function loadImage(source: string): Promise<LoadedImage> {
     image.onerror = () => {
       reject(new Error('Failed to load image'));
     };
+    image.src = source.replace(SERVER_PREFIX, getOrigin());
   });
 }
 

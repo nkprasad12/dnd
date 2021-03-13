@@ -1,4 +1,3 @@
-import {checkDefined} from '_common/preconditions';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
 
 export type CharacterLoader = (id: string) => Promise<CharacterSheetData>;
@@ -43,21 +42,17 @@ export class CharacterSheetCache {
    * @returns the name of the character contained in the loaded sheet.
    */
   async load(sheetId: string, force: boolean = false): Promise<LoadResult> {
-    const hasSheet = this.sheetNameMap.has(sheetId);
-    if (hasSheet && !force) {
-      return {loadedName: checkDefined(this.sheetNameMap.get(sheetId))};
+    const existingName = this.sheetNameMap.get(sheetId);
+    if (existingName !== undefined && !force) {
+      return {loadedName: existingName};
     }
-    let removedName: string | undefined = undefined;
-    if (hasSheet) {
-      removedName = this.sheetNameMap.get(sheetId);
-      if (removedName) {
-        this.nameDataMap.delete(removedName);
-      }
+    if (existingName !== undefined) {
+      this.nameDataMap.delete(existingName);
     }
     const sheet = await this.loader(sheetId);
     this.nameDataMap.set(sheet.name.toLowerCase(), sheet);
     this.sheetNameMap.set(sheetId, sheet.name.toLowerCase());
-    const result = {loadedName: sheet.name, removedName: removedName};
+    const result = {loadedName: sheet.name, removedName: existingName};
     this.listeners.forEach((listener) => listener(result));
     return result;
   }

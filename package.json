@@ -9,9 +9,7 @@
   "scripts": {
     "build-client": "npx webpack --config webpack.client.config.js",
     "build-server": "npx webpack --config webpack.server.config.js",
-    "setup-key": "node -r dotenv/config build/prestart.bundle.js",
-    "setup-dirs": "mkdir -p data/images && mkdir -p data/server_db",
-    "setup-env": "npm run setup-key && npm run setup-dirs",
+    "setup-env": "node -r dotenv/config build/prestart.bundle.js",
     "build": "npm run build-client && npm run build-server && npm run setup-env",
     "start": "node -r dotenv/config build/server.bundle.js",
     "start:client-inc": "npm run build-client && npm run start",
@@ -80,7 +78,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged && npm run test -- -o",
+      "post-merge": "npm install"
     }
   },
   "lint-staged": {

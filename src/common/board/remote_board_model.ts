@@ -1,53 +1,47 @@
 import deepEqual from 'deep-equal';
+import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
-import {
-  areLocationsEqual,
-  arePointsEqual,
-  Location,
-  Point,
-} from '_common/coordinates';
+import {areLocationsEqual, arePointsEqual, Point} from '_common/coordinates';
 import {isGrid} from '_common/verification';
-
-const DEFAULT_SPEED = 6;
 
 /**
  * Represents the data model for a remote token.
  * This is a subset of TokenModel that is relevant to the shared game state.
  */
-export class RemoteTokenModel {
-  static isValid(input: any): input is RemoteTokenModel {
-    const maybeToken = input as RemoteTokenModel;
-    const isValid =
-      maybeToken.id !== undefined &&
-      maybeToken.location !== undefined &&
-      maybeToken.name !== undefined &&
-      maybeToken.imageSource !== undefined &&
-      maybeToken.size !== undefined &&
-      maybeToken.speed !== undefined;
-    return isValid;
+export interface RemoteTokenModel extends TokenData, BoardOnlyTokenData {}
+
+export namespace RemoteTokenModel {
+  export function isValid(input: any): input is RemoteTokenModel {
+    return TokenData.isValid(input) && BoardOnlyTokenData.isValid(input);
   }
 
-  static fillDefaults(input: any): any {
-    if (input.speed === undefined) {
-      input.speed = DEFAULT_SPEED;
+  export function createFrom(
+    baseData: TokenData,
+    boardData: BoardOnlyTokenData
+  ): RemoteTokenModel {
+    if (baseData.id !== boardData.id) {
+      throw new Error('Trying to create from data with different ids!');
     }
-    return input;
+    const result: any = baseData;
+    result.location = boardData.location;
+    if (!isValid(result)) {
+      throw new Error('Invalid token result created');
+    }
+    return result;
   }
 
-  constructor(
-    readonly id: string,
-    readonly location: Location,
-    readonly name: string,
-    readonly imageSource: string,
-    readonly size: number,
-    readonly speed: number
-  ) {}
+  export function fillDefaults(input: any): any {
+    return TokenData.fillDefaults(input);
+  }
 
-  static equals(first: RemoteTokenModel, other: RemoteTokenModel): boolean {
+  export function equals(
+    first: RemoteTokenModel,
+    other: RemoteTokenModel
+  ): boolean {
     return deepEqual(first, other);
   }
 
-  static mergedWith(
+  export function mergedWith(
     model: RemoteTokenModel,
     diff: RemoteTokenDiff
   ): RemoteTokenModel {
@@ -55,17 +49,18 @@ export class RemoteTokenModel {
       console.log('[RemoteTokenModel] Diff ID does not match current ID');
       return model;
     }
-    return new RemoteTokenModel(
-      model.id,
-      diff.location === undefined ? model.location : diff.location,
-      diff.name === undefined ? model.name : diff.name,
-      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-      diff.size === undefined ? model.size : diff.size,
-      diff.speed === undefined ? model.speed : diff.speed
-    );
+    return {
+      id: model.id,
+      location: diff.location === undefined ? model.location : diff.location,
+      name: diff.name === undefined ? model.name : diff.name,
+      imageSource:
+        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
+      size: diff.size === undefined ? model.size : diff.size,
+      speed: diff.speed === undefined ? model.speed : diff.speed,
+    };
   }
 
-  static computeDiff(
+  export function computeDiff(
     newModel: RemoteTokenModel,
     oldModel: RemoteTokenModel
   ): RemoteTokenDiff {

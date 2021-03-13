@@ -29,7 +29,7 @@ test('processCommand with attack gives expected', async (done) => {
   const commandString = '!attack longbow';
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.body).toContain('Not supported yet');
+  expect(result?.header).toContain('command reference');
   done();
 });
 
@@ -37,7 +37,7 @@ test('processCommand with check gives expected', async (done) => {
   const commandString = '!check animal handling';
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.body).toContain('Not supported yet');
+  expect(result?.header).toContain('command reference');
   done();
 });
 
@@ -45,7 +45,7 @@ test('processCommand with save gives expected', async (done) => {
   const commandString = '!save dex';
   const result = await commandResolver().handleCommand(commandString);
 
-  expect(result?.body).toContain('Not supported yet');
+  expect(result?.header).toContain('command reference');
   done();
 });
 

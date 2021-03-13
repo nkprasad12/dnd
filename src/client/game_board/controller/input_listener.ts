@@ -1,6 +1,6 @@
 import {Point} from '_common/coordinates';
 
-type DragCallback = (
+export type DragCallback = (
   from: BaseClickData,
   to: BaseClickData,
   mouseButton: number
@@ -27,28 +27,22 @@ export class InputListener {
     private readonly element: HTMLElement,
     private readonly dragCallback: DragCallback
   ) {
-    this.element.addEventListener('mousedown', (e) => {
-      this.handleMouseDown(e);
-      e.preventDefault();
-      console.log('Got mousedown');
-      console.log(e);
-      return false;
-    });
-
-    this.element.addEventListener('mouseup', (e) => {
-      this.handleMouseUp(e);
-      e.preventDefault();
-      console.log('Got mouseup');
-      console.log(e);
-      return false;
-    });
-
-    this.element.addEventListener('contextmenu', (event) => {
+    this.element.onmousedown = (event) => {
+      this.handleMouseDown(event);
       event.preventDefault();
-      console.log('Got contextmenu');
-      console.log(event);
       return false;
-    });
+    };
+
+    this.element.onmouseup = (event) => {
+      this.handleMouseUp(event);
+      event.preventDefault();
+      return false;
+    };
+
+    this.element.oncontextmenu = (event) => {
+      event.preventDefault();
+      return false;
+    };
   }
 
   private handleMouseDown(event: MouseEvent): void {

@@ -4,27 +4,30 @@ import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view
 import {BoardModel} from '_client/game_board/model/board_model';
 
 export class ContextMenu {
-  private readonly view: ContextMenuView;
-
-  constructor(
+  static create(
     parent: HTMLElement,
     clickListener: (item: ContextMenuItem) => any
-  ) {
-    this.view = new ContextMenuView(parent, clickListener);
+  ): ContextMenu {
+    const view = new ContextMenuView(parent, clickListener);
+    return new ContextMenu(view);
   }
+
+  constructor(private readonly view: ContextMenuView) {}
 
   onNewModel(model: BoardModel): void {
     const invalidItems: ContextMenuItem[] = [];
-    if (model.localSelection.length > 1) {
+    const selectedTiles = model.localSelection.length;
+    const hasToken =
+      selectedTiles > 0 && this.hasTokenAt(model, model.localSelection[0]);
+    if (selectedTiles > 1) {
       invalidItems.push(ContextMenuItem.AddToken);
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
-    } else if (
-      model.localSelection.length === 1 &&
-      !this.hasTokenAt(model, model.localSelection[0])
-    ) {
+    } else if (selectedTiles === 1 && !hasToken) {
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
+    } else if (selectedTiles === 1 && hasToken) {
+      invalidItems.push(ContextMenuItem.AddToken);
     }
 
     let fullFogTiles = 0;
