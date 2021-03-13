@@ -13,6 +13,28 @@ export interface CharacterSheetData {
   readonly attackBonuses: Map<string, AttackData>;
 }
 
+export interface Spell {
+  name: string;
+  desc: string;
+  page: string;
+  range: string;
+  components: string;
+  material?: string;
+  ritual: string;
+  duration: string;
+  concentration: string;
+  castingTime: string;
+  level: string;
+  school: string;
+  class: string;
+  higherLevel?: string;
+  archetype?: string;
+  domains?: string;
+  patrons?: string;
+  circles?: string;
+  oaths?: string;
+}
+
 export const SKILL_ORDER = [
   'Acrobatics',
   'Animal Handling',
