@@ -31,7 +31,7 @@ function saveBoard(fileKey: string, board: RemoteBoardModel): void {
 
 class CachedGameFactory extends CacheItemFactory<RemoteBoardModel> {
   constructor() {
-    super('CachedGameFactory', storageUtil().loadFromFile);
+    super('CachedGameFactory', (file) => storageUtil().loadFromFile(file));
   }
   validate(item: any): item is RemoteBoardModel {
     return RemoteBoardModel.isValid(item);

@@ -5,7 +5,7 @@ import {storageUtil} from '_server/storage/storage_util';
 
 class CachedTokenFactory extends CacheItemFactory<TokenData> {
   constructor() {
-    super('CachedTokenFactory', storageUtil().loadFromFile);
+    super('CachedTokenFactory', (file) => storageUtil().loadFromFile(file));
   }
   validate(item: any): item is TokenData {
     return TokenData.isValid(item);
