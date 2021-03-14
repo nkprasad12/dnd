@@ -5,6 +5,7 @@ import {isChatMessage} from '_common/chat/chat_model';
 import {commandResolver} from '_common/chat/chat_resolver';
 import {CommandType} from '_common/chat/command_parser';
 import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
+import {lookupCommandHandler} from '_common/chat/command_handlers/lookup_command_handler';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {extractSheetData} from '_server/sheets/sheets';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
@@ -15,12 +16,17 @@ import {
 } from '_common/chat/command_handlers/character_command_handlers';
 import {storageUtil} from '_server/storage/storage_util';
 import {isStringArray} from '_common/verification';
+import {Spell} from '_common/chat/command_handlers/types';
 
-export function registerChatRoutes(ioServer: Server): void {
+export async function registerChatRoutes(ioServer: Server): Promise<void> {
   // TODO: Look into express-socket.io-session for security.
   const cache = CharacterSheetCache.create(extractSheetData);
   const preloader = new SheetPreloader(cache);
   const resolver = CharacterResolver.create(cache);
+
+  const spellLoader = new SpellLoader();
+  const spells = await spellLoader.load();
+
   commandResolver().addCommandHandler(
     CommandType.Load,
     loadCommandHandler(cache)
@@ -37,10 +43,36 @@ export function registerChatRoutes(ioServer: Server): void {
     CommandType.Save,
     saveCommandHandler(resolver)
   );
+  commandResolver().addCommandHandler(
+    CommandType.Lookup,
+    lookupCommandHandler(spells)
+  );
+
   ioServer.of('/chat').on('connection', (socket) => {
     preloader.preLoad();
     ChatSocketServerConnection.create(socket);
   });
+}
+
+class SpellLoader {
+  private hasLoaded = false;
+  private spells: Spell[] = [];
+
+  async load() {
+    try {
+      if (this.hasLoaded && this.spells != []) {
+        return this.spells;
+      }
+
+      const spellData = await storageUtil().loadFromFile('dndSpellData.json');
+      const spellObj = JSON.parse(spellData);
+      this.spells = spellObj['jsonSpellData'];
+    } catch {
+      console.log('Failed to retrieve spells');
+    }
+
+    return this.spells;
+  }
 }
 
 class SheetPreloader {
