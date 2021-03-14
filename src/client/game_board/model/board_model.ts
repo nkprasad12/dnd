@@ -111,7 +111,7 @@ export class BoardModel {
     const newModel = this.deepCopy();
     for (const tokenDiff of diff.tokenDiffs) {
       for (let i = 0; i < newModel.tokens.length; i++) {
-        if (newModel.tokens[i].inner.id == tokenDiff.id && tokenDiff.location) {
+        if (newModel.tokens[i].inner.id === tokenDiff.id) {
           newModel.tokens[i] = TokenModel.merge(newModel.tokens[i], {
             inner: tokenDiff,
           });

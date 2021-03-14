@@ -52,6 +52,7 @@ export class TokenModel {
       diff.inner,
       RemoteTokenModel.mergedWith
     );
+    // TODO: If the imageSource is different, load a new image here.
     return new TokenModel(
       inner,
       prefer(diff.image, model.image),
