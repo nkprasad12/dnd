@@ -5,7 +5,7 @@ import {ModelHandler, INVALID_INDEX} from './model_handler';
 import {EditTokenForm, NewTokenForm} from '_client/board_tools/board_form';
 import {BaseClickData} from '_client/game_board/controller/input_listener';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
-import {getId} from '_client/common/id_generator';
+import {TokenModel} from '_client/game_board/model/token_model';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -154,9 +154,9 @@ class DefaultState extends InteractionState {
       return this.onRightClick(clickData, model);
     }
     const tokenIndex = collisions[0];
-    const mutableToken = model.tokens[tokenIndex].mutableCopy();
-    mutableToken.isActive = true;
-    model.tokens[tokenIndex] = mutableToken.freeze();
+    model.tokens[tokenIndex] = TokenModel.merge(model.tokens[tokenIndex], {
+      isActive: true,
+    });
     return {
       model: model,
       newState: new PickedUpTokenState(this.modelHandler),
@@ -200,7 +200,7 @@ class PickedUpTokenState extends InteractionState {
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
-    const activeTokenSize = model.tokens[activeTokenIndex].size;
+    const activeTokenSize = model.tokens[activeTokenIndex].inner.size;
     const collisions = this.modelHandler.wouldCollide(
       clickData.tile,
       activeTokenSize
@@ -211,10 +211,18 @@ class PickedUpTokenState extends InteractionState {
     ) {
       return this.onRightClick(clickData, model);
     }
-    const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
-    mutableToken.isActive = false;
-    mutableToken.location = clickData.tile;
-    model.tokens[activeTokenIndex] = mutableToken.freeze();
+    console.log(clickData);
+    model.tokens[activeTokenIndex] = TokenModel.merge(
+      model.tokens[activeTokenIndex],
+      {
+        isActive: false,
+        inner: {
+          id: model.tokens[activeTokenIndex].inner.id,
+          location: clickData.tile,
+        },
+      }
+    );
+    console.log(model.tokens[activeTokenIndex]);
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 
@@ -223,9 +231,12 @@ class PickedUpTokenState extends InteractionState {
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
-    const mutableToken = model.tokens[activeTokenIndex].mutableCopy();
-    mutableToken.isActive = false;
-    model.tokens[activeTokenIndex] = mutableToken.freeze();
+    model.tokens[activeTokenIndex] = TokenModel.merge(
+      model.tokens[activeTokenIndex],
+      {
+        isActive: false,
+      }
+    );
     return {model: model, newState: new DefaultState(this.modelHandler)};
   }
 }
@@ -407,15 +418,17 @@ class ContextMenuOpenState extends InteractionState {
       for (const target of candidates) {
         const collisions = this.modelHandler.wouldCollide(
           target,
-          selectedToken.size
+          selectedToken.inner.size
         );
         if (collisions.length > 0) {
           continue;
         }
-        const copy = selectedToken.mutableCopy();
-        copy.id = getId();
-        copy.location = target;
-        model.tokens.push(copy.freeze());
+        const copy = TokenModel.duplicate(selectedToken);
+        model.tokens.push(
+          TokenModel.merge(copy, {
+            inner: {id: copy.inner.id, location: target},
+          })
+        );
         return;
       }
 

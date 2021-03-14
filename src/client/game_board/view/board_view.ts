@@ -5,7 +5,8 @@ import {
   arePointsEqual,
   Point,
 } from '_common/coordinates';
-import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
+import {BoardModel} from '_client/game_board/model/board_model';
+import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
@@ -284,9 +285,9 @@ export class BoardView {
   }
 
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
-    const tokenSize = tokenModel.size * newModel.tileSize;
+    const tokenSize = tokenModel.inner.size * newModel.tileSize;
     const startPoint = getStartPoint(
-      tokenModel.location,
+      tokenModel.inner.location,
       newModel.gridOffset,
       newModel.tileSize
     );
@@ -298,7 +299,7 @@ export class BoardView {
       tokenSize
     );
     if (tokenModel.isActive) {
-      this.getTile(tokenModel.location).activeTokenGrid();
+      this.getTile(tokenModel.inner.location).activeTokenGrid();
       for (const tile of this.getMovableTiles(tokenModel, newModel)) {
         tile.activeTokenGrid();
         tile.movableToSelectionOn();
@@ -307,9 +308,9 @@ export class BoardView {
   }
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
-    const tokenSize = tokenModel.size * newModel.tileSize;
+    const tokenSize = tokenModel.inner.size * newModel.tileSize;
     const startPoint = getStartPoint(
-      tokenModel.location,
+      tokenModel.inner.location,
       newModel.gridOffset,
       newModel.tileSize
     );
@@ -319,7 +320,7 @@ export class BoardView {
       tokenSize + 2,
       tokenSize + 2
     );
-    this.getTile(tokenModel.location).defaultGrid();
+    this.getTile(tokenModel.inner.location).defaultGrid();
     if (tokenModel.isActive) {
       for (const tile of this.getMovableTiles(tokenModel, newModel)) {
         tile.defaultGrid();
@@ -335,8 +336,8 @@ export class BoardView {
     const result: Tile[] = [];
     for (let i = 0; i < newModel.cols; i++) {
       for (let j = 0; j < newModel.rows; j++) {
-        const d = tileDistance(tokenModel.location, {col: i, row: j});
-        if (0 < d && d <= tokenModel.speed) {
+        const d = tileDistance(tokenModel.inner.location, {col: i, row: j});
+        if (0 < d && d <= tokenModel.inner.speed) {
           result.push(this.tiles[i][j]);
         }
       }

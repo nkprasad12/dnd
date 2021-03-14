@@ -67,10 +67,10 @@ export class ContextMenu {
   private hasTokenAt(model: BoardModel, target: Location): boolean {
     for (let i = 0; i < model.tokens.length; i++) {
       const token = model.tokens[i];
-      const minCol = token.location.col;
-      const maxCol = minCol + token.size;
-      const minRow = token.location.row;
-      const maxRow = minRow + token.size;
+      const minCol = token.inner.location.col;
+      const maxCol = minCol + token.inner.size;
+      const minRow = token.inner.location.row;
+      const maxRow = minRow + token.inner.size;
 
       const colsDisjoint = target.col >= maxCol || target.col + 1 <= minCol;
       const rowsDisjoint = target.row >= maxRow || target.row + 1 <= minRow;
