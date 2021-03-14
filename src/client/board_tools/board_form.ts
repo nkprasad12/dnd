@@ -2,7 +2,8 @@ import {Location, Point} from '_common/coordinates';
 import {getOrigin} from '_client/common/get_origin';
 import {getElementById} from '_client/common/ui_util';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
-import {BoardModel, TokenModel} from '_client/game_board/model/board_model';
+import {BoardModel} from '_client/game_board/model/board_model';
+import {TokenModel} from '_client/game_board/model/token_model';
 import {LoadedImage, loadImage} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
 import {TokenData} from '_common/board/token_data';
@@ -559,13 +560,13 @@ class TokenFormDefaults {
   readonly size: number;
 
   constructor(input?: TokenModel) {
-    this.name = input === undefined ? 'Name' : input.name;
-    this.speed = input === undefined ? 6 : input.speed;
-    this.size = input === undefined ? 1 : input.size;
+    this.name = input === undefined ? 'Name' : input.inner.name;
+    this.speed = input === undefined ? 6 : input.inner.speed;
+    this.size = input === undefined ? 1 : input.inner.size;
     this.icon =
       input === undefined
         ? undefined
-        : new LoadedImage(input.image, input.imageSource);
+        : new LoadedImage(input.image, input.inner.imageSource);
   }
 }
 
@@ -577,11 +578,11 @@ export class NewTokenForm extends BaseDialogForm {
       getElementById(TOKEN_FORM_STUB),
       tile,
       (token) => {
-        console.log('NewTokenForm onNewToken: ' + token.id);
+        console.log('NewTokenForm onNewToken: ' + token.inner.id);
         const newModel = modelHandler.copyModel();
         let addedToken = false;
         for (let i = 0; i < newModel.tokens.length; i++) {
-          if (newModel.tokens[i].id !== token.id) {
+          if (newModel.tokens[i].inner.id !== token.inner.id) {
             continue;
           }
           newModel.tokens[i] = token;
@@ -625,14 +626,16 @@ export class NewTokenForm extends BaseDialogForm {
         tokenId === undefined
           ? TokenModel.create(name, icon, size, tile, false, speed)
           : new TokenModel(
-              tokenId,
-              name,
-              icon.source,
+              {
+                id: tokenId,
+                name: name,
+                imageSource: icon.source,
+                size: size,
+                location: tile,
+                speed: speed,
+              },
               icon.image,
-              size,
-              tile,
-              false,
-              speed
+              false
             );
       console.log(token);
       onNewToken(token);
@@ -671,7 +674,7 @@ export class EditTokenForm extends BaseDialogForm {
         const newModel = modelHandler.copyModel();
         let index: number | undefined = undefined;
         for (let i = 0; i < newModel.tokens.length; i++) {
-          if (newModel.tokens[i].id === edited.id) {
+          if (newModel.tokens[i].inner.id === edited.inner.id) {
             index = i;
             break;
           }
@@ -696,36 +699,36 @@ export class EditTokenForm extends BaseDialogForm {
   ) {
     const nameEntry: TextInputEntry = new TextInputEntry(
       'Token Name',
-      token.name
+      token.inner.name
     );
     const sizeEntry: NumberInputEntry = new NumberInputEntry('Size (tiles)', {
-      defaultValue: token.size,
+      defaultValue: token.inner.size,
     });
     const speedEntry: NumberInputEntry = new NumberInputEntry(
       'Speed (tiles / move)',
-      {defaultValue: token.speed}
+      {defaultValue: token.inner.speed}
     );
     super(parent, label, [nameEntry, sizeEntry, speedEntry], () => {
       const name = checkDefined(nameEntry.getResolved(), 'name');
       const speed = checkDefined(speedEntry.getResolved(), 'speed');
       const size = checkDefined(sizeEntry.getResolved(), 'size');
 
-      const collisions = modelHandler.collisionIds(token.location, size);
+      const collisions = modelHandler.collisionIds(token.inner.location, size);
       if (
         collisions.length > 1 ||
-        (collisions.length === 1 && collisions[0] !== token.id)
+        (collisions.length === 1 && collisions[0] !== token.inner.id)
       ) {
         // TODO: Show the user this error.
         console.log('Token would collide, ignoring request');
         return;
       }
 
-      const edited = token.mutableCopy();
-      edited.name = name;
-      edited.speed = speed;
-      edited.size = size;
+      const mutation = {
+        inner: {id: token.inner.id, name: name, speed: speed, size: size},
+      };
+      const edited = TokenModel.merge(token, mutation);
       console.log('Edited token: ' + JSON.stringify(edited));
-      onInputComplete(edited.freeze());
+      onInputComplete(edited);
     });
   }
 }

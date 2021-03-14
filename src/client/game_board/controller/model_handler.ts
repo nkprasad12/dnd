@@ -113,10 +113,10 @@ export class ModelHandler {
     const results: number[] = [];
     for (let i = 0; i < this.model.tokens.length; i++) {
       const token = this.model.tokens[i];
-      const minCol = token.location.col;
-      const maxCol = minCol + token.size;
-      const minRow = token.location.row;
-      const maxRow = minRow + token.size;
+      const minCol = token.inner.location.col;
+      const maxCol = minCol + token.inner.size;
+      const minRow = token.inner.location.row;
+      const maxRow = minRow + token.inner.size;
 
       const colsDisjoint = target.col >= maxCol || target.col + size <= minCol;
       const rowsDisjoint = target.row >= maxRow || target.row + size <= minRow;
@@ -136,15 +136,15 @@ export class ModelHandler {
     const results: string[] = [];
     for (let i = 0; i < this.model.tokens.length; i++) {
       const token = this.model.tokens[i];
-      const minCol = token.location.col;
-      const maxCol = minCol + token.size;
-      const minRow = token.location.row;
-      const maxRow = minRow + token.size;
+      const minCol = token.inner.location.col;
+      const maxCol = minCol + token.inner.size;
+      const minRow = token.inner.location.row;
+      const maxRow = minRow + token.inner.size;
 
       const colsDisjoint = target.col >= maxCol || target.col + size <= minCol;
       const rowsDisjoint = target.row >= maxRow || target.row + size <= minRow;
       if (!colsDisjoint && !rowsDisjoint) {
-        results.push(token.id);
+        results.push(token.inner.id);
       }
     }
     return results;
