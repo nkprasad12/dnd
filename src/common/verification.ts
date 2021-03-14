@@ -34,3 +34,23 @@ export function isGrid(
   }
   return true;
 }
+
+/** Returns the first if it is defined, and otherwise the backup. */
+export function prefer<T>(preferred: T | undefined | null, backup: T): T {
+  if (preferred === undefined || preferred === null) {
+    return backup;
+  }
+  return preferred;
+}
+
+/** Merged the input if both are defined, otherwise returns the base. */
+export function maybeMerge<T, S>(
+  base: T,
+  diff: S | undefined | null,
+  merger: (t: T, s: S) => T
+): T {
+  if (diff === undefined || diff === null) {
+    return base;
+  }
+  return merger(base, diff);
+}

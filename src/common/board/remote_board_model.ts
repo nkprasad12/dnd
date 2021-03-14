@@ -11,10 +11,12 @@ import {isGrid} from '_common/verification';
 export interface RemoteTokenModel extends TokenData, BoardOnlyTokenData {}
 
 export namespace RemoteTokenModel {
+  /** Returns true if and only if the input is a valid model. */
   export function isValid(input: any): input is RemoteTokenModel {
     return TokenData.isValid(input) && BoardOnlyTokenData.isValid(input);
   }
 
+  /** Merges two input data sources to create a token model. */
   export function createFrom(
     baseData: TokenData,
     boardData: BoardOnlyTokenData
@@ -46,8 +48,7 @@ export namespace RemoteTokenModel {
     diff: RemoteTokenDiff
   ): RemoteTokenModel {
     if (diff.id !== model.id) {
-      console.log('[RemoteTokenModel] Diff ID does not match current ID');
-      return model;
+      throw new Error('[RemoteTokenModel] Diff ID does not match current ID');
     }
     return {
       id: model.id,

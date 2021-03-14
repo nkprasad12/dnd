@@ -4,159 +4,10 @@ import {getId} from '_client/common/id_generator';
 import {
   RemoteBoardDiff,
   RemoteBoardModel,
-  RemoteTokenDiff,
-  RemoteTokenModel,
 } from '_common/board/remote_board_model';
 import {LoadedImage, loadImage, loadImages} from '_client/utils/image_utils';
-
-/** Data model for a token on the game board. */
-export class TokenModel {
-  static create(
-    name: string,
-    image: LoadedImage,
-    size: number,
-    location: Location,
-    isActive: boolean,
-    speed: number
-  ): TokenModel {
-    console.log('Warning - creating new TokenModel!');
-    return new TokenModel(
-      getId(),
-      name,
-      image.source,
-      image.image,
-      size,
-      location,
-      isActive,
-      speed
-    );
-  }
-
-  static fromRemoteAndMap(
-    model: RemoteTokenModel,
-    imageMap: Map<string, CanvasImageSource>
-  ): TokenModel {
-    const image = getOrThrow(imageMap, model.imageSource);
-    const loadedImage = new LoadedImage(image, model.imageSource);
-    return TokenModel.fromRemoteAndImage(model, loadedImage);
-  }
-
-  static fromRemoteAndImage(
-    model: RemoteTokenModel,
-    loadedImage: LoadedImage
-  ): TokenModel {
-    return new TokenModel(
-      model.id,
-      model.name,
-      loadedImage.source,
-      loadedImage.image,
-      model.size,
-      model.location,
-      false,
-      model.speed
-    );
-  }
-
-  static async fromRemote(model: RemoteTokenModel): Promise<TokenModel> {
-    const loadedImage = await loadImage(model.imageSource);
-    return TokenModel.fromRemoteAndImage(model, loadedImage);
-  }
-
-  constructor(
-    readonly id: string,
-    readonly name: string,
-    readonly imageSource: string,
-    readonly image: CanvasImageSource,
-    readonly size: number,
-    readonly location: Location,
-    readonly isActive: boolean,
-    readonly speed: number
-  ) {}
-
-  mergedWith(diff: RemoteTokenDiff): RemoteTokenModel {
-    console.log('Unexpectedly got diffId: ' + diff.id);
-    throw new Error('We should not be here!');
-  }
-
-  equals(other: TokenModel): boolean {
-    if (this.isActive != other.isActive) {
-      return false;
-    }
-    return RemoteTokenModel.equals(this.remoteCopy(), other.remoteCopy());
-  }
-
-  deepCopy(): TokenModel {
-    return new TokenModel(
-      this.id,
-      this.name,
-      this.imageSource,
-      this.image,
-      this.size,
-      this.location,
-      this.isActive,
-      this.speed
-    );
-  }
-
-  remoteCopy(): RemoteTokenModel {
-    return {
-      id: this.id,
-      location: this.location,
-      name: this.name,
-      imageSource: this.imageSource,
-      size: this.size,
-      speed: this.speed,
-    };
-  }
-
-  mutableCopy(): MutableTokenModel {
-    return new MutableTokenModel(
-      this.id,
-      this.name,
-      this.imageSource,
-      this.image,
-      this.size,
-      this.location,
-      this.isActive,
-      this.speed
-    );
-  }
-}
-
-/** Mutable version of TokenModel. */
-export class MutableTokenModel {
-  constructor(
-    public id: string,
-    public name: string,
-    public imageSource: string,
-    public image: CanvasImageSource,
-    public size: number,
-    public location: Location,
-    public isActive: boolean,
-    public speed: number
-  ) {}
-
-  freeze(): TokenModel {
-    return new TokenModel(
-      this.id,
-      this.name,
-      this.imageSource,
-      this.image,
-      this.size,
-      this.location,
-      this.isActive,
-      this.speed
-    );
-  }
-}
-
-function getOrThrow<K, V>(map: Map<K, V>, key: K): V {
-  const value = map.get(key);
-  if (value == undefined) {
-    throw new Error('No value for key: ' + String(key));
-  }
-  return value;
-}
+import {checkDefined} from '_common/preconditions';
+import {TokenModel} from './token_model';
 
 /** Data model representing the game board. */
 export class BoardModel {
@@ -198,7 +49,7 @@ export class BoardModel {
       console.log('Grid offset is invalid! Ignoring.');
       this.gridOffset = {x: 0, y: 0};
     }
-    this.tokens = tokens.map((token) => token.deepCopy());
+    this.tokens = tokens.slice();
     this.localSelection = localSelection.slice();
     this.contextMenuState = contextMenuState.deepCopy();
     const usePublicSelection =
@@ -238,7 +89,7 @@ export class BoardModel {
       model.name,
       model.backgroundImage.source,
       model.tileSize,
-      model.tokens.map((tokenModel) => tokenModel.remoteCopy()),
+      model.tokens.map((tokenModel) => tokenModel.inner),
       fogOfWar,
       model.publicSelection.map((col) => col.slice()),
       model.gridOffset,
@@ -260,15 +111,16 @@ export class BoardModel {
     const newModel = this.deepCopy();
     for (const tokenDiff of diff.tokenDiffs) {
       for (let i = 0; i < newModel.tokens.length; i++) {
-        if (newModel.tokens[i].id == tokenDiff.id && tokenDiff.location) {
-          const mutableToken = newModel.tokens[i].mutableCopy();
-          mutableToken.location = tokenDiff.location;
-          newModel.tokens[i] = mutableToken.freeze();
-          break;
+        if (newModel.tokens[i].inner.id === tokenDiff.id) {
+          newModel.tokens[i] = TokenModel.merge(newModel.tokens[i], {
+            inner: tokenDiff,
+          });
         }
       }
     }
-    newModel.tokens.filter((token) => !diff.removedTokens.includes(token.id));
+    newModel.tokens.filter(
+      (token) => !diff.removedTokens.includes(token.inner.id)
+    );
     const newTokens = await Promise.all(
       diff.newTokens.map(TokenModel.fromRemote)
     );
@@ -319,7 +171,7 @@ export class BoardModel {
       model: RemoteBoardModel,
       imageMap: Map<string, CanvasImageSource>
     ): BoardModel.Builder {
-      const image = getOrThrow(imageMap, model.imageSource);
+      const image = checkDefined(imageMap.get(model.imageSource));
       const loadedImage = new LoadedImage(image, model.imageSource);
       const tokens = model.tokens.map((token) =>
         TokenModel.fromRemoteAndMap(token, imageMap)
