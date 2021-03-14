@@ -9,7 +9,6 @@ import {getId} from '_client/common/id_generator';
 
 interface ClickData extends BaseClickData {
   tile: Location;
-  // point: Point;
 }
 
 interface ClickResult {
@@ -317,6 +316,11 @@ class ContextMenuOpenState extends InteractionState {
       case ContextMenuItem.OrangeHighlight:
         for (const tile of model.localSelection) {
           model.publicSelection[tile.col][tile.row] = '2';
+        }
+        break;
+      case ContextMenuItem.GreenHighlight:
+        for (const tile of model.localSelection) {
+          model.publicSelection[tile.col][tile.row] = '3';
         }
         break;
       case ContextMenuItem.AddToken:

@@ -35,5 +35,5 @@ imageRouter.post('/uploadImage', upload.single('file'), (req, res) => {
     res.status(403).contentType('text/plain').end('Invalid file type');
     return;
   }
-  res.send({path: storageUtil().saveImage(req.file)});
+  res.send({path: storageUtil().saveImage(req.file).imageName});
 });

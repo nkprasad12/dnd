@@ -1,4 +1,4 @@
-import {checkDefined} from './preconditions';
+import {checkDefined, checkState} from './preconditions';
 
 test('checkDefined returns original', () => {
   const testObj = {x: 'test'};
@@ -15,4 +15,12 @@ test('checkDefined throws on undefined', () => {
 
 test('checkDefined throws on undefined with name', () => {
   expect(() => checkDefined(undefined, 'Crassus')).toThrowError('Crassus');
+});
+
+test('checkState throws on false', () => {
+  expect(() => checkState(false, 'Testing')).toThrow();
+});
+
+test('checkState does not throw on true.', () => {
+  checkState(true, 'Testing');
 });
