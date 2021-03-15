@@ -1,11 +1,18 @@
 import {getOrigin} from '_client/common/get_origin';
-import {LoadedImage, loadImage, loadImages} from '_client/utils/image_utils';
+import {
+  getBackgroundData,
+  LoadedImage,
+  loadImage,
+  loadImages,
+} from '_client/utils/image_utils';
 
 const RealImage = Image;
 
 let imageInstances: FakeImage[] = [];
 
 class FakeImage {
+  public readonly width: string = '57';
+  public readonly height: string = '420';
   public src: string | undefined = undefined;
   constructor() {
     imageInstances.push(this);
@@ -29,17 +36,6 @@ beforeEach(() => {
 
 afterAll(() => {
   global.Image = RealImage;
-});
-
-test('LoadedImage deepCopy copies as expected', () => {
-  const image: any = {image: 'yes'};
-  const source = 'imageSource';
-  const loadedImage = new LoadedImage(image, source);
-
-  const copy = loadedImage.deepCopy();
-
-  expect(copy.image === loadedImage.image).toBe(true);
-  expect(copy.source).toBe(loadedImage.source);
 });
 
 test('loadImage produces expected result on success', () => {
@@ -98,4 +94,22 @@ test('loadImages produces expected result', () => {
       [secondSource, secondCanvasImage],
     ])
   );
+});
+
+describe('getBackgroundData', () => {
+  const image: any = new FakeImage();
+  const loadedImage = new LoadedImage(image, 'whatever');
+  const data = getBackgroundData(loadedImage, 10);
+
+  it('reads from the input loadedImage', () => {
+    expect(data.backgroundImage).toBe(loadedImage);
+    expect(data.width).toBe(image.width);
+    expect(data.height).toBe(image.height);
+  });
+
+  it('computes rows and columns correctly', () => {
+    // Rounding up from 57 / 10
+    expect(data.cols).toBe(6);
+    expect(data.rows).toBe(42);
+  });
 });

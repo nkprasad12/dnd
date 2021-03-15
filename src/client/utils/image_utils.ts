@@ -3,10 +3,6 @@ import {checkState} from '_common/preconditions';
 
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
-
-  deepCopy(): LoadedImage {
-    return new LoadedImage(this.image, this.source);
-  }
 }
 
 const SERVER_PREFIX = 'server@';
