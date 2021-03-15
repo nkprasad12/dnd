@@ -5,37 +5,18 @@ import {
   loadImage,
   loadImages,
 } from '_client/utils/image_utils';
-
-const RealImage = Image;
-
-let imageInstances: FakeImage[] = [];
-
-class FakeImage {
-  public readonly width: string = '57';
-  public readonly height: string = '420';
-  public src: string | undefined = undefined;
-  constructor() {
-    imageInstances.push(this);
-  }
-
-  // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onload(event: Event): void {}
-
-  onerror(): void {}
-}
+import {FakeImage} from '_client/utils/fake_image';
 
 beforeAll(() => {
-  // @ts-ignore
-  global.Image = FakeImage;
+  FakeImage.invokeBeforeAll(false);
 });
 
 beforeEach(() => {
-  imageInstances = [];
+  FakeImage.invokeBeforeEach();
 });
 
 afterAll(() => {
-  global.Image = RealImage;
+  FakeImage.invokeAfterAll();
 });
 
 test('loadImage produces expected result on success', () => {
@@ -45,8 +26,8 @@ test('loadImage produces expected result on success', () => {
 
   const imagePromise = loadImage(source);
 
-  expect(imageInstances.length).toBe(1);
-  imageInstances[0].onload(event);
+  expect(FakeImage.instances.length).toBe(1);
+  FakeImage.instances[0].onload(event);
   return expect(imagePromise).resolves.toEqual({
     source: source,
     image: canvasImageSource,
@@ -59,8 +40,8 @@ test('loadImage has expected source', () => {
 
   loadImage(prefix + sourceSuffix);
 
-  expect(imageInstances.length).toBe(1);
-  expect(imageInstances[0].src).toBe(getOrigin() + sourceSuffix);
+  expect(FakeImage.instances.length).toBe(1);
+  expect(FakeImage.instances[0].src).toBe(getOrigin() + sourceSuffix);
 });
 
 test('loadImage throws on bad source', () => {
@@ -72,8 +53,8 @@ test('loadImage produces expected result on failure', () => {
 
   const imagePromise = loadImage(source);
 
-  expect(imageInstances.length).toBe(1);
-  imageInstances[0].onerror();
+  expect(FakeImage.instances.length).toBe(1);
+  FakeImage.instances[0].onerror();
   return expect(imagePromise).rejects.toBeInstanceOf(Error);
 });
 
@@ -85,9 +66,9 @@ test('loadImages produces expected result', () => {
 
   const imageMapPromise = loadImages([firstSource, secondSource]);
 
-  expect(imageInstances.length).toBe(2);
-  imageInstances[0].onload({currentTarget: firstCanvasImage} as any);
-  imageInstances[1].onload({currentTarget: secondCanvasImage} as any);
+  expect(FakeImage.instances.length).toBe(2);
+  FakeImage.instances[0].onload({currentTarget: firstCanvasImage} as any);
+  FakeImage.instances[1].onload({currentTarget: secondCanvasImage} as any);
   return expect(imageMapPromise).resolves.toEqual(
     new Map([
       [firstSource, firstCanvasImage],
@@ -97,7 +78,7 @@ test('loadImages produces expected result', () => {
 });
 
 describe('getBackgroundData', () => {
-  const image: any = new FakeImage();
+  const image: any = new FakeImage.FakeImage();
   const loadedImage = new LoadedImage(image, 'whatever');
   const data = getBackgroundData(loadedImage, 10);
 

@@ -1,7 +1,8 @@
 import {
-  ModelHandler,
-  UpdateListener,
-} from '_client/game_board/controller/model_handler';
+  FakeAllListener,
+  FakeLocalListener,
+} from '_client/game_board/controller/fake_listeners';
+import {ModelHandler} from '_client/game_board/controller/model_handler';
 
 class FakeModel {
   name: string;
@@ -12,30 +13,6 @@ class FakeModel {
 
   mergedWith(diff: {inner: {name: string}}): Promise<FakeModel> {
     return Promise.resolve(new FakeModel(diff.inner.name));
-  }
-}
-
-class FakeLocalListener {
-  updatedModel: any = undefined;
-  lastDiff: any = undefined;
-  readonly listener: UpdateListener;
-  constructor() {
-    this.listener = UpdateListener.forLocal((update, diff) => {
-      this.updatedModel = update;
-      this.lastDiff = diff;
-    });
-  }
-}
-
-class FakeAllListener {
-  updatedModel: any = undefined;
-  lastDiff: any = undefined;
-  readonly listener: UpdateListener;
-  constructor() {
-    this.listener = UpdateListener.forAll((update, diff) => {
-      this.updatedModel = update;
-      this.lastDiff = diff;
-    });
   }
 }
 
@@ -57,7 +34,7 @@ describe('addListeners', () => {
   });
 });
 
-test('ModelHandler updates all listener on update', async (done) => {
+test('applyLocalDiff updates all listener on update', async (done) => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();
   const initialModel = new FakeModel('Tacitus');
@@ -74,7 +51,7 @@ test('ModelHandler updates all listener on update', async (done) => {
   done();
 });
 
-test('ModelHandler updates only remote on remote update', async (done) => {
+test('applyLocalDiff updates only remote on remote update', async (done) => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();
   const initialModel = new FakeModel('Tacitus');
@@ -88,5 +65,13 @@ test('ModelHandler updates only remote on remote update', async (done) => {
   expect(localListener.updatedModel).toStrictEqual(initialModel);
   expect(allListener.lastDiff).toStrictEqual({inner: {name: newName}});
   expect(localListener.lastDiff).toStrictEqual({});
+  done();
+});
+
+test('getModel returns current model', async (done) => {
+  const initialModel = new FakeModel('Tacitus');
+  const handler = new ModelHandler(initialModel as any, {} as any);
+
+  expect(handler.getModel()).toBe(initialModel);
   done();
 });
