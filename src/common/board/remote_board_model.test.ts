@@ -23,6 +23,8 @@ function defaultBoard(): RemoteBoardModel {
     [defaultRemoteToken()],
     [['0']],
     [['0']],
+    57,
+    57,
     {x: 57, y: 57},
     1,
     1
@@ -196,26 +198,6 @@ test('RemoteTokenModel mergeWith overwrites speed', () => {
 
   expect(mergeResult.speed).toStrictEqual(newSpeed);
   expect(mergeResult === defaultRemoteToken()).toBe(false);
-});
-
-test('RemoteTokenModel computeDiff different ids throws', () => {
-  const differentId = Object.assign(defaultRemoteToken());
-  differentId.id = 'definitelyNotTheSameId';
-
-  expect(() =>
-    RemoteTokenModel.computeDiff(defaultRemoteToken(), differentId)
-  ).toThrow();
-});
-
-test('RemoteTokenModel computeDiff different locations', () => {
-  const differentLocation = Object.assign(defaultRemoteToken());
-  differentLocation.location = {col: 57, row: 57575757};
-
-  const diff = RemoteTokenModel.computeDiff(
-    defaultRemoteToken(),
-    differentLocation
-  );
-  expect(diff).toEqual({id: DEFAULT_ID, location: DEFAULT_LOCATION});
 });
 
 test('RemoteTokenModel createFrom uses location from boardData', () => {
@@ -508,27 +490,6 @@ test('RemoteBoardDiff isValid returns true on valid', () => {
 test('RemoteBoardDiff isValid requires id', () => {
   const copy = Object.assign(defaultBoardDiff());
   copy.id = undefined;
-
-  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
-});
-
-test('RemoteBoardDiff isValid requires newTokens', () => {
-  const copy = Object.assign(defaultBoardDiff());
-  copy.newTokens = undefined;
-
-  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
-});
-
-test('RemoteBoardDiff isValid requires removedTokens', () => {
-  const copy = Object.assign(defaultBoardDiff());
-  copy.removedTokens = undefined;
-
-  expect(RemoteBoardDiff.isValid(copy)).toBe(false);
-});
-
-test('RemoteBoardDiff isValid requires tokenDiffs', () => {
-  const copy = Object.assign(defaultBoardDiff());
-  copy.tokenDiffs = undefined;
 
   expect(RemoteBoardDiff.isValid(copy)).toBe(false);
 });

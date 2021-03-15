@@ -47,3 +47,26 @@ export async function loadImages(
   }
   return imageMap;
 }
+
+export interface BackgroundData {
+  backgroundImage: LoadedImage;
+  width: number;
+  height: number;
+  cols: number;
+  rows: number;
+}
+
+export function getBackgroundData(
+  image: LoadedImage,
+  tileSize: number
+): BackgroundData {
+  const width = <number>image.image.width;
+  const height = <number>image.image.height;
+  return {
+    backgroundImage: image,
+    width: width,
+    height: height,
+    cols: Math.ceil(width / tileSize),
+    rows: Math.ceil(height / tileSize),
+  };
+}

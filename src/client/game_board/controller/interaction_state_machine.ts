@@ -1,5 +1,5 @@
 import {Location, areLocationsEqual} from '_common/coordinates';
-import {BoardModel} from '_client/game_board/model/board_model';
+import {BoardDiff, BoardModel} from '_client/game_board/model/board_model';
 
 import {ModelHandler, INVALID_INDEX} from './model_handler';
 import {EditTokenForm, NewTokenForm} from '_client/board_tools/board_form';
@@ -12,7 +12,7 @@ interface ClickData extends BaseClickData {
 }
 
 interface ClickResult {
-  model: BoardModel;
+  diff: BoardDiff;
   newState: InteractionState;
 }
 
@@ -40,25 +40,17 @@ abstract class InteractionState {
 
   protected abstract onLeftDrag(
     fromData: ClickData,
-    toData: ClickData,
-    model: BoardModel
+    toData: ClickData
   ): ClickResult;
 
   protected abstract onRightDrag(
     fromData: ClickData,
-    toData: ClickData,
-    model: BoardModel
+    toData: ClickData
   ): ClickResult;
 
-  protected abstract onLeftClick(
-    clickData: ClickData,
-    model: BoardModel
-  ): ClickResult;
+  protected abstract onLeftClick(clickData: ClickData): ClickResult;
 
-  protected abstract onRightClick(
-    clickData: ClickData,
-    model: BoardModel
-  ): ClickResult;
+  protected abstract onRightClick(clickData: ClickData): ClickResult;
 
   onDragEvent(
     fromPoint: BaseClickData,
@@ -74,38 +66,33 @@ abstract class InteractionState {
     const to = this.clickDataForPoint(toPoint);
     const isSingleTileClick = areLocationsEqual(from.tile, to.tile);
 
-    const newModel = this.modelHandler.copyModel();
     let result: ClickResult;
     if (isLeftClick) {
       if (isSingleTileClick) {
-        result = this.onLeftClick(from, newModel);
+        result = this.onLeftClick(from);
       } else {
-        result = this.onLeftDrag(from, to, newModel);
+        result = this.onLeftDrag(from, to);
       }
     } else {
       if (isSingleTileClick) {
-        result = this.onRightClick(from, newModel);
+        result = this.onRightClick(from);
       } else {
-        result = this.onRightDrag(from, to, newModel);
+        result = this.onRightDrag(from, to);
       }
     }
-    this.modelHandler.update(result.model);
+    this.modelHandler.applyLocalDiff(result.diff);
     return result.newState;
   }
 
-  protected onContextMenuClickInternal(
-    action: ContextMenuItem,
-    model: BoardModel
-  ): ClickResult {
-    console.log('Got click on board: ' + model.id + ', action: ' + action);
+  protected onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
+    console.log('Got click on action: ' + action);
     throw new Error('Invalid state for onContextMenuClickInternal');
   }
 
   onContextMenuClick(action: ContextMenuItem): InteractionState {
     console.log('Handling context menu click');
-    const newModel = this.modelHandler.copyModel();
-    const result = this.onContextMenuClickInternal(action, newModel);
-    this.modelHandler.update(result.model);
+    const result = this.onContextMenuClickInternal(action);
+    this.modelHandler.applyLocalDiff(result.diff);
     return result.newState;
   }
 
@@ -123,52 +110,46 @@ class DefaultState extends InteractionState {
     super(modelHandler);
   }
 
-  onLeftDrag(
-    fromData: ClickData,
-    toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    return this.onRightDrag(fromData, toData, model);
+  onLeftDrag(fromData: ClickData, toData: ClickData): ClickResult {
+    return this.onRightDrag(fromData, toData);
   }
 
-  onRightDrag(
-    fromData: ClickData,
-    toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    model.contextMenuState.isVisible = true;
-    model.localSelection = tilesInDrag(fromData, toData);
-    model.contextMenuState.clickPoint = toData.pagePoint;
+  onRightDrag(fromData: ClickData, toData: ClickData): ClickResult {
     return {
-      model: model,
+      diff: {
+        contextMenuState: {clickPoint: toData.pagePoint, isVisible: true},
+        localSelection: tilesInDrag(fromData, toData),
+      },
       newState: new ContextMenuOpenState(this.modelHandler),
     };
   }
 
-  onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
+  onLeftClick(clickData: ClickData): ClickResult {
     const collisions = this.modelHandler.wouldCollide(clickData.tile, 1);
+    const model = this.modelHandler.getModel();
     if (collisions.length > 1) {
       console.log('Unexpected multiple collisions! Taking the first one.');
     }
     if (collisions.length === 0) {
-      return this.onRightClick(clickData, model);
+      return this.onRightClick(clickData);
     }
     const tokenIndex = collisions[0];
-    model.tokens[tokenIndex] = TokenModel.merge(model.tokens[tokenIndex], {
+    const tokenDiff = {
       isActive: true,
-    });
+      inner: {id: model.tokens[tokenIndex].inner.id},
+    };
     return {
-      model: model,
+      diff: {tokenDiffs: [tokenDiff]},
       newState: new PickedUpTokenState(this.modelHandler),
     };
   }
 
-  onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
-    model.contextMenuState.isVisible = true;
-    model.localSelection = [clickData.tile];
-    model.contextMenuState.clickPoint = clickData.pagePoint;
+  onRightClick(clickData: ClickData): ClickResult {
     return {
-      model: model,
+      diff: {
+        contextMenuState: {clickPoint: clickData.pagePoint, isVisible: true},
+        localSelection: [clickData.tile],
+      },
       newState: new ContextMenuOpenState(this.modelHandler),
     };
   }
@@ -179,27 +160,22 @@ class PickedUpTokenState extends InteractionState {
     super(modelHandler);
   }
 
-  onLeftDrag(
-    fromData: ClickData,
-    _toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    return this.onRightClick(fromData, model);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLeftDrag(fromData: ClickData, _toData: ClickData): ClickResult {
+    return this.onRightClick(fromData);
   }
 
-  onRightDrag(
-    fromData: ClickData,
-    _toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    return this.onRightClick(fromData, model);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onRightDrag(fromData: ClickData, _toData: ClickData): ClickResult {
+    return this.onRightClick(fromData);
   }
 
-  onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
+  onLeftClick(clickData: ClickData): ClickResult {
     const activeTokenIndex = this.modelHandler.activeTokenIndex();
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
+    const model = this.modelHandler.getModel();
     const activeTokenSize = model.tokens[activeTokenIndex].inner.size;
     const collisions = this.modelHandler.wouldCollide(
       clickData.tile,
@@ -209,35 +185,36 @@ class PickedUpTokenState extends InteractionState {
       collisions.length > 1 ||
       (collisions.length === 1 && activeTokenIndex !== collisions[0])
     ) {
-      return this.onRightClick(clickData, model);
+      return this.onRightClick(clickData);
     }
-    console.log(clickData);
-    model.tokens[activeTokenIndex] = TokenModel.merge(
-      model.tokens[activeTokenIndex],
-      {
-        isActive: false,
-        inner: {
-          id: model.tokens[activeTokenIndex].inner.id,
-          location: clickData.tile,
-        },
-      }
-    );
-    console.log(model.tokens[activeTokenIndex]);
-    return {model: model, newState: new DefaultState(this.modelHandler)};
+    const tokenDiff = {
+      isActive: false,
+      inner: {
+        id: model.tokens[activeTokenIndex].inner.id,
+        location: clickData.tile,
+      },
+    };
+    return {
+      diff: {tokenDiffs: [tokenDiff]},
+      newState: new DefaultState(this.modelHandler),
+    };
   }
 
-  onRightClick(_clickData: ClickData, model: BoardModel): ClickResult {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onRightClick(_clickData: ClickData): ClickResult {
     const activeTokenIndex = this.modelHandler.activeTokenIndex();
     if (activeTokenIndex == INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
-    model.tokens[activeTokenIndex] = TokenModel.merge(
-      model.tokens[activeTokenIndex],
-      {
-        isActive: false,
-      }
-    );
-    return {model: model, newState: new DefaultState(this.modelHandler)};
+    const model = this.modelHandler.getModel();
+    const tokenDiff = {
+      isActive: false,
+      inner: {id: model.tokens[activeTokenIndex].inner.id},
+    };
+    return {
+      diff: {tokenDiffs: [tokenDiff]},
+      newState: new DefaultState(this.modelHandler),
+    };
   }
 }
 
@@ -246,109 +223,114 @@ class ContextMenuOpenState extends InteractionState {
     super(modelHandler);
   }
 
-  onLeftDrag(
-    fromData: ClickData,
-    _toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    return this.onRightClick(fromData, model);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLeftDrag(fromData: ClickData, _toData: ClickData): ClickResult {
+    return this.onRightClick(fromData);
   }
 
-  onRightDrag(
-    fromData: ClickData,
-    _toData: ClickData,
-    model: BoardModel
-  ): ClickResult {
-    return this.onRightClick(fromData, model);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onRightDrag(fromData: ClickData, _toData: ClickData): ClickResult {
+    return this.onRightClick(fromData);
   }
 
-  onLeftClick(clickData: ClickData, model: BoardModel): ClickResult {
-    return this.onRightClick(clickData, model);
+  onLeftClick(clickData: ClickData): ClickResult {
+    return this.onRightClick(clickData);
   }
 
-  onRightClick(clickData: ClickData, model: BoardModel): ClickResult {
-    model.contextMenuState.isVisible = false;
-    model.localSelection = [];
-    model.contextMenuState.clickPoint = clickData.pagePoint;
-    return {model: model, newState: new DefaultState(this.modelHandler)};
+  onRightClick(clickData: ClickData): ClickResult {
+    return {
+      diff: {
+        contextMenuState: {isVisible: false, clickPoint: clickData.pagePoint},
+        localSelection: [],
+      },
+      newState: new DefaultState(this.modelHandler),
+    };
   }
 
-  onContextMenuClickInternal(
-    action: ContextMenuItem,
-    model: BoardModel
-  ): ClickResult {
-    this.handleContextMenuAction(action, model);
-    model.contextMenuState.isVisible = false;
-    model.localSelection = [];
-    return {model: model, newState: new DefaultState(this.modelHandler)};
+  onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
+    const actionDiff = this.handleContextMenuAction(action);
+    actionDiff.contextMenuState = {isVisible: false, clickPoint: {x: 0, y: 0}};
+    actionDiff.localSelection = [];
+    return {
+      diff: actionDiff,
+      newState: new DefaultState(this.modelHandler),
+    };
   }
 
-  private handleContextMenuAction(
-    action: ContextMenuItem,
-    model: BoardModel
-  ): void {
+  private fogDiff(model: BoardModel, fogOn: boolean): BoardDiff {
+    const fogOfWarDiffs = model.localSelection.map((tile) => {
+      return {col: tile.col, row: tile.row, isFogOn: fogOn};
+    });
+    return {
+      inner: {
+        fogOfWarDiffs: fogOfWarDiffs,
+        removedTokens: [],
+        publicSelectionDiffs: [],
+        newTokens: [],
+        id: model.inner.id,
+      },
+    };
+  }
+
+  private peekDiff(model: BoardModel, isPeeked = true): BoardDiff {
+    const startCol = Math.min(...model.localSelection.map((tile) => tile.col));
+    const startRow = Math.min(...model.localSelection.map((tile) => tile.row));
+    const endCol = Math.max(...model.localSelection.map((tile) => tile.col));
+    const endRow = Math.max(...model.localSelection.map((tile) => tile.row));
+    return {
+      peekDiff: {
+        start: {col: startCol, row: startRow},
+        end: {col: endCol, row: endRow},
+        isPeeked: isPeeked,
+      },
+    };
+  }
+
+  private highlightDiff(model: BoardModel, color: string): BoardDiff {
+    const publicSelectionDiffs = model.localSelection.map((tile) => {
+      return {col: tile.col, row: tile.row, value: color};
+    });
+    return {
+      inner: {
+        fogOfWarDiffs: [],
+        removedTokens: [],
+        publicSelectionDiffs: publicSelectionDiffs,
+        newTokens: [],
+        id: model.inner.id,
+      },
+    };
+  }
+
+  private handleContextMenuAction(action: ContextMenuItem): BoardDiff {
+    const model = this.modelHandler.getModel();
     switch (action) {
       case ContextMenuItem.AddFog:
-        for (const tile of model.localSelection) {
-          model.fogOfWarState[tile.col][tile.row] = '1';
-        }
-        break;
+        return this.fogDiff(model, true);
       case ContextMenuItem.ClearFog:
-        for (const tile of model.localSelection) {
-          model.fogOfWarState[tile.col][tile.row] = '0';
-        }
-        break;
+        return this.fogDiff(model, false);
       case ContextMenuItem.PeekFog:
-        for (const tile of model.localSelection) {
-          const current = model.fogOfWarState[tile.col][tile.row];
-          if (current === '1') {
-            model.fogOfWarState[tile.col][tile.row] = '2';
-          }
-        }
-        break;
+        return this.peekDiff(model, true);
       case ContextMenuItem.UnpeekFog:
-        for (const tile of model.localSelection) {
-          const current = model.fogOfWarState[tile.col][tile.row];
-          if (current === '2') {
-            model.fogOfWarState[tile.col][tile.row] = '1';
-          }
-        }
-        break;
+        return this.peekDiff(model, false);
       case ContextMenuItem.ClearHighlight:
-        for (const tile of model.localSelection) {
-          model.publicSelection[tile.col][tile.row] = '0';
-        }
-        break;
+        return this.highlightDiff(model, '0');
       case ContextMenuItem.BlueHighlight:
-        for (const tile of model.localSelection) {
-          model.publicSelection[tile.col][tile.row] = '1';
-        }
-        break;
+        return this.highlightDiff(model, '1');
       case ContextMenuItem.OrangeHighlight:
-        for (const tile of model.localSelection) {
-          model.publicSelection[tile.col][tile.row] = '2';
-        }
-        break;
+        return this.highlightDiff(model, '2');
       case ContextMenuItem.GreenHighlight:
-        for (const tile of model.localSelection) {
-          model.publicSelection[tile.col][tile.row] = '3';
-        }
-        break;
+        return this.highlightDiff(model, '3');
       case ContextMenuItem.AddToken:
         NewTokenForm.create(model.localSelection[0], this.modelHandler);
-        break;
+        return {};
       case ContextMenuItem.EditToken:
-        this.handleEditToken(model);
-        break;
+        return this.handleEditToken(model);
       case ContextMenuItem.CopyToken:
-        this.handleCopyToken(model);
-        break;
+        return this.handleCopyToken(model);
       case ContextMenuItem.ZoomIn:
-        model.scale = model.scale * 2;
-        break;
+        return {scale: model.scale * 2};
       case ContextMenuItem.ZoomOut:
-        model.scale = model.scale / 2;
-        break;
+        return {scale: model.scale / 2};
       default:
         throw new Error('Unsupported context menu action: ' + action);
     }
@@ -365,46 +347,47 @@ class ContextMenuOpenState extends InteractionState {
     return collisions[0];
   }
 
-  private handleEditToken(model: BoardModel): void {
+  private handleEditToken(model: BoardModel): BoardDiff {
     if (model.localSelection.length !== 1) {
       console.log('Requires exactly one tile selected, ignoring');
-      return;
+      return {};
     }
     const tile = model.localSelection[0];
     const tokenIndex = this.findTokenOnTile(tile);
     if (tokenIndex === undefined) {
       console.log('No token in selection, ignoring');
-      return;
+      return {};
     }
     const selectedToken = model.tokens[tokenIndex];
     EditTokenForm.create(selectedToken, this.modelHandler);
+    return {};
   }
 
-  private handleCopyToken(model: BoardModel): void {
+  private handleCopyToken(model: BoardModel): BoardDiff {
     if (model.localSelection.length !== 1) {
       console.log('Requires exactly one tile selected, ignoring');
-      return;
+      return {};
     }
 
     const tile = model.localSelection[0];
     const tokenIndex = this.findTokenOnTile(tile);
     if (tokenIndex === undefined) {
       console.log('No token in selection, ignoring');
-      return;
+      return {};
     }
     const selectedToken = model.tokens[tokenIndex];
 
-    const rowDir = tile.row < model.rows / 2 ? 1 : -1;
-    const colDir = tile.col < model.cols / 2 ? 1 : -1;
+    const rowDir = tile.row < model.inner.rows / 2 ? 1 : -1;
+    const colDir = tile.col < model.inner.cols / 2 ? 1 : -1;
     let i = 1;
     while (true) {
       const newRow = tile.row + rowDir * i;
       const newCol = tile.col + colDir * i;
-      const rowInBounds = 0 < newRow && newRow < model.rows - 1;
-      const colInBounds = 0 < newCol && newCol < model.cols - 1;
+      const rowInBounds = 0 < newRow && newRow < model.inner.rows - 1;
+      const colInBounds = 0 < newCol && newCol < model.inner.cols - 1;
       if (!rowInBounds && !colInBounds) {
         console.log('Found no target tile for copy, ignoring');
-        return;
+        return {};
       }
       const candidates: Location[] = [];
       if (rowInBounds) {
@@ -424,12 +407,16 @@ class ContextMenuOpenState extends InteractionState {
           continue;
         }
         const copy = TokenModel.duplicate(selectedToken);
-        model.tokens.push(
-          TokenModel.merge(copy, {
-            inner: {id: copy.inner.id, location: target},
-          })
-        );
-        return;
+        // TODO: Make TokenDiff have a separate newTokens field.
+        const newToken = TokenModel.merge(copy, {
+          inner: {id: copy.inner.id, location: target},
+        });
+        return {
+          inner: {
+            newTokens: [newToken.inner],
+            id: model.inner.id,
+          },
+        };
       }
 
       i += 1;

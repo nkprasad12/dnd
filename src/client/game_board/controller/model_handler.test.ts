@@ -4,87 +4,89 @@ import {
 } from '_client/game_board/controller/model_handler';
 
 class FakeModel {
-  constructor(private readonly data: string) {}
+  name: string;
 
-  deepCopy(): FakeModel {
-    return new FakeModel(this.data);
+  constructor(name: string) {
+    this.name = name;
   }
 
-  mergedFrom(data: string): Promise<FakeModel> {
-    return Promise.resolve(new FakeModel(data));
+  mergedWith(diff: {inner: {name: string}}): Promise<FakeModel> {
+    return Promise.resolve(new FakeModel(diff.inner.name));
   }
 }
 
 class FakeLocalListener {
   updatedModel: any = undefined;
+  lastDiff: any = undefined;
   readonly listener: UpdateListener;
   constructor() {
-    this.listener = UpdateListener.forLocal((update) => {
+    this.listener = UpdateListener.forLocal((update, diff) => {
       this.updatedModel = update;
+      this.lastDiff = diff;
     });
   }
 }
 
 class FakeAllListener {
   updatedModel: any = undefined;
+  lastDiff: any = undefined;
   readonly listener: UpdateListener;
   constructor() {
-    this.listener = UpdateListener.forAll((update) => {
+    this.listener = UpdateListener.forAll((update, diff) => {
       this.updatedModel = update;
+      this.lastDiff = diff;
     });
   }
 }
 
-test('ModelHandler updates listeners on initial', () => {
+describe('addListeners', () => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();
   const initialModel = new FakeModel('Tacitus');
 
-  new ModelHandler(
-    initialModel as any,
-    [allListener.listener, localListener.listener],
-    {} as any
-  );
+  const handler = new ModelHandler(initialModel as any, {} as any);
+  handler.addListeners([allListener.listener, localListener.listener]);
+  it('updates listener model on initial add', () => {
+    expect(allListener.updatedModel).toEqual(initialModel);
+    expect(localListener.updatedModel).toEqual(initialModel);
+  });
 
-  expect(allListener.updatedModel === initialModel).toBe(false);
-  expect(allListener.updatedModel).toEqual(initialModel);
-  expect(localListener.updatedModel === initialModel).toBe(false);
-  expect(localListener.updatedModel).toEqual(initialModel);
+  it('updates listener diff with empty diff', () => {
+    expect(allListener.lastDiff).toEqual({});
+    expect(localListener.lastDiff).toEqual({});
+  });
 });
 
-test('ModelHandler updates all listener on update', () => {
+test('ModelHandler updates all listener on update', async (done) => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();
   const initialModel = new FakeModel('Tacitus');
-  const newModel = new FakeModel('Cassius Dio');
+  const newName = 'Cassius Dio';
 
-  const handler = new ModelHandler(
-    initialModel as any,
-    [allListener.listener, localListener.listener],
-    {} as any
-  );
-  handler.update(newModel as any);
+  const handler = new ModelHandler(initialModel as any, {} as any);
+  handler.addListeners([allListener.listener, localListener.listener]);
+  await handler.applyLocalDiff({inner: {name: newName}} as any);
 
-  expect(allListener.updatedModel === newModel).toBe(false);
-  expect(allListener.updatedModel).toEqual(newModel);
-  expect(localListener.updatedModel === newModel).toBe(false);
-  expect(localListener.updatedModel).toEqual(newModel);
+  expect(allListener.updatedModel.name).toBe(newName);
+  expect(localListener.updatedModel.name).toBe(newName);
+  expect(allListener.lastDiff).toStrictEqual({inner: {name: newName}});
+  expect(localListener.lastDiff).toStrictEqual({inner: {name: newName}});
+  done();
 });
 
 test('ModelHandler updates only remote on remote update', async (done) => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();
   const initialModel = new FakeModel('Tacitus');
-  const remoteDiff = 'Cassius Dio';
+  const newName = 'Cassius Dio';
 
-  const handler = new ModelHandler(
-    initialModel as any,
-    [allListener.listener, localListener.listener],
-    {} as any
-  );
-  await handler.applyRemoteDiff(remoteDiff as any);
+  const handler = new ModelHandler(initialModel as any, {} as any);
+  handler.addListeners([allListener.listener, localListener.listener]);
+  await handler.applyRemoteDiff({name: newName} as any);
 
-  expect(allListener.updatedModel.data).toEqual(remoteDiff);
-  expect(localListener.updatedModel).toEqual(initialModel);
+  expect(allListener.updatedModel.name).toBe(newName);
+  expect(localListener.updatedModel).toStrictEqual(initialModel);
+  expect(allListener.lastDiff).toStrictEqual({inner: {name: newName}});
+  expect(localListener.lastDiff).toStrictEqual({});
   done();
 });

@@ -36,12 +36,14 @@ export class ContextMenu {
     let highlightedTiles = 0;
 
     for (const tile of model.localSelection) {
-      const fogValue = model.fogOfWarState[tile.col][tile.row];
-      fullFogTiles += fogValue === '1' ? 1 : 0;
-      peekedFogTiles += fogValue === '2' ? 1 : 0;
-      noFogTiles += fogValue === '0' ? 1 : 0;
+      const fogValue = model.inner.fogOfWar[tile.col][tile.row];
+      const isFoggy = fogValue === '1';
+      const isPeeked = model.peekedTiles[tile.col][tile.row];
+      fullFogTiles += isFoggy && !isPeeked ? 1 : 0;
+      peekedFogTiles += isFoggy && isPeeked ? 1 : 0;
+      noFogTiles += !isFoggy ? 1 : 0;
       highlightedTiles +=
-        model.publicSelection[tile.col][tile.row] === '0' ? 0 : 1;
+        model.inner.publicSelection[tile.col][tile.row] === '0' ? 0 : 1;
     }
 
     if (fullFogTiles + peekedFogTiles === 0) {

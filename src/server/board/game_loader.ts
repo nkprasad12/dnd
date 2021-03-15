@@ -1,6 +1,7 @@
 import path from 'path';
 import {
   RemoteBoardModel,
+  RemoteTokenDiff,
   RemoteTokenModel,
 } from '_common/board/remote_board_model';
 import {TokenData} from '_common/board/token_data';
@@ -125,12 +126,16 @@ class GameLoader {
 
   async retrieveBoard(boardId: string): Promise<RemoteBoardModel> {
     const baseBoard = await this.gameCache.get(getBoardKey(boardId));
+    const tokenDiffs: RemoteTokenDiff[] = [];
     for (let i = 0; i < baseBoard.tokens.length; i++) {
       const token = baseBoard.tokens[i];
       const tokenData = await this.tokenCache.get(getTokenKey(token.id));
-      baseBoard.tokens[i] = RemoteTokenModel.createFrom(tokenData, token);
+      tokenDiffs.push(RemoteTokenModel.createFrom(tokenData, token));
     }
-    return baseBoard;
+    return RemoteBoardModel.mergedWith(baseBoard, {
+      id: boardId,
+      tokenDiffs: tokenDiffs,
+    });
   }
 
   async getAllTokens(): Promise<TokenData[]> {

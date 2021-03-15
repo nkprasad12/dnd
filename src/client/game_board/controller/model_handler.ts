@@ -1,12 +1,14 @@
 import {RemoteBoardDiff} from '_common/board/remote_board_model';
 import {Location, Point} from '_common/coordinates';
-import {BoardModel} from '_client/game_board/model/board_model';
+import {BoardDiff, BoardModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
 
 export const INVALID_INDEX: number = -1;
 
+export type BoardDiffListener = (model: BoardModel, diff: BoardDiff) => any;
+
 export interface UpdateListener {
-  listener: (newModel: BoardModel) => any;
+  listener: BoardDiffListener;
   updateOnLocal: boolean;
   updateOnRemote: boolean;
 }
@@ -16,7 +18,7 @@ export namespace UpdateListener {
    * Creates a listener that will be notified on changes triggered by local
    * actions, but not from remote actions.
    */
-  export function forLocal(listener: (newModel: BoardModel) => any) {
+  export function forLocal(listener: BoardDiffListener) {
     return {
       listener: listener,
       updateOnLocal: true,
@@ -28,7 +30,7 @@ export namespace UpdateListener {
    * Creates a listener that will be notified on changes triggered by local
    * actions and remote actions.
    */
-  export function forAll(listener: (newModel: BoardModel) => any) {
+  export function forAll(listener: BoardDiffListener) {
     return {
       listener: listener,
       updateOnLocal: true,
@@ -38,36 +40,42 @@ export namespace UpdateListener {
 }
 
 export class ModelHandler {
+  private readonly listeners: UpdateListener[] = [];
+
   constructor(
     private model: BoardModel,
-    private readonly listeners: UpdateListener[],
     // TODO: Remove this once we figure out where to put tileForPoint.
     private readonly view: BoardView
-  ) {
-    this.update(this.model);
+  ) {}
+
+  addListeners(listeners: UpdateListener[]): void {
+    listeners.forEach((listener) => {
+      this.listeners.push(listener);
+      listener.listener(this.model, {});
+    });
   }
 
-  update(newModel: BoardModel): void {
-    this.model = newModel;
-    const copy = this.copyModel();
+  getModel(): BoardModel {
+    return this.model;
+  }
+
+  async applyLocalDiff(diff: BoardDiff): Promise<void> {
+    console.log('applyLocalDiff');
+    console.log(diff);
+    this.model = await this.model.mergedWith(diff);
     this.listeners
       .filter((listener) => listener.updateOnLocal === true)
-      .forEach((listener) => listener.listener(copy));
+      .forEach((listener) => listener.listener(this.model, diff));
   }
 
   async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {
-    const newModel = await this.model.mergedFrom(diff);
+    console.log('applyRemoteDiff');
+    console.log(diff);
+    const newModel = await this.model.mergedWith({inner: diff});
     this.model = newModel;
-    console.log('New merged model from remote diff');
-    console.log(this.model);
-    const copy = this.copyModel();
     this.listeners
       .filter((listener) => listener.updateOnRemote === true)
-      .forEach((listener) => listener.listener(copy));
-  }
-
-  copyModel(): BoardModel {
-    return this.model.deepCopy();
+      .forEach((listener) => listener.listener(this.model, {inner: diff}));
   }
 
   /** Returns the tile for the input client point, relative to the canvas. */
@@ -78,14 +86,14 @@ export class ModelHandler {
       x: clientPoint.x - rect.left,
       y: clientPoint.y - rect.top,
     };
-    const tileSize = this.model.tileSize;
+    const tileSize = this.model.inner.tileSize;
     let baseX = relativePoint.x / this.model.scale;
     let baseY = relativePoint.y / this.model.scale;
-    if (this.model.gridOffset.x > 0) {
-      baseX = baseX + tileSize - this.model.gridOffset.x;
+    if (this.model.inner.gridOffset.x > 0) {
+      baseX = baseX + tileSize - this.model.inner.gridOffset.x;
     }
-    if (this.model.gridOffset.y > 0) {
-      baseY = baseY + tileSize - this.model.gridOffset.y;
+    if (this.model.inner.gridOffset.y > 0) {
+      baseY = baseY + tileSize - this.model.inner.gridOffset.y;
     }
     return {
       col: Math.floor(baseX / tileSize),

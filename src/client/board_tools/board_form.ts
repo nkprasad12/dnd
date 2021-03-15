@@ -4,7 +4,11 @@ import {getElementById} from '_client/common/ui_util';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
-import {LoadedImage, loadImage} from '_client/utils/image_utils';
+import {
+  getBackgroundData,
+  LoadedImage,
+  loadImage,
+} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
 import {TokenData} from '_common/board/token_data';
 import {RemoteCache} from '_client/game_board/remote/remote_cache';
@@ -400,19 +404,23 @@ abstract class BaseSimpleForm {
 export interface BoardUpdateData {
   tileSize: number;
   offset: Point;
+  cols: number;
+  rows: number;
 }
 
 /** Class for a form requesting information to make a game board. */
 export class BoardUpdateForm extends BaseSimpleForm {
   static create(
     parentId: string,
+    modelHandler: ModelHandler,
     onUpdate: (data: BoardUpdateData) => any
   ): void {
-    new BoardUpdateForm(getElementById(parentId), onUpdate);
+    new BoardUpdateForm(getElementById(parentId), modelHandler, onUpdate);
   }
 
   private constructor(
     parent: HTMLElement,
+    modelHandler: ModelHandler,
     onUpdate: (data: BoardUpdateData) => any
   ) {
     const tileSizeEntry: NumberInputEntry = new NumberInputEntry(
@@ -441,7 +449,16 @@ export class BoardUpdateForm extends BaseSimpleForm {
         console.log('Invalid input! ignoring');
         return;
       }
-      onUpdate({tileSize: tileSize, offset: {x: offsetX, y: offsetY}});
+      const backgroundData = getBackgroundData(
+        modelHandler.getModel().backgroundImage,
+        tileSize
+      );
+      onUpdate({
+        tileSize: tileSize,
+        rows: backgroundData.rows,
+        cols: backgroundData.cols,
+        offset: {x: offsetX, y: offsetY},
+      });
     });
   }
 }
@@ -539,13 +556,7 @@ export class NewBoardForm extends BaseDialogForm {
           backgroundImageEntry.getResolved(),
           'backgroundImage'
         );
-        onNewBoard(
-          BoardModel.Builder.forNewBoard()
-            .setName(boardName)
-            .setBackgroundImage(backgroundImage)
-            .setTileSize(tileSize)
-            .build()
-        );
+        onNewBoard(BoardModel.createNew(boardName, backgroundImage, tileSize));
       }
     );
   }
@@ -579,19 +590,24 @@ export class NewTokenForm extends BaseDialogForm {
       tile,
       (token) => {
         console.log('NewTokenForm onNewToken: ' + token.inner.id);
-        const newModel = modelHandler.copyModel();
+        const model = modelHandler.getModel();
         let addedToken = false;
-        for (let i = 0; i < newModel.tokens.length; i++) {
-          if (newModel.tokens[i].inner.id !== token.inner.id) {
+        for (let i = 0; i < model.tokens.length; i++) {
+          if (model.tokens[i].inner.id !== token.inner.id) {
             continue;
           }
-          newModel.tokens[i] = token;
+          modelHandler.applyLocalDiff({tokenDiffs: [model.tokens[i]]});
           addedToken = true;
+          break;
         }
         if (!addedToken) {
-          newModel.tokens.push(token);
+          modelHandler.applyLocalDiff({
+            inner: {
+              newTokens: [token.inner],
+              id: model.inner.id,
+            },
+          });
         }
-        modelHandler.update(newModel);
       },
       new TokenFormDefaults(),
       RemoteCache.get().getAllTokens()
@@ -671,10 +687,10 @@ export class EditTokenForm extends BaseDialogForm {
       token,
       modelHandler,
       (edited) => {
-        const newModel = modelHandler.copyModel();
+        const model = modelHandler.getModel();
         let index: number | undefined = undefined;
-        for (let i = 0; i < newModel.tokens.length; i++) {
-          if (newModel.tokens[i].inner.id === edited.inner.id) {
+        for (let i = 0; i < model.tokens.length; i++) {
+          if (model.tokens[i].inner.id === edited.inner.id) {
             index = i;
             break;
           }
@@ -683,8 +699,9 @@ export class EditTokenForm extends BaseDialogForm {
           console.log('Could not find token to update!');
           return;
         }
-        newModel.tokens[index] = edited;
-        modelHandler.update(newModel);
+        modelHandler.applyLocalDiff({
+          tokenDiffs: [edited],
+        });
       }
     );
     form.show();
