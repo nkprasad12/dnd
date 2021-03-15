@@ -79,17 +79,29 @@ function processSaveBonuses(
 }
 
 function processCheckBonuses(
-  data: sheetsV4.Schema$ValueRange
+  skillData: sheetsV4.Schema$ValueRange,
+  abilityData: sheetsV4.Schema$ValueRange
 ): Map<string, number> {
-  if (data.range !== RANGES[4]) {
+  if (skillData.range !== RANGES[4]) {
     throw new Error('Invalid value range for skill checks.');
   }
   const result: Map<string, number> = new Map();
+
   const items = Array.from(Array(SKILL_ORDER.length).keys());
-  const values = checkDefined(data.values, 'skillChecks:data.values')[0];
+  const values = checkDefined(skillData.values, 'skillChecks:data.values')[0];
   for (const i of items) {
     result.set(SKILL_ORDER[i], Number.parseInt(values[i]));
   }
+
+  const abilityItems = Array.from(Array(ABILITY_ORDER.length).keys());
+  const abilityValues = checkDefined(
+    abilityData.values,
+    'abilities:data.values'
+  )[0];
+  for (const i of abilityItems) {
+    result.set(ABILITY_ORDER[i], Number.parseInt(abilityValues[i]));
+  }
+
   return result;
 }
 
@@ -167,7 +179,7 @@ export async function extractSheetData(
     proficiencyBonus: processProficiency(data[1]),
     abilityBonuses: processAbilityBonuses(data[2]),
     saveBonuses: processSaveBonuses(data[3]),
-    checkBonuses: processCheckBonuses(data[4]),
+    checkBonuses: processCheckBonuses(data[4], data[2]),
     attackBonuses: processAttackBonuses(data[5]),
   };
 }

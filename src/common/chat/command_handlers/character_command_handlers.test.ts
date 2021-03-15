@@ -32,7 +32,10 @@ const BRUTUS_DATA: CharacterSheetData = {
     ['Dexterity', 3],
     ['Wisdom', -1],
   ]),
-  abilityBonuses: new Map(),
+  abilityBonuses: new Map([
+    ['Dexterity', 3],
+    ['Wisdom', -1],
+  ]),
   attackBonuses: new Map([
     ['Longbow', {toHit: 8, damageRoll: '1d8+2'}],
     ['Dagger', {toHit: 3, damageRoll: 'malformed'}],
@@ -173,6 +176,15 @@ test('checkHandler basic matching request', async (done) => {
 
   const result = await handler('Perception @Brutus');
   expect(result.header).toContain('perception check:');
+  expect(result.header).toContain('Brutus');
+  done();
+});
+
+test('checkHandler basic ability matching request', async (done) => {
+  const handler = await checkHandler();
+
+  const result = await handler('wisdom @Brutus');
+  expect(result.header).toContain('wisdom check:');
   expect(result.header).toContain('Brutus');
   done();
 });
