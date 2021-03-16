@@ -1,5 +1,6 @@
 import {getOrigin} from '_client/common/get_origin';
 import {checkState} from '_common/preconditions';
+import {gridDimensions} from '_common/util/grid';
 
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
@@ -58,11 +59,12 @@ export function getBackgroundData(
 ): BackgroundData {
   const width = <number>image.image.width;
   const height = <number>image.image.height;
+  const dimensions = gridDimensions(width, height, tileSize);
   return {
     backgroundImage: image,
     width: width,
     height: height,
-    cols: Math.ceil(width / tileSize),
-    rows: Math.ceil(height / tileSize),
+    cols: dimensions.cols,
+    rows: dimensions.rows,
   };
 }

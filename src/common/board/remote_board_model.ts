@@ -2,7 +2,7 @@ import deepEqual from 'deep-equal';
 import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
 import {Point} from '_common/coordinates';
-import {createGrid} from '_common/util/grid';
+import {createGrid, gridDimensions} from '_common/util/grid';
 import {isGrid, prefer} from '_common/verification';
 
 /**
@@ -88,7 +88,7 @@ export class RemoteBoardModel {
     if (!isGrid(maybeModel.fogOfWar, maybeModel.cols, maybeModel.rows)) {
       return false;
     }
-    if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
+    if (!['0', '1'].includes(maybeModel.fogOfWar[0][0])) {
       return false;
     }
     if (!isGrid(maybeModel.publicSelection, maybeModel.cols, maybeModel.rows)) {
@@ -180,6 +180,17 @@ export class RemoteBoardModel {
       throw new Error(
         '[RemoteBoardModel] mergedWith called with different ids'
       );
+    }
+    const expectedDimensions = gridDimensions(
+      model.width,
+      model.height,
+      prefer(diff.tileSize, model.tileSize)
+    );
+    if (
+      expectedDimensions.cols !== prefer(diff.cols, model.cols) ||
+      expectedDimensions.rows !== prefer(diff.rows, model.rows)
+    ) {
+      throw new Error('Invalid board dimensions');
     }
     let mergedTokens: RemoteTokenModel[] = [];
     mergedTokens = mergedTokens.concat(prefer(diff.newTokens, []));

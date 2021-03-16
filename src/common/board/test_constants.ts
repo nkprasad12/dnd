@@ -34,13 +34,19 @@ export function remoteBoardModel(): RemoteBoardModel {
     TEST_BOARD_SOURCE,
     57,
     [remoteTokenModel()],
-    [['0']],
-    [['0']],
-    57,
-    57,
+    [
+      ['0', '0', '0'],
+      ['0', '0', '0'],
+    ],
+    [
+      ['0', '0', '0'],
+      ['0', '0', '0'],
+    ],
+    60,
+    150,
     {x: 57, y: 57},
-    1,
-    1
+    2,
+    3
   );
 }
 
