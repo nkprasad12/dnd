@@ -54,10 +54,28 @@ describe('FakeConnection', () => {
     done();
   });
 
+  it('connectionsOn is incremented for new sockets', async (done) => {
+    FakeConnection.invokeBeforeEach();
+    expect(FakeConnection.connectionsOn(socketNamespace)).toBe(0);
+    await FakeConnection.connectTo(socketNamespace);
+    expect(FakeConnection.connectionsOn(socketNamespace)).toBe(1);
+    await FakeConnection.connectTo(socketNamespace);
+    expect(FakeConnection.connectionsOn(socketNamespace)).toBe(2);
+    done();
+  });
+
   it('invokeBeforeEach clears sockets', async (done) => {
     await FakeConnection.connectTo(socketNamespace);
     FakeConnection.invokeBeforeEach();
     expect(FakeConnection.getFakeSocket(socketNamespace)).toBe(undefined);
+    done();
+  });
+
+  it('invokeBeforeEach clears connection counts', async (done) => {
+    FakeConnection.invokeBeforeEach();
+    await FakeConnection.connectTo(socketNamespace);
+    FakeConnection.invokeBeforeEach();
+    expect(FakeConnection.connectionsOn(socketNamespace)).toBe(0);
     done();
   });
 });

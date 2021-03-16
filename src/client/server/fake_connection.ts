@@ -1,6 +1,11 @@
 import {Socket} from '_client/server/socket';
+import {checkDefined} from '_common/preconditions';
+import {prefer} from '_common/verification';
 
-const sockets: Map<string, FakeSocket> = new Map();
+const sockets: Map<
+  string,
+  {socket: FakeSocket; connections: number}
+> = new Map();
 
 export namespace FakeConnection {
   export function invokeBeforeEach(): void {
@@ -10,8 +15,12 @@ export namespace FakeConnection {
     }
   }
 
+  export function connectionsOn(namespace: string): number {
+    return prefer(sockets.get(namespace)?.connections, 0);
+  }
+
   export function getFakeSocket(namespace: string): FakeSocket | undefined {
-    return sockets.get(namespace);
+    return sockets.get(namespace)?.socket;
   }
 
   /**
@@ -24,10 +33,13 @@ export namespace FakeConnection {
     });
   */
   export function connectTo(namespace: string): Promise<Socket> {
-    let socket = sockets.get(namespace);
+    let socket = sockets.get(namespace)?.socket;
     if (socket === undefined) {
       socket = new FakeSocket(namespace);
-      sockets.set(namespace, socket);
+      sockets.set(namespace, {socket: socket, connections: 1});
+    } else {
+      const connections = checkDefined(sockets.get(namespace)?.connections);
+      sockets.set(namespace, {socket: socket, connections: connections + 1});
     }
     return Promise.resolve(socket);
   }
