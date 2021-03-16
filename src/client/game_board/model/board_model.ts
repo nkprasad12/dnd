@@ -83,6 +83,12 @@ export class BoardModel implements Readonly<MutableBoardModel> {
   ) {}
 
   async mergedWith(diff: BoardDiff): Promise<BoardModel> {
+    if (
+      diff.inner !== undefined &&
+      (diff.inner as any).tokenDiffs !== undefined
+    ) {
+      throw new Error('Inner diff of BoardDiff cannot have tokenDiffs');
+    }
     const tokens = await this.mergeTokens(diff.inner, diff.tokenDiffs);
     let peekedTiles = this.peekedTiles;
     const dimsChanged =
@@ -131,8 +137,8 @@ export class BoardModel implements Readonly<MutableBoardModel> {
       diff.removedTokens &&
       diff.removedTokens.length > 0
     ) {
-      result = result.filter((token) =>
-        prefer(diff.removedTokens, []).includes(token.inner.id)
+      result = result.filter(
+        (token) => !prefer(diff.removedTokens, []).includes(token.inner.id)
       );
     }
     if (tokenDiffs !== undefined && tokenDiffs.length > 0) {

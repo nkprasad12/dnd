@@ -9,8 +9,10 @@ export function createGrid<T>(
     .map(() => Array(rows).fill(t));
 }
 
+type Grid<T> = ReadonlyArray<ReadonlyArray<T>>;
+
 /** Creates a new grid with each element shallow copied. */
-export function copyGrid<T>(input: readonly T[][]): T[][] {
+export function copyGrid<T>(input: Grid<T>): Grid<T> {
   return input.map((col) => col.slice());
 }
 
