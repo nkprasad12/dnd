@@ -6,6 +6,7 @@ import {connectTo} from '_client/server/socket_connection';
 import {Socket} from '_client/server/socket';
 import * as Events from '_common/board/board_events';
 import {TokenData} from '_common/board/token_data';
+import {isStringArray} from '_common/verification';
 
 export type BoardUpateListener = (diff: RemoteBoardDiff) => any;
 
@@ -50,11 +51,15 @@ export class BoardClient {
           return;
         }
         console.log('Received invalid board - trying to fill defaults');
-        const updatedResponse = RemoteBoardModel.fillDefaults(response);
-        console.log(updatedResponse);
-        if (RemoteBoardModel.isValid(updatedResponse)) {
-          resolve(updatedResponse);
-          return;
+        try {
+          const updatedResponse = RemoteBoardModel.fillDefaults(response);
+          console.log(updatedResponse);
+          if (RemoteBoardModel.isValid(updatedResponse)) {
+            resolve(updatedResponse);
+            return;
+          }
+        } catch {
+          // Intended to fall through to error.
         }
         reject(new Error('Received invalid board model!'));
       });
@@ -65,17 +70,11 @@ export class BoardClient {
     return new Promise((resolve, reject) => {
       this.socket.emit(Events.BOARD_GET_ALL_REQUEST, 'pls');
       this.socket.on(Events.BOARD_GET_ALL_RESPONSE, (response) => {
-        if (!Array.isArray(response)) {
+        if (!isStringArray(response)) {
           reject(new Error('GET_ALL Received invalid response!'));
           return;
         }
-        for (const item of response) {
-          if (typeof item !== 'string') {
-            reject(new Error('GET_ALL Received invalid response!'));
-            return;
-          }
-        }
-        resolve(response as string[]);
+        resolve(response);
       });
     });
   }
