@@ -1,6 +1,7 @@
 import {FakeImage} from '_client/utils/fake_image';
 
 const OriginalImage = global.Image;
+jest.useFakeTimers();
 
 afterEach(() => {
   global.Image = OriginalImage;

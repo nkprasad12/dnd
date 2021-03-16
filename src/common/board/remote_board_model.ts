@@ -229,7 +229,7 @@ export class RemoteBoardModel {
     return new RemoteBoardModel(
       model.id,
       prefer(diff.name, model.name),
-      prefer(diff.imageSource, model.imageSource),
+      model.imageSource,
       prefer(diff.tileSize, model.tileSize),
       mergedTokens,
       fogOfWarState,
@@ -270,7 +270,6 @@ export interface RemoteBoardDiff {
   removedTokens?: string[];
   newTokens?: RemoteTokenModel[];
   publicSelectionDiffs?: PublicSelectionDiff[];
-  imageSource?: string;
   tileSize?: number;
   gridOffset?: Point;
   fogOfWarDiffs?: FogOfWarDiff[];

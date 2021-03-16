@@ -1,21 +1,55 @@
 /* istanbul ignore file */
 
-import {RemoteTokenModel} from '_common/board/remote_board_model';
+import {
+  RemoteBoardDiff,
+  RemoteBoardModel,
+  RemoteTokenModel,
+} from '_common/board/remote_board_model';
 
-export const DEFAULT_ID = '12345678';
 export const DEFAULT_LOCATION = {row: 1, col: 7};
-export const DEFAULT_NAME = 'Ozymandias';
-export const DEFAULT_IMAGE_SOURCE = 'source@kingOfKings';
 export const DEFAULT_SIZE = 2;
 export const DEFAULT_SPEED = 6;
+export const TEST_TOKEN_ID = 'AndOnThePedestal';
+export const TEST_BOARD_ID = 'TheseWordsAppear';
+export const TEST_BOARD_NAME = 'MyNameIs';
+export const TEST_BOARD_SOURCE = 'server@Ozymandias';
+export const TEST_TOKEN_NAME = 'KingOfKings';
+export const TEST_TOKEN_SOURCE = 'server@LookUponMyWorks';
 
-export function defaultRemoteToken(): RemoteTokenModel {
+export function remoteTokenModel(): RemoteTokenModel {
   return {
-    id: DEFAULT_ID,
+    id: TEST_TOKEN_ID,
     location: DEFAULT_LOCATION,
-    name: DEFAULT_NAME,
-    imageSource: DEFAULT_IMAGE_SOURCE,
+    name: TEST_TOKEN_NAME,
+    imageSource: TEST_TOKEN_SOURCE,
     size: DEFAULT_SIZE,
     speed: DEFAULT_SPEED,
+  };
+}
+
+export function remoteBoardModel(): RemoteBoardModel {
+  return new RemoteBoardModel(
+    TEST_BOARD_ID,
+    TEST_BOARD_NAME,
+    TEST_BOARD_SOURCE,
+    57,
+    [remoteTokenModel()],
+    [['0']],
+    [['0']],
+    57,
+    57,
+    {x: 57, y: 57},
+    1,
+    1
+  );
+}
+
+export function remoteBoardDiff(): RemoteBoardDiff {
+  return {
+    id: TEST_TOKEN_ID,
+    newTokens: [remoteTokenModel()],
+    removedTokens: ['removedId'],
+    tokenDiffs: [{id: 'tokenDiffId', speed: 5}],
+    publicSelectionDiffs: [],
   };
 }

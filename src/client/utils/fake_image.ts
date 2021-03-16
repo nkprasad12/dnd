@@ -1,5 +1,4 @@
 const RealImage = Image;
-jest.useFakeTimers();
 
 function loadEvent(): any {
   const canvasImageSource: any = {};

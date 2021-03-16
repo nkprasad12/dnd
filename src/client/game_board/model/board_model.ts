@@ -7,7 +7,6 @@ import {
 import {
   getBackgroundData,
   LoadedImage,
-  loadImage,
   loadImages,
 } from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
@@ -84,10 +83,6 @@ export class BoardModel implements Readonly<MutableBoardModel> {
 
   async mergedWith(diff: BoardDiff): Promise<BoardModel> {
     const tokens = await this.mergeTokens(diff.inner, diff.tokenDiffs);
-    let backgroundImage: LoadedImage | undefined = undefined;
-    if (diff.inner?.imageSource) {
-      backgroundImage = await loadImage(diff.inner?.imageSource);
-    }
     let peekedTiles = this.peekedTiles;
     const dimsChanged =
       (diff.inner?.rows !== undefined &&
@@ -116,7 +111,7 @@ export class BoardModel implements Readonly<MutableBoardModel> {
         BoardDiff.extractRemoteDiff(this.inner.id, diff),
         RemoteBoardModel.mergedWith
       ),
-      prefer(backgroundImage, this.backgroundImage),
+      this.backgroundImage,
       prefer(diff.contextMenuState, this.contextMenuState),
       peekedTiles,
       tokens,
