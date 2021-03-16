@@ -1,15 +1,21 @@
-import {FakeConnection, FakeSocket} from '_client/server/fake_connection';
+import * as FakeConnection from '_client/server/__mocks__/socket_connection';
 
 const socketNamespace = 'Diocletian';
 
 describe('FakeSocket', () => {
+  const EMIT_EVENT = 'CaeserCrossedTheRubicon';
+  const EMIT_MESSAGE = 'panic';
+  const ON_EVENT = 'TheBritishAreComing';
+  const ON_CALLBACK = (message: string) =>
+    message === '1' ? 'By Land' : 'By Sea';
+
   it('has the expected namespace', () => {
-    const socket = new FakeSocket(socketNamespace);
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
     expect(socket.nsp).toBe(socketNamespace);
   });
 
   it('notifies callback on connect', () => {
-    const socket = new FakeSocket(socketNamespace);
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
     const mockCallback = jest.fn(() => {});
 
     socket.on('connect', mockCallback);
@@ -20,24 +26,27 @@ describe('FakeSocket', () => {
   });
 
   it('adds to map on other events', () => {
-    const socket = new FakeSocket(socketNamespace);
-    const event = 'TheBritishAreComing';
-    const callback = (message: string) =>
-      message === '1' ? 'By Land' : 'By Sea';
-
-    socket.on(event, callback);
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.on(ON_EVENT, ON_CALLBACK);
     expect(socket.onMap.size).toBe(1);
-    expect(socket.onMap.get(event)).toBe(callback);
+    expect(socket.onMap.get(ON_EVENT)).toBe(ON_CALLBACK);
   });
 
   it('adds to map on emitted event', () => {
-    const socket = new FakeSocket(socketNamespace);
-    const event = 'CaeserCrossedTheRubicon';
-    const message = 'panic';
-
-    socket.emit(event, message);
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.emit(EMIT_EVENT, EMIT_MESSAGE);
     expect(socket.emitMap.size).toBe(1);
-    expect(socket.emitMap.get(event)).toBe(message);
+    expect(socket.emitMap.get(EMIT_EVENT)).toBe(EMIT_MESSAGE);
+  });
+
+  it('resets maps on reset', () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.emit(EMIT_EVENT, EMIT_MESSAGE);
+    socket.on(ON_EVENT, ON_CALLBACK);
+
+    socket.reset();
+    expect(socket.emitMap.size).toBe(0);
+    expect(socket.onMap.size).toBe(0);
   });
 });
 
@@ -76,6 +85,18 @@ describe('FakeConnection', () => {
     await FakeConnection.connectTo(socketNamespace);
     FakeConnection.invokeBeforeEach();
     expect(FakeConnection.connectionsOn(socketNamespace)).toBe(0);
+    done();
+  });
+
+  it('resetAllSockets clears socket state', async (done) => {
+    FakeConnection.invokeBeforeEach();
+    const socket = await FakeConnection.connectTo(socketNamespace);
+    socket.emit('Hello', 'hi');
+    FakeConnection.resetAllSockets();
+
+    expect(FakeConnection.connectionsOn(socketNamespace)).toBe(1);
+    expect(FakeConnection.getFakeSocket(socketNamespace)).toBe(socket);
+    expect((socket as FakeConnection.FakeSocket).onMap.size).toBe(0);
     done();
   });
 });

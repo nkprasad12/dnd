@@ -41,23 +41,6 @@ export class BoardClient {
     });
   }
 
-  async joinBoard(
-    id: string,
-    listener: BoardUpateListener
-  ): Promise<RemoteBoardModel> {
-    const board = await this.requestBoard(id);
-    this.socket.on(Events.BOARD_UPDATE, (update) => {
-      if (!RemoteBoardDiff.isValid(update)) {
-        throw new Error('Received invalid board update!');
-      }
-      if (update.id != id) {
-        throw new Error('Received update for incorrect board!');
-      }
-      listener(update);
-    });
-    return board;
-  }
-
   async requestBoard(id: string): Promise<RemoteBoardModel> {
     return new Promise((resolve, reject) => {
       this.socket.emit(Events.BOARD_GET_REQUEST, id);

@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import {FakeSocket} from '_client/server/fake_connection';
+import {FakeSocket} from '_client/server/__mocks__/socket_connection';
 import {connectTo} from '_client/server/socket_connection';
 
 jest.mock('socket.io-client');
