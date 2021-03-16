@@ -2,6 +2,7 @@ import deepEqual from 'deep-equal';
 import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
 import {Point} from '_common/coordinates';
+import {createGrid} from '_common/util/grid';
 import {isGrid, prefer} from '_common/verification';
 
 /**
@@ -241,13 +242,6 @@ export class RemoteBoardModel {
       prefer(diff.rows, model.rows)
     );
   }
-}
-
-// TODO: move this somewhere common
-function createGrid<T>(rows: number, cols: number, t: T): T[][] {
-  return Array(cols)
-    .fill(0)
-    .map(() => Array(rows).fill(t));
 }
 
 export interface FogOfWarDiff {

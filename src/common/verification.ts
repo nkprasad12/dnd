@@ -54,3 +54,7 @@ export function maybeMerge<T, S>(
   }
   return merger(base, diff);
 }
+
+export function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
+}

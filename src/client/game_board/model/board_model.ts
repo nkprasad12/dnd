@@ -11,8 +11,9 @@ import {
 } from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
 import {TokenDiff, TokenModel} from './token_model';
-import {maybeMerge, prefer} from '_common/verification';
+import {maybeMerge, notUndefined, prefer} from '_common/verification';
 import {getId} from '_client/common/id_generator';
+import {createGrid} from '_common/util/grid';
 
 /** Data model representing the game board. */
 export class BoardModel implements Readonly<MutableBoardModel> {
@@ -161,18 +162,6 @@ interface MutableBoardModel {
   tokens: readonly TokenModel[];
   localSelection: readonly Location[];
   scale: number;
-}
-
-// TODO: move this into verification
-function notUndefined<T>(x: T | undefined): x is T {
-  return x !== undefined;
-}
-
-// TODO: move this somewhere common
-function createGrid<T>(rows: number, cols: number, t: T): T[][] {
-  return Array(cols)
-    .fill(0)
-    .map(() => Array(rows).fill(t));
 }
 
 function inRange(lower: number, upper: number): (value: number) => boolean {

@@ -1,4 +1,10 @@
-import {isGrid, isStringArray, maybeMerge, prefer} from '_common/verification';
+import {
+  isGrid,
+  isStringArray,
+  maybeMerge,
+  notUndefined,
+  prefer,
+} from '_common/verification';
 
 describe('isStringArray', () => {
   it('on empty array returns true', () => {
@@ -123,5 +129,15 @@ describe('maybeMerge', () => {
       num: 420,
       str: 'Blaze it',
     });
+  });
+});
+
+describe('notUndefined', () => {
+  it('returns true on defined', () => {
+    expect(notUndefined(0)).toBe(true);
+  });
+
+  it('returns false on undefined', () => {
+    expect(notUndefined(undefined)).toBe(false);
   });
 });
