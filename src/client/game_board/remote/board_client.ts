@@ -2,7 +2,8 @@ import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {connectTo, Socket} from '_client/server/socket_connection';
+import {connectTo} from '_client/server/socket_connection';
+import {Socket} from '_client/server/socket';
 import * as Events from '_common/board/board_events';
 import {TokenData} from '_common/board/token_data';
 
