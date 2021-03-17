@@ -135,6 +135,8 @@ class DefaultState extends InteractionState {
   onLeftClick(clickData: ClickData): ClickResult {
     const collisions = this.modelHandler.wouldCollide(clickData.tile, 1);
     const model = this.modelHandler.getModel();
+    /* istanbul ignore next */
+    // This shouldn't happen in practice.
     if (collisions.length > 1) {
       console.log('Unexpected multiple collisions! Taking the first one.');
     }
@@ -211,7 +213,7 @@ class PickedUpTokenState extends InteractionState {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRightClick(_clickData: ClickData): ClickResult {
     const activeTokenIndex = this.modelHandler.activeTokenIndex();
-    if (activeTokenIndex == INVALID_INDEX) {
+    if (activeTokenIndex === INVALID_INDEX) {
       throw new Error('No active token found in PickedUpTokenState');
     }
     const model = this.modelHandler.getModel();
@@ -231,14 +233,12 @@ class ContextMenuOpenState extends InteractionState {
     super(modelHandler);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onLeftDrag(fromData: ClickData, _toData: ClickData): ClickResult {
-    return this.onRightClick(fromData);
+  onLeftDrag(_fromData: ClickData, toData: ClickData): ClickResult {
+    return this.onRightClick(toData);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onRightDrag(fromData: ClickData, _toData: ClickData): ClickResult {
-    return this.onRightClick(fromData);
+  onRightDrag(_fromData: ClickData, toData: ClickData): ClickResult {
+    return this.onRightClick(toData);
   }
 
   onLeftClick(clickData: ClickData): ClickResult {
