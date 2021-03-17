@@ -16,6 +16,11 @@ interface ClickResult {
   newState: InteractionState;
 }
 
+interface InteractionResult {
+  updatePromise: Promise<any>;
+  newState: InteractionState;
+}
+
 function tilesInDrag(fromData: ClickData, toData: ClickData) {
   const from = fromData.tile;
   const to = toData.tile;
@@ -56,9 +61,9 @@ abstract class InteractionState {
     fromPoint: BaseClickData,
     toPoint: BaseClickData,
     mouseButton: number
-  ): InteractionState {
+  ): InteractionResult {
     if (mouseButton != 0 && mouseButton != 2) {
-      return this;
+      return {newState: this, updatePromise: Promise.resolve()};
     }
 
     const isLeftClick = mouseButton == 0;
@@ -80,8 +85,10 @@ abstract class InteractionState {
         result = this.onRightDrag(from, to);
       }
     }
-    this.modelHandler.applyLocalDiff(result.diff);
-    return result.newState;
+    return {
+      newState: result.newState,
+      updatePromise: this.modelHandler.applyLocalDiff(result.diff),
+    };
   }
 
   protected onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
@@ -89,11 +96,13 @@ abstract class InteractionState {
     throw new Error('Invalid state for onContextMenuClickInternal');
   }
 
-  onContextMenuClick(action: ContextMenuItem): InteractionState {
+  onContextMenuClick(action: ContextMenuItem): InteractionResult {
     console.log('Handling context menu click');
     const result = this.onContextMenuClickInternal(action);
-    this.modelHandler.applyLocalDiff(result.diff);
-    return result.newState;
+    return {
+      newState: result.newState,
+      updatePromise: this.modelHandler.applyLocalDiff(result.diff),
+    };
   }
 
   private clickDataForPoint(point: BaseClickData): ClickData {
@@ -301,6 +310,7 @@ class ContextMenuOpenState extends InteractionState {
     };
   }
 
+  // TODO: Move this into a separate class.
   private handleContextMenuAction(action: ContextMenuItem): BoardDiff {
     const model = this.modelHandler.getModel();
     switch (action) {
@@ -435,17 +445,19 @@ export class InteractionStateMachine {
     fromPoint: BaseClickData,
     toPoint: BaseClickData,
     mouseButton: number
-  ): void {
-    const newState = this.currentState.onDragEvent(
+  ): Promise<void> {
+    const result = this.currentState.onDragEvent(
       fromPoint,
       toPoint,
       mouseButton
     );
-    this.currentState = newState;
+    this.currentState = result.newState;
+    return result.updatePromise;
   }
 
-  onContextMenuClick(action: ContextMenuItem): void {
-    const newState = this.currentState.onContextMenuClick(action);
-    this.currentState = newState;
+  onContextMenuClick(action: ContextMenuItem): Promise<void> {
+    const result = this.currentState.onContextMenuClick(action);
+    this.currentState = result.newState;
+    return result.updatePromise;
   }
 }

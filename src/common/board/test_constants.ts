@@ -5,6 +5,9 @@ import {
   RemoteBoardModel,
   RemoteTokenModel,
 } from '_common/board/remote_board_model';
+import {Point} from '_common/coordinates';
+import {createGrid, gridDimensions} from '_common/util/grid';
+import {prefer} from '_common/verification';
 
 export const DEFAULT_LOCATION = {row: 1, col: 7};
 export const DEFAULT_SIZE = 2;
@@ -27,26 +30,33 @@ export function remoteTokenModel(): RemoteTokenModel {
   };
 }
 
-export function remoteBoardModel(): RemoteBoardModel {
+export interface RemoteModelParameters {
+  tileSizeOverride?: number;
+  widthOverride?: number;
+  heightOverride?: number;
+  gridOffsetOverride?: Point;
+}
+
+export function remoteBoardModel(
+  params?: RemoteModelParameters
+): RemoteBoardModel {
+  const tileSize = prefer(params?.tileSizeOverride, 57);
+  const width = prefer(params?.widthOverride, 60);
+  const height = prefer(params?.heightOverride, 150);
+  const dimensions = gridDimensions(width, height, tileSize);
   return new RemoteBoardModel(
     TEST_BOARD_ID,
     TEST_BOARD_NAME,
     TEST_BOARD_SOURCE,
-    57,
+    tileSize,
     [remoteTokenModel()],
-    [
-      ['0', '0', '0'],
-      ['0', '0', '0'],
-    ],
-    [
-      ['0', '0', '0'],
-      ['0', '0', '0'],
-    ],
-    60,
-    150,
-    {x: 57, y: 57},
-    2,
-    3
+    createGrid(dimensions.rows, dimensions.cols, '0'),
+    createGrid(dimensions.rows, dimensions.cols, '0'),
+    width,
+    height,
+    prefer(params?.gridOffsetOverride, {x: 57, y: 57}),
+    dimensions.cols,
+    dimensions.rows
   );
 }
 
