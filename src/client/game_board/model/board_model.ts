@@ -1,5 +1,4 @@
 import {ContextMenuModel} from '_client/game_board/context_menu/context_menu_model';
-import {Location} from '_common/coordinates';
 import {
   RemoteBoardDiff,
   RemoteBoardModel,
@@ -13,7 +12,7 @@ import {checkDefined} from '_common/preconditions';
 import {TokenDiff, TokenModel} from './token_model';
 import {maybeMerge, notUndefined, prefer} from '_common/verification';
 import {getId} from '_client/common/id_generator';
-import {createGrid} from '_common/util/grid';
+import {Grid, createGrid} from '_common/util/grid';
 
 /** Data model representing the game board. */
 export class BoardModel implements Readonly<MutableBoardModel> {
@@ -81,7 +80,7 @@ export class BoardModel implements Readonly<MutableBoardModel> {
     readonly contextMenuState: ContextMenuModel,
     readonly peekedTiles: ReadonlyArray<ReadonlyArray<boolean>>,
     readonly tokens: readonly TokenModel[] = [],
-    readonly localSelection: readonly Location[] = [],
+    readonly localSelection: {readonly area?: Grid.SimpleArea} = {},
     readonly scale: number = 1
   ) {}
 
@@ -101,14 +100,7 @@ export class BoardModel implements Readonly<MutableBoardModel> {
 
     let peekedTiles = this.peekedTiles;
     if (diff.peekDiff !== undefined && !dimsChanged) {
-      const newValue = diff.peekDiff.isPeeked;
-      const colTest = inRange(diff.peekDiff.start.col, diff.peekDiff.end.col);
-      const rowTest = inRange(diff.peekDiff.start.row, diff.peekDiff.end.row);
-      peekedTiles = peekedTiles.map((col, i) =>
-        colTest(i)
-          ? col.map((oldValue, j) => (rowTest(j) ? newValue : oldValue))
-          : col
-      );
+      peekedTiles = Grid.applySimpleDiff(peekedTiles, diff.peekDiff);
     }
     peekedTiles = dimsChanged
       ? createGrid(
@@ -171,21 +163,8 @@ interface MutableBoardModel {
   contextMenuState: ContextMenuModel;
   peekedTiles: ReadonlyArray<ReadonlyArray<boolean>>;
   tokens: readonly TokenModel[];
-  localSelection: readonly Location[];
+  localSelection: {area?: Grid.SimpleArea};
   scale: number;
-}
-
-function inRange(lower: number, upper: number): (value: number) => boolean {
-  return (value) => lower <= value && value <= upper;
-}
-
-export interface PeekDiff {
-  /** The top left corner of the changed area. */
-  start: Location;
-  /** The bottom right corner of the changed area. */
-  end: Location;
-  /** Whether the area was peeked or unpeeked. */
-  isPeeked: boolean;
 }
 
 type PrunedRemoteBoardDiff = Omit<RemoteBoardDiff, 'tokenDiffs'>;
@@ -193,7 +172,7 @@ type PrunedRemoteBoardDiff = Omit<RemoteBoardDiff, 'tokenDiffs'>;
 interface AdditionalFields {
   inner?: PrunedRemoteBoardDiff;
   tokenDiffs?: TokenDiff[];
-  peekDiff?: PeekDiff;
+  peekDiff?: Grid.SimpleDiff<boolean>;
 }
 
 export type BoardDiff = Partial<

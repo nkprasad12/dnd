@@ -68,6 +68,5 @@ export function remoteBoardDiff(): RemoteBoardDiff {
     newTokens: [remoteTokenModel()],
     removedTokens: ['removedId'],
     tokenDiffs: [{id: 'tokenDiffId', speed: 5}],
-    publicSelectionDiffs: [],
   };
 }

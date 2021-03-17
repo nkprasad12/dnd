@@ -1,8 +1,4 @@
-import {
-  BoardDiff,
-  BoardModel,
-  PeekDiff,
-} from '_client/game_board/model/board_model';
+import {BoardDiff, BoardModel} from '_client/game_board/model/board_model';
 import {TokenDiff} from '_client/game_board/model/token_model';
 import {FakeImage} from '_client/utils/fake_image';
 import {getBackgroundData, LoadedImage} from '_client/utils/image_utils';
@@ -19,7 +15,7 @@ import {
   TEST_TOKEN_NAME,
 } from '_common/board/test_constants';
 import {checkDefined} from '_common/preconditions';
-import {copyGrid, createGrid} from '_common/util/grid';
+import {copyGrid, createGrid, Grid} from '_common/util/grid';
 import {isGrid} from '_common/verification';
 
 beforeAll(() => {
@@ -193,10 +189,12 @@ describe('boardModel.mergedWith', () => {
   });
 
   it('has same inner model if no inner or token diff', async (done) => {
-    const peekDiff: PeekDiff = {
-      start: {col: 1, row: 1},
-      end: {col: 2, row: 2},
-      isPeeked: true,
+    const peekDiff: Grid.SimpleDiff<boolean> = {
+      area: {
+        start: {col: 1, row: 0},
+        end: {col: 2, row: 3},
+      },
+      value: true,
     };
 
     const merged = await model.mergedWith({peekDiff: peekDiff});
@@ -205,10 +203,12 @@ describe('boardModel.mergedWith', () => {
   });
 
   it('does not mutate original if diff has peekDiff', async (done) => {
-    const peekDiff: PeekDiff = {
-      start: {col: 1, row: 0},
-      end: {col: 2, row: 3},
-      isPeeked: true,
+    const peekDiff: Grid.SimpleDiff<boolean> = {
+      area: {
+        start: {col: 1, row: 0},
+        end: {col: 2, row: 3},
+      },
+      value: true,
     };
 
     const originalPeek = copyGrid(model.peekedTiles);
@@ -218,10 +218,12 @@ describe('boardModel.mergedWith', () => {
   });
 
   it('updates peekTiles if diff has peekDiff', async (done) => {
-    const peekDiff: PeekDiff = {
-      start: {col: 1, row: 0},
-      end: {col: 2, row: 3},
-      isPeeked: true,
+    const peekDiff: Grid.SimpleDiff<boolean> = {
+      area: {
+        start: {col: 1, row: 0},
+        end: {col: 2, row: 3},
+      },
+      value: true,
     };
 
     const merged = await model.mergedWith({peekDiff: peekDiff});
@@ -243,10 +245,14 @@ describe('boardModel.mergedWith', () => {
   });
 
   it('updates localSelection if diff has localSelection', async (done) => {
-    const localSelection = [{row: 1, col: 1}];
-    const merged = await model.mergedWith({localSelection: localSelection});
-    expect(merged.localSelection).toBe(localSelection);
-    expect(model.localSelection).toEqual([]);
+    const localSelection = {
+      area: {start: {col: 1, row: 1}, end: {col: 1, row: 1}},
+    };
+    const merged = await model.mergedWith({
+      localSelection: localSelection,
+    });
+    expect(merged.localSelection).toStrictEqual(localSelection);
+    expect(model.localSelection).toEqual({});
     done();
   });
 

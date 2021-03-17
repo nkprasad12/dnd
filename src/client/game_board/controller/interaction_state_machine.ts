@@ -6,6 +6,7 @@ import {BaseClickData} from '_client/game_board/controller/input_listener';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {checkDefined} from '_common/preconditions';
+import {Grid} from '_common/util/grid';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -21,23 +22,16 @@ interface InteractionResult {
   newState: InteractionState;
 }
 
-function tilesInDrag(fromData: ClickData, toData: ClickData) {
+function tilesInDrag(fromData: ClickData, toData: ClickData): Grid.SimpleArea {
   const from = fromData.tile;
   const to = toData.tile;
-  const selectedTiles: Array<Location> = [];
 
   const colFrom = Math.min(from.col, to.col);
   const colTo = Math.max(from.col, to.col);
   const rowFrom = Math.min(from.row, to.row);
   const rowTo = Math.max(from.row, to.row);
 
-  for (let i = colFrom; i <= colTo; i++) {
-    for (let j = rowFrom; j <= rowTo; j++) {
-      selectedTiles.push({col: i, row: j});
-    }
-  }
-
-  return selectedTiles;
+  return {start: {col: colFrom, row: rowFrom}, end: {col: colTo, row: rowTo}};
 }
 
 abstract class InteractionState {
@@ -127,7 +121,7 @@ class DefaultState extends InteractionState {
     return {
       diff: {
         contextMenuState: {clickPoint: toData.pagePoint, isVisible: true},
-        localSelection: tilesInDrag(fromData, toData),
+        localSelection: {area: tilesInDrag(fromData, toData)},
       },
       newState: new ContextMenuOpenState(this.modelHandler),
     };
@@ -159,7 +153,7 @@ class DefaultState extends InteractionState {
     return {
       diff: {
         contextMenuState: {clickPoint: clickData.pagePoint, isVisible: true},
-        localSelection: [clickData.tile],
+        localSelection: {area: {start: clickData.tile, end: clickData.tile}},
       },
       newState: new ContextMenuOpenState(this.modelHandler),
     };
@@ -244,7 +238,7 @@ class ContextMenuOpenState extends InteractionState {
     return {
       diff: {
         contextMenuState: {isVisible: false, clickPoint: clickData.pagePoint},
-        localSelection: [],
+        localSelection: {},
       },
       newState: new DefaultState(this.modelHandler),
     };
@@ -255,7 +249,7 @@ class ContextMenuOpenState extends InteractionState {
       this.modelHandler
     ).handleContextMenuAction(action);
     actionDiff.contextMenuState = {isVisible: false, clickPoint: {x: 0, y: 0}};
-    actionDiff.localSelection = [];
+    actionDiff.localSelection = {};
     return {
       diff: actionDiff,
       newState: new DefaultState(this.modelHandler),

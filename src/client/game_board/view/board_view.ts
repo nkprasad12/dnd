@@ -8,6 +8,7 @@ import {
 import {BoardModel} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
+import {Grid} from '_common/util/grid';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
@@ -219,11 +220,14 @@ export class BoardView {
     newModel: BoardModel,
     backgroundChange: boolean
   ): void {
-    let oldSelection: readonly Location[] = [];
-    if (this.model != undefined) {
-      oldSelection = this.model.localSelection;
-    }
-    const newSelection = newModel.localSelection;
+    const oldSelection: readonly Location[] =
+      this.model?.localSelection.area !== undefined
+        ? Grid.SimpleArea.toTiles(this.model.localSelection.area)
+        : [];
+    const newSelection: readonly Location[] =
+      newModel.localSelection.area !== undefined
+        ? Grid.SimpleArea.toTiles(newModel.localSelection.area)
+        : [];
 
     for (const oldTile of oldSelection) {
       let hasMatch = false;

@@ -20,9 +20,11 @@ import {prefer} from '_common/verification';
 const handleContextAction = jest.fn(() => {
   return {
     peekDiff: {
-      start: {col: 0, row: 0},
-      end: {col: 0, row: 0},
-      isPeeked: true,
+      area: {
+        start: {col: 0, row: 0},
+        end: {col: 0, row: 0},
+      },
+      value: true,
     },
   };
 });
@@ -156,13 +158,15 @@ async function click(
 }
 
 describe('InteractionStateMachine from default state', () => {
+  const FIRST_TILE = {col: 0, row: 0};
+
   it('opens context menu on left click not on token', async (done) => {
     const clickPoint = {x: 5, y: 5};
     const objects = await click(clickPoint, 0);
 
     const expectedDiff: BoardDiff = {
       contextMenuState: {isVisible: true, clickPoint: clickPoint},
-      localSelection: [{col: 0, row: 0}],
+      localSelection: {area: {start: FIRST_TILE, end: FIRST_TILE}},
     };
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
     done();
@@ -184,7 +188,7 @@ describe('InteractionStateMachine from default state', () => {
 
     const expectedDiff: BoardDiff = {
       contextMenuState: {isVisible: true, clickPoint: clickPoint},
-      localSelection: [{col: 0, row: 0}],
+      localSelection: {area: {start: FIRST_TILE, end: FIRST_TILE}},
     };
     expect(objects.diffListener).toHaveBeenCalledTimes(1);
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
@@ -198,10 +202,7 @@ describe('InteractionStateMachine from default state', () => {
 
     const expectedDiff: BoardDiff = {
       contextMenuState: {isVisible: true, clickPoint: to},
-      localSelection: [
-        {col: 0, row: 0},
-        {col: 0, row: 1},
-      ],
+      localSelection: {area: {start: FIRST_TILE, end: {col: 0, row: 1}}},
     };
     expect(objects.diffListener).toHaveBeenCalledTimes(1);
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
@@ -215,10 +216,7 @@ describe('InteractionStateMachine from default state', () => {
 
     const expectedDiff: BoardDiff = {
       contextMenuState: {isVisible: true, clickPoint: to},
-      localSelection: [
-        {col: 0, row: 0},
-        {col: 0, row: 1},
-      ],
+      localSelection: {area: {start: FIRST_TILE, end: {col: 0, row: 1}}},
     };
     expect(objects.diffListener).toHaveBeenCalledTimes(1);
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
@@ -333,7 +331,7 @@ describe('InteractionStateMachine from context menu state', () => {
   function expectContextMenuDismissed(objects: TestObjects): void {
     const expectedDiff: BoardDiff = {
       contextMenuState: {isVisible: false, clickPoint: DRAG_END},
-      localSelection: [],
+      localSelection: {},
     };
     expect(objects.diffListener).toHaveBeenCalledTimes(1);
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
@@ -389,12 +387,14 @@ describe('InteractionStateMachine from context menu state', () => {
     const expectedDiff: BoardDiff = {
       // These are expected from closing the menu
       contextMenuState: {isVisible: false, clickPoint: {x: 0, y: 0}},
-      localSelection: [],
+      localSelection: {},
       // This is what the mock returns
       peekDiff: {
-        start: {col: 0, row: 0},
-        end: {col: 0, row: 0},
-        isPeeked: true,
+        area: {
+          start: {col: 0, row: 0},
+          end: {col: 0, row: 0},
+        },
+        value: true,
       },
     };
     expect(objects.diffListener).toHaveBeenCalledTimes(1);

@@ -145,22 +145,22 @@ describe('notUndefined', () => {
 
 describe('inRange', () => {
   it('Returns true for number in inclusive range', () => {
-    expect(inRange(7, 1, 10)).toBe(true);
+    expect(inRange(1, 10)(7)).toBe(true);
   });
 
   it('Returns true for number on lower boundary', () => {
-    expect(inRange(1, 1, 10)).toBe(true);
+    expect(inRange(1, 10)(1)).toBe(true);
   });
 
   it('Returns true for number on upper boundary', () => {
-    expect(inRange(10, 1, 10)).toBe(true);
+    expect(inRange(1, 10)(10)).toBe(true);
   });
 
   it('Returns false for number below range', () => {
-    expect(inRange(0, 1, 10)).toBe(false);
+    expect(inRange(1, 10)(0)).toBe(false);
   });
 
   it('Returns false for number above range', () => {
-    expect(inRange(11, 1, 10)).toBe(false);
+    expect(inRange(1, 10)(11)).toBe(false);
   });
 });

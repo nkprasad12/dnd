@@ -1,9 +1,11 @@
-import {Location} from '_common/coordinates';
+import {areLocationsEqual, Location} from '_common/coordinates';
 import {NewTokenForm, EditTokenForm} from '_client/board_tools/board_form';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, BoardDiff} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
+import {checkDefined} from '_common/preconditions';
+import {FOG_OFF, FOG_ON} from '_common/board/remote_board_model';
 
 export class ContextActionHandler {
   constructor(private modelHandler: ModelHandler) {}
@@ -28,7 +30,10 @@ export class ContextActionHandler {
       case ContextMenuItem.GreenHighlight:
         return this.highlightDiff(model, '3');
       case ContextMenuItem.AddToken:
-        NewTokenForm.create(model.localSelection[0], this.modelHandler);
+        NewTokenForm.create(
+          checkDefined(model.localSelection.area).start,
+          this.modelHandler
+        );
         return {};
       case ContextMenuItem.EditToken:
         return this.handleEditToken(model);
@@ -44,44 +49,35 @@ export class ContextActionHandler {
   }
 
   private fogDiff(model: BoardModel, fogOn: boolean): BoardDiff {
-    const fogOfWarDiffs = model.localSelection.map((tile) => {
-      return {col: tile.col, row: tile.row, isFogOn: fogOn};
-    });
+    const fogOfWarDiffs = {
+      area: checkDefined(model.localSelection.area),
+      value: fogOn ? FOG_ON : FOG_OFF,
+    };
     return {
       inner: {
         fogOfWarDiffs: fogOfWarDiffs,
-        removedTokens: [],
-        publicSelectionDiffs: [],
-        newTokens: [],
         id: model.inner.id,
       },
     };
   }
 
   private peekDiff(model: BoardModel, isPeeked = true): BoardDiff {
-    const startCol = Math.min(...model.localSelection.map((tile) => tile.col));
-    const startRow = Math.min(...model.localSelection.map((tile) => tile.row));
-    const endCol = Math.max(...model.localSelection.map((tile) => tile.col));
-    const endRow = Math.max(...model.localSelection.map((tile) => tile.row));
     return {
       peekDiff: {
-        start: {col: startCol, row: startRow},
-        end: {col: endCol, row: endRow},
-        isPeeked: isPeeked,
+        area: checkDefined(model.localSelection.area),
+        value: isPeeked,
       },
     };
   }
 
   private highlightDiff(model: BoardModel, color: string): BoardDiff {
-    const publicSelectionDiffs = model.localSelection.map((tile) => {
-      return {col: tile.col, row: tile.row, value: color};
-    });
+    const publicSelectionDiffs = {
+      area: checkDefined(model.localSelection.area),
+      value: color,
+    };
     return {
       inner: {
-        fogOfWarDiffs: [],
-        removedTokens: [],
         publicSelectionDiffs: publicSelectionDiffs,
-        newTokens: [],
         id: model.inner.id,
       },
     };
@@ -99,11 +95,12 @@ export class ContextActionHandler {
   }
 
   private handleEditToken(model: BoardModel): BoardDiff {
-    if (model.localSelection.length !== 1) {
+    const localSelection = checkDefined(model.localSelection.area);
+    if (!areLocationsEqual(localSelection.start, localSelection.end)) {
       console.log('Requires exactly one tile selected, ignoring');
       return {};
     }
-    const tile = model.localSelection[0];
+    const tile = localSelection.start;
     const tokenIndex = this.findTokenOnTile(tile);
     if (tokenIndex === undefined) {
       console.log('No token in selection, ignoring');
@@ -115,12 +112,13 @@ export class ContextActionHandler {
   }
 
   private handleCopyToken(model: BoardModel): BoardDiff {
-    if (model.localSelection.length !== 1) {
+    const localSelection = checkDefined(model.localSelection.area);
+    if (!areLocationsEqual(localSelection.start, localSelection.end)) {
       console.log('Requires exactly one tile selected, ignoring');
       return {};
     }
 
-    const tile = model.localSelection[0];
+    const tile = localSelection.start;
     const tokenIndex = this.findTokenOnTile(tile);
     if (tokenIndex === undefined) {
       console.log('No token in selection, ignoring');

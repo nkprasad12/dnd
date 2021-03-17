@@ -12,6 +12,8 @@ import {
 import {areLocationsEqual} from '_common/coordinates';
 import {copyGrid, createGrid} from '_common/util/grid';
 import {
+  FOG_OFF,
+  FOG_ON,
   RemoteBoardDiff,
   RemoteBoardModel,
   RemoteTokenModel,
@@ -521,7 +523,13 @@ describe('RemoteBoardModel.mergedWith', () => {
   it('produces expected publicSelection', () => {
     const diff: RemoteBoardDiff = {
       id: board.id,
-      publicSelectionDiffs: [{col: 1, row: 2, value: '57'}],
+      publicSelectionDiffs: {
+        area: {
+          start: {col: 1, row: 2},
+          end: {col: 1, row: 2},
+        },
+        value: '57',
+      },
     };
     const merged = RemoteBoardModel.mergedWith(board, diff);
 
@@ -536,7 +544,13 @@ describe('RemoteBoardModel.mergedWith', () => {
   it('does not mutate original public selection', () => {
     const diff: RemoteBoardDiff = {
       id: board.id,
-      publicSelectionDiffs: [{col: 1, row: 2, value: '57'}],
+      publicSelectionDiffs: {
+        area: {
+          start: {col: 1, row: 2},
+          end: {col: 1, row: 2},
+        },
+        value: '57',
+      },
     };
     const selectionCopy = copyGrid(board.publicSelection);
     RemoteBoardModel.mergedWith(board, diff);
@@ -547,7 +561,13 @@ describe('RemoteBoardModel.mergedWith', () => {
   it('produces expected fogOfWar', () => {
     const diff: RemoteBoardDiff = {
       id: board.id,
-      fogOfWarDiffs: [{col: 1, row: 2, isFogOn: true}],
+      fogOfWarDiffs: {
+        area: {
+          start: {col: 1, row: 2},
+          end: {col: 1, row: 2},
+        },
+        value: FOG_ON,
+      },
     };
     const merged = RemoteBoardModel.mergedWith(board, diff);
 
@@ -564,7 +584,13 @@ describe('RemoteBoardModel.mergedWith', () => {
     fogOnBoard.fogOfWar = createGrid(3, 2, '1');
     const diff: RemoteBoardDiff = {
       id: board.id,
-      fogOfWarDiffs: [{col: 1, row: 2, isFogOn: false}],
+      fogOfWarDiffs: {
+        area: {
+          start: {col: 1, row: 2},
+          end: {col: 1, row: 2},
+        },
+        value: FOG_OFF,
+      },
     };
     const merged = RemoteBoardModel.mergedWith(fogOnBoard, diff);
 
@@ -579,7 +605,13 @@ describe('RemoteBoardModel.mergedWith', () => {
   it('does not mutate original fogOfWar', () => {
     const diff: RemoteBoardDiff = {
       id: board.id,
-      fogOfWarDiffs: [{col: 1, row: 2, isFogOn: true}],
+      fogOfWarDiffs: {
+        area: {
+          start: {col: 1, row: 2},
+          end: {col: 1, row: 2},
+        },
+        value: FOG_OFF,
+      },
     };
     const copy = copyGrid(board.fogOfWar);
     RemoteBoardModel.mergedWith(board, diff);

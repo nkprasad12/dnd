@@ -1,4 +1,4 @@
-import {copyGrid, createGrid, gridDimensions} from '_common/util/grid';
+import {copyGrid, createGrid, Grid, gridDimensions} from '_common/util/grid';
 import {isGrid} from '_common/verification';
 
 test('createGrid makes expected grid', () => {
@@ -74,5 +74,53 @@ describe('gridDimensions', () => {
     const dimensions = gridDimensions(50, 41, 8, {x: 2, y: 2});
     expect(dimensions.cols).toBe(7);
     expect(dimensions.rows).toBe(6);
+  });
+});
+
+describe('applySimpleDiff', () => {
+  const diff: Grid.SimpleDiff<boolean> = {
+    area: {
+      start: {col: 1, row: 0},
+      end: {col: 2, row: 1},
+    },
+    value: true,
+  };
+
+  it('produces the expected new grid', () => {
+    const grid = createGrid(3, 3, false);
+    const result = Grid.applySimpleDiff(grid, diff);
+
+    const expected = [
+      [false, false, false],
+      [true, true, false],
+      [true, true, false],
+    ];
+    expect(result).toStrictEqual(expected);
+  });
+
+  it('does not mutate the original', () => {
+    const grid = createGrid(3, 3, false);
+    const copy = copyGrid(grid);
+    Grid.applySimpleDiff(grid, diff);
+    expect(grid).toStrictEqual(copy);
+  });
+});
+
+describe('SimpleArea.toTiles', () => {
+  const AREA: Grid.SimpleArea = {
+    start: {col: 1, row: 0},
+    end: {col: 3, row: 1},
+  };
+
+  it('returns all expected tiles', () => {
+    const tiles = Grid.SimpleArea.toTiles(AREA);
+
+    expect(tiles.length).toBe(6);
+    expect(tiles).toContainEqual({col: 1, row: 0});
+    expect(tiles).toContainEqual({col: 2, row: 1});
+    expect(tiles).toContainEqual({col: 3, row: 0});
+    expect(tiles).toContainEqual({col: 1, row: 1});
+    expect(tiles).toContainEqual({col: 2, row: 0});
+    expect(tiles).toContainEqual({col: 3, row: 1});
   });
 });

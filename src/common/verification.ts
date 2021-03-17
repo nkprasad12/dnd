@@ -60,6 +60,9 @@ export function notUndefined<T>(x: T | undefined): x is T {
 }
 
 /** Returns whether the value is in the specified inclusive range. */
-export function inRange(value: number, lower: number, higher: number) {
-  return lower <= value && value <= higher;
+export function inRange(
+  lower: number,
+  upper: number
+): (value: number) => boolean {
+  return (value) => lower <= value && value <= upper;
 }

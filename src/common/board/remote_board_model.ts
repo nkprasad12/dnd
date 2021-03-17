@@ -2,7 +2,7 @@ import deepEqual from 'deep-equal';
 import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
 import {Point} from '_common/coordinates';
-import {createGrid, gridDimensions} from '_common/util/grid';
+import {createGrid, Grid, gridDimensions} from '_common/util/grid';
 import {isGrid, prefer} from '_common/verification';
 
 /**
@@ -163,8 +163,8 @@ export class RemoteBoardModel {
     readonly imageSource: string,
     readonly tileSize: number,
     readonly tokens: readonly RemoteTokenModel[],
-    readonly fogOfWar: readonly string[][],
-    readonly publicSelection: readonly string[][],
+    readonly fogOfWar: Grid<string>,
+    readonly publicSelection: Grid<string>,
     readonly width: number,
     readonly height: number,
     readonly gridOffset: Point,
@@ -217,28 +217,18 @@ export class RemoteBoardModel {
           prefer(diff.cols, model.cols),
           '0'
         )
-      : // TODO: Re-use arrays here that are unchanged.
-        // https://github.com/nkprasad12/dnd/issues/124
-        model.fogOfWar.map((row) => row.slice());
+      : diff.fogOfWarDiffs !== undefined
+      ? Grid.applySimpleDiff(model.fogOfWar, diff.fogOfWarDiffs)
+      : model.fogOfWar;
     const publicSelection = dimsChanged
       ? createGrid(
           prefer(diff.rows, model.rows),
           prefer(diff.cols, model.cols),
           '0'
         )
-      : // TODO: Re-use arrays here that are unchanged.
-        // https://github.com/nkprasad12/dnd/issues/124
-        model.publicSelection.map((row) => row.slice());
-    if (diff.fogOfWarDiffs !== undefined) {
-      for (const d of diff.fogOfWarDiffs) {
-        fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
-      }
-    }
-    if (diff.publicSelectionDiffs !== undefined) {
-      for (const d of diff.publicSelectionDiffs) {
-        publicSelection[d.col][d.row] = d.value;
-      }
-    }
+      : diff.publicSelectionDiffs !== undefined
+      ? Grid.applySimpleDiff(model.publicSelection, diff.publicSelectionDiffs)
+      : model.publicSelection;
     return new RemoteBoardModel(
       model.id,
       prefer(diff.name, model.name),
@@ -256,17 +246,8 @@ export class RemoteBoardModel {
   }
 }
 
-export interface FogOfWarDiff {
-  readonly row: number;
-  readonly col: number;
-  readonly isFogOn: boolean;
-}
-
-export interface PublicSelectionDiff {
-  readonly row: number;
-  readonly col: number;
-  readonly value: string;
-}
+export const FOG_ON = '1';
+export const FOG_OFF = '0';
 
 /** Represents a mutation of RemoteBoardModel. */
 export interface RemoteBoardDiff {
@@ -275,10 +256,10 @@ export interface RemoteBoardDiff {
   tokenDiffs?: RemoteTokenDiff[];
   removedTokens?: string[];
   newTokens?: RemoteTokenModel[];
-  publicSelectionDiffs?: PublicSelectionDiff[];
+  publicSelectionDiffs?: Grid.SimpleDiff<string>;
   tileSize?: number;
   gridOffset?: Point;
-  fogOfWarDiffs?: FogOfWarDiff[];
+  fogOfWarDiffs?: Grid.SimpleDiff<string>;
   rows?: number;
   cols?: number;
 }
