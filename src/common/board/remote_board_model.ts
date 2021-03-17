@@ -1,8 +1,9 @@
 import deepEqual from 'deep-equal';
 import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
-import {areLocationsEqual, arePointsEqual, Point} from '_common/coordinates';
-import {isGrid} from '_common/verification';
+import {Point} from '_common/coordinates';
+import {createGrid, Grid, gridDimensions} from '_common/util/grid';
+import {isGrid, prefer} from '_common/verification';
 
 /**
  * Represents the data model for a remote token.
@@ -52,36 +53,11 @@ export namespace RemoteTokenModel {
     }
     return {
       id: model.id,
-      location: diff.location === undefined ? model.location : diff.location,
-      name: diff.name === undefined ? model.name : diff.name,
-      imageSource:
-        diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-      size: diff.size === undefined ? model.size : diff.size,
-      speed: diff.speed === undefined ? model.speed : diff.speed,
-    };
-  }
-
-  export function computeDiff(
-    newModel: RemoteTokenModel,
-    oldModel: RemoteTokenModel
-  ): RemoteTokenDiff {
-    if (newModel.id != oldModel.id) {
-      throw new Error(
-        '[RemoteTokenModel computeDiff] Models have different IDs!'
-      );
-    }
-    return {
-      id: newModel.id,
-      location: areLocationsEqual(newModel.location, oldModel.location)
-        ? undefined
-        : newModel.location,
-      name: newModel.name === oldModel.name ? undefined : newModel.name,
-      imageSource:
-        newModel.imageSource === oldModel.imageSource
-          ? undefined
-          : newModel.imageSource,
-      size: newModel.size === oldModel.size ? undefined : newModel.size,
-      speed: newModel.speed === oldModel.speed ? undefined : newModel.speed,
+      location: prefer(diff.location, model.location),
+      name: prefer(diff.name, model.name),
+      imageSource: prefer(diff.imageSource, model.imageSource),
+      size: prefer(diff.size, model.size),
+      speed: prefer(diff.speed, model.speed),
     };
   }
 }
@@ -112,7 +88,7 @@ export class RemoteBoardModel {
     if (!isGrid(maybeModel.fogOfWar, maybeModel.cols, maybeModel.rows)) {
       return false;
     }
-    if (!['0', '1', '2'].includes(maybeModel.fogOfWar[0][0])) {
+    if (!['0', '1'].includes(maybeModel.fogOfWar[0][0])) {
       return false;
     }
     if (!isGrid(maybeModel.publicSelection, maybeModel.cols, maybeModel.rows)) {
@@ -155,7 +131,7 @@ export class RemoteBoardModel {
       for (let i = 0; i < input.fogOfWar.length; i++) {
         for (let j = 0; j < input.fogOfWar[0].length; j++) {
           const current = input.fogOfWar[i][j];
-          if (['0', '1', '2'].includes(current)) {
+          if (['0', '1'].includes(current)) {
             continue;
           }
           if (current === 'True') {
@@ -186,9 +162,11 @@ export class RemoteBoardModel {
     readonly name: string,
     readonly imageSource: string,
     readonly tileSize: number,
-    readonly tokens: RemoteTokenModel[],
-    readonly fogOfWar: string[][],
-    readonly publicSelection: string[][],
+    readonly tokens: readonly RemoteTokenModel[],
+    readonly fogOfWar: Grid<string>,
+    readonly publicSelection: Grid<string>,
+    readonly width: number,
+    readonly height: number,
     readonly gridOffset: Point,
     readonly cols: number,
     readonly rows: number
@@ -203,14 +181,26 @@ export class RemoteBoardModel {
         '[RemoteBoardModel] mergedWith called with different ids'
       );
     }
+    const expectedDimensions = gridDimensions(
+      model.width,
+      model.height,
+      prefer(diff.tileSize, model.tileSize),
+      prefer(diff.gridOffset, model.gridOffset)
+    );
+    if (
+      expectedDimensions.cols !== prefer(diff.cols, model.cols) ||
+      expectedDimensions.rows !== prefer(diff.rows, model.rows)
+    ) {
+      throw new Error('Invalid board dimensions');
+    }
     let mergedTokens: RemoteTokenModel[] = [];
-    mergedTokens = mergedTokens.concat(diff.newTokens);
+    mergedTokens = mergedTokens.concat(prefer(diff.newTokens, []));
     for (const token of model.tokens) {
-      if (diff.removedTokens.includes(token.id)) {
+      if (prefer(diff.removedTokens, []).includes(token.id)) {
         continue;
       }
       let finalToken = token;
-      for (const tokenDiff of diff.tokenDiffs) {
+      for (const tokenDiff of prefer(diff.tokenDiffs, [])) {
         if (tokenDiff.id === token.id) {
           finalToken = RemoteTokenModel.mergedWith(finalToken, tokenDiff);
           break;
@@ -218,188 +208,80 @@ export class RemoteBoardModel {
       }
       mergedTokens.push(finalToken);
     }
-    const fogOfWarState = model.fogOfWar.map((row) => row.slice());
-    if (diff.fogOfWarDiffs !== undefined) {
-      for (const d of diff.fogOfWarDiffs) {
-        fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
-      }
-    }
-    const publicSelection = model.publicSelection.map((row) => row.slice());
-    if (diff.publicSelectionDiffs !== undefined) {
-      for (const d of diff.publicSelectionDiffs) {
-        publicSelection[d.col][d.row] = d.value;
-      }
-    }
+    const dimsChanged =
+      (diff.rows !== undefined && diff.rows !== model.rows) ||
+      (diff.cols !== undefined && diff.cols !== model.cols);
+    const fogOfWarState = dimsChanged
+      ? createGrid(
+          prefer(diff.rows, model.rows),
+          prefer(diff.cols, model.cols),
+          '0'
+        )
+      : diff.fogOfWarDiffs !== undefined
+      ? Grid.applySimpleDiff(model.fogOfWar, diff.fogOfWarDiffs)
+      : model.fogOfWar;
+    const publicSelection = dimsChanged
+      ? createGrid(
+          prefer(diff.rows, model.rows),
+          prefer(diff.cols, model.cols),
+          '0'
+        )
+      : diff.publicSelectionDiffs !== undefined
+      ? Grid.applySimpleDiff(model.publicSelection, diff.publicSelectionDiffs)
+      : model.publicSelection;
     return new RemoteBoardModel(
       model.id,
-      diff.name === undefined ? model.name : diff.name,
-      diff.imageSource === undefined ? model.imageSource : diff.imageSource,
-      diff.tileSize === undefined ? model.tileSize : diff.tileSize,
+      prefer(diff.name, model.name),
+      model.imageSource,
+      prefer(diff.tileSize, model.tileSize),
       mergedTokens,
       fogOfWarState,
       publicSelection,
-      model.gridOffset,
-      model.cols,
-      model.rows
+      model.width,
+      model.height,
+      prefer(diff.gridOffset, model.gridOffset),
+      prefer(diff.cols, model.cols),
+      prefer(diff.rows, model.rows)
     );
   }
 }
 
-export interface FogOfWarDiff {
-  readonly row: number;
-  readonly col: number;
-  readonly isFogOn: boolean;
-}
-
-export interface PublicSelectionDiff {
-  readonly row: number;
-  readonly col: number;
-  readonly value: string;
-}
+export const FOG_ON = '1';
+export const FOG_OFF = '0';
 
 /** Represents a mutation of RemoteBoardModel. */
 export interface RemoteBoardDiff {
-  readonly id: string;
-  readonly name?: string;
-  readonly tokenDiffs: RemoteTokenDiff[];
-  readonly removedTokens: string[];
-  readonly newTokens: RemoteTokenModel[];
-  readonly publicSelectionDiffs: PublicSelectionDiff[];
-  readonly imageSource?: string;
-  readonly tileSize?: number;
-  readonly gridOffset?: Point;
-  readonly fogOfWarDiffs?: FogOfWarDiff[];
+  id: string;
+  name?: string;
+  tokenDiffs?: RemoteTokenDiff[];
+  removedTokens?: string[];
+  newTokens?: RemoteTokenModel[];
+  publicSelectionDiffs?: Grid.SimpleDiff<string>;
+  tileSize?: number;
+  gridOffset?: Point;
+  fogOfWarDiffs?: Grid.SimpleDiff<string>;
+  rows?: number;
+  cols?: number;
 }
 
 export namespace RemoteBoardDiff {
   export function isValid(input: any): input is RemoteBoardDiff {
     const maybeDiff = input as RemoteBoardDiff;
-    const isValid =
-      maybeDiff.id !== undefined &&
-      maybeDiff.newTokens !== undefined &&
-      maybeDiff.removedTokens !== undefined &&
-      maybeDiff.tokenDiffs != undefined;
+    // TODO: Validate the other fields.
+    const isValid = maybeDiff.id !== undefined;
     if (!isValid) {
       return false;
     }
-    for (const tokenDiff of maybeDiff.tokenDiffs) {
+    for (const tokenDiff of prefer(maybeDiff.tokenDiffs, [])) {
       if (tokenDiff.id === undefined) {
         return false;
       }
     }
-    for (const newToken of maybeDiff.newTokens) {
+    for (const newToken of prefer(maybeDiff.newTokens, [])) {
       if (!RemoteTokenModel.isValid(newToken)) {
         return false;
       }
     }
     return isValid;
-  }
-
-  export function computeBetween(
-    newModel: RemoteBoardModel,
-    oldModel: RemoteBoardModel
-  ): RemoteBoardDiff | undefined {
-    if (newModel.id != oldModel.id) {
-      throw new Error(
-        '[RemoteBoardDiff] computeBetween called with diferent ids'
-      );
-    }
-    const newTokens: RemoteTokenModel[] = [];
-    const modifiedTokens: RemoteTokenDiff[] = [];
-    const removedTokens: string[] = [];
-
-    for (const newToken of newModel.tokens) {
-      let foundMatch = false;
-      for (const oldToken of oldModel.tokens) {
-        if (newToken.id != oldToken.id) {
-          continue;
-        }
-        foundMatch = true;
-        if (!RemoteTokenModel.equals(newToken, oldToken)) {
-          modifiedTokens.push(RemoteTokenModel.computeDiff(newToken, oldToken));
-        }
-        break;
-      }
-      if (!foundMatch) {
-        newTokens.push(newToken);
-      }
-    }
-    for (const oldToken of oldModel.tokens) {
-      let foundMatch = false;
-      for (const newToken of newModel.tokens) {
-        if (oldToken.id != newToken.id) {
-          continue;
-        }
-        foundMatch = true;
-        break;
-      }
-      if (!foundMatch) {
-        removedTokens.push(oldToken.id);
-      }
-    }
-    const fogOfWarDiffs: FogOfWarDiff[] = [];
-    const publicSelectionDiffs: PublicSelectionDiff[] = [];
-    if (newModel.imageSource === oldModel.imageSource) {
-      for (let i = 0; i < newModel.cols; i++) {
-        for (let j = 0; j < newModel.rows; j++) {
-          if (oldModel.fogOfWar[i][j] !== newModel.fogOfWar[i][j]) {
-            fogOfWarDiffs.push({
-              col: i,
-              row: j,
-              isFogOn: newModel.fogOfWar[i][j] !== '0',
-            });
-          }
-          const newSelection = newModel.publicSelection[i][j];
-          if (oldModel.publicSelection[i][j] !== newSelection) {
-            publicSelectionDiffs.push({col: i, row: j, value: newSelection});
-          }
-        }
-      }
-    } else {
-      console.log('Warning - skipping fog of war diff calculation.');
-    }
-
-    const diffImageSource =
-      newModel.imageSource === oldModel.imageSource
-        ? undefined
-        : newModel.imageSource;
-    const diffTileSize =
-      newModel.tileSize === oldModel.tileSize ? undefined : newModel.tileSize;
-    const diffName =
-      newModel.name === oldModel.name ? undefined : newModel.name;
-    const diffGridOffset = arePointsEqual(
-      newModel.gridOffset,
-      oldModel.gridOffset
-    )
-      ? undefined
-      : newModel.gridOffset;
-
-    const isValidDiff =
-      diffName != undefined ||
-      modifiedTokens.length > 0 ||
-      removedTokens.length > 0 ||
-      newTokens.length > 0 ||
-      diffImageSource != undefined ||
-      diffTileSize != undefined ||
-      diffGridOffset != undefined ||
-      fogOfWarDiffs.length > 0 ||
-      publicSelectionDiffs.length > 0;
-
-    if (!isValidDiff) {
-      return undefined;
-    }
-
-    return {
-      id: newModel.id,
-      name: diffName,
-      tokenDiffs: modifiedTokens,
-      removedTokens: removedTokens,
-      newTokens: newTokens,
-      publicSelectionDiffs: publicSelectionDiffs,
-      imageSource: diffImageSource,
-      tileSize: diffTileSize,
-      gridOffset: diffGridOffset,
-      fogOfWarDiffs: fogOfWarDiffs,
-    };
   }
 }

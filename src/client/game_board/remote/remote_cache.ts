@@ -23,7 +23,7 @@ export class RemoteCache {
     return this.cachedTokens;
   }
 
-  async updateTokens(updateTokens: RemoteTokenModel[]): Promise<void> {
+  async updateTokens(updateTokens: readonly RemoteTokenModel[]): Promise<void> {
     const cacheTokens = await this.getAllTokens();
     const tokenMap: Map<string, TokenData> = new Map();
     for (const token of cacheTokens) {

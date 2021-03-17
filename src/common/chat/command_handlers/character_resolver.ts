@@ -1,6 +1,7 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {notUndefined} from '_common/verification';
 
 export class CharacterResolver {
   static create(cache: CharacterSheetCache): CharacterResolver {
@@ -29,8 +30,4 @@ export class CharacterResolver {
       .map((name) => this.cache.getDataForName(name))
       .filter(notUndefined);
   }
-}
-
-function notUndefined<T>(x: T | undefined): x is T {
-  return x !== undefined;
 }

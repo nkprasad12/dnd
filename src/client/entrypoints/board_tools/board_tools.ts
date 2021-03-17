@@ -62,10 +62,10 @@ NewBoardForm.createOnClick(NEW_BOARD_BUTTON, BOARD_FORM_STUB, (model) => {
 async function setupEditing(model: BoardModel): Promise<void> {
   removeChildrenOf(PREVIEW_BOARD_STUB);
   const board = new GameBoard(PREVIEW_BOARD_STUB, model, await serverPromise);
-  (await serverPromise).createBoard(board.getRemoteModel());
-  selectorsPromise.then((selectors) => selectors.add(model.id));
+  (await serverPromise).createBoard(model.inner);
+  selectorsPromise.then((selectors) => selectors.add(model.inner.id));
   removeChildrenOf(EDITING_AREA_STUB);
-  BoardUpdateForm.create(EDITING_AREA_STUB, (data) => {
+  BoardUpdateForm.create(EDITING_AREA_STUB, board.modelHandler, (data) => {
     board.updateGridParameters(data);
   });
 }

@@ -54,3 +54,15 @@ export function maybeMerge<T, S>(
   }
   return merger(base, diff);
 }
+
+export function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
+}
+
+/** Returns whether the value is in the specified inclusive range. */
+export function inRange(
+  lower: number,
+  upper: number
+): (value: number) => boolean {
+  return (value) => lower <= value && value <= upper;
+}

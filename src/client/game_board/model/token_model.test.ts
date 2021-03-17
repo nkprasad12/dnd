@@ -2,21 +2,21 @@ import * as Ids from '_client/common/id_generator';
 import {TokenModel} from '_client/game_board/model/token_model';
 import * as Images from '_client/utils/image_utils';
 import {
-  defaultRemoteToken,
-  DEFAULT_ID,
-  DEFAULT_IMAGE_SOURCE,
+  remoteTokenModel,
+  TEST_TOKEN_ID,
+  TEST_TOKEN_SOURCE,
   DEFAULT_LOCATION,
-  DEFAULT_NAME,
+  TEST_TOKEN_NAME,
   DEFAULT_SIZE,
   DEFAULT_SPEED,
 } from '_common/board/test_constants';
 
 beforeEach(() => {
-  jest.spyOn(Ids, 'getId').mockReturnValue(DEFAULT_ID);
+  jest.spyOn(Ids, 'getId').mockReturnValue(TEST_TOKEN_ID);
   jest
     .spyOn(Images, 'loadImage')
     .mockReturnValue(
-      Promise.resolve(new Images.LoadedImage(IMAGE, DEFAULT_IMAGE_SOURCE))
+      Promise.resolve(new Images.LoadedImage(IMAGE, TEST_TOKEN_SOURCE))
     );
 });
 
@@ -28,8 +28,8 @@ const IMAGE = {} as any;
 const IS_ACTIVE = true;
 function createToken(): TokenModel {
   return TokenModel.create(
-    DEFAULT_NAME,
-    new Images.LoadedImage(IMAGE, DEFAULT_IMAGE_SOURCE),
+    TEST_TOKEN_NAME,
+    new Images.LoadedImage(IMAGE, TEST_TOKEN_SOURCE),
     DEFAULT_SIZE,
     DEFAULT_LOCATION,
     IS_ACTIVE,
@@ -39,7 +39,7 @@ function createToken(): TokenModel {
 
 describe('create', () => {
   it('makes a token with the expected inner model', () => {
-    expect(createToken().inner).toStrictEqual(defaultRemoteToken());
+    expect(createToken().inner).toStrictEqual(remoteTokenModel());
   });
 
   it('makes a token with the expected outer fields', () => {
@@ -72,35 +72,35 @@ describe('duplicate', () => {
 
 describe('fromRemoteAndMap', () => {
   const IMAGE_MAP: Map<string, CanvasImageSource> = new Map([
-    [DEFAULT_IMAGE_SOURCE, IMAGE],
+    [TEST_TOKEN_SOURCE, IMAGE],
   ]);
 
   it('throws if source is not in the map', () => {
-    const remoteToken = defaultRemoteToken() as any;
+    const remoteToken = remoteTokenModel() as any;
     remoteToken.imageSource = 'definitely not the default source';
     expect(() => TokenModel.fromRemoteAndMap(remoteToken, IMAGE_MAP)).toThrow();
   });
 
   it('uses image from the map if the source is present', () => {
-    const token = TokenModel.fromRemoteAndMap(defaultRemoteToken(), IMAGE_MAP);
+    const token = TokenModel.fromRemoteAndMap(remoteTokenModel(), IMAGE_MAP);
     expect(token.image).toBe(IMAGE);
   });
 
   it('has the given inner model', () => {
-    const remoteModel = defaultRemoteToken();
+    const remoteModel = remoteTokenModel();
     const token = TokenModel.fromRemoteAndMap(remoteModel, IMAGE_MAP);
     expect(token.inner).toBe(remoteModel);
   });
 
   it('sets isActive to false', () => {
-    const token = TokenModel.fromRemoteAndMap(defaultRemoteToken(), IMAGE_MAP);
+    const token = TokenModel.fromRemoteAndMap(remoteTokenModel(), IMAGE_MAP);
     expect(token.isActive).toBe(false);
   });
 });
 
 describe('fromRemote', () => {
   it('constructs token with given inner model', async (done) => {
-    const remoteToken = defaultRemoteToken();
+    const remoteToken = remoteTokenModel();
     const token = await TokenModel.fromRemote(remoteToken);
 
     expect(token.inner).toBe(remoteToken);
@@ -108,7 +108,7 @@ describe('fromRemote', () => {
   });
 
   it('constructs token with isActive false', async (done) => {
-    const remoteToken = defaultRemoteToken();
+    const remoteToken = remoteTokenModel();
     const token = await TokenModel.fromRemote(remoteToken);
 
     expect(token.isActive).toBe(false);
@@ -116,7 +116,7 @@ describe('fromRemote', () => {
   });
 
   it('loads from the remote token source', async (done) => {
-    const remoteToken = defaultRemoteToken();
+    const remoteToken = remoteTokenModel();
     await TokenModel.fromRemote(remoteToken);
 
     expect(Images.loadImage).toHaveBeenCalledWith(remoteToken.imageSource);
@@ -126,8 +126,8 @@ describe('fromRemote', () => {
 
 describe('equals', () => {
   it('returns true on identical tokens', async (done) => {
-    const first = await TokenModel.fromRemote(defaultRemoteToken());
-    const second = await TokenModel.fromRemote(defaultRemoteToken());
+    const first = await TokenModel.fromRemote(remoteTokenModel());
+    const second = await TokenModel.fromRemote(remoteTokenModel());
 
     expect(first.equals(second)).toBe(true);
     expect(second.equals(first)).toBe(true);
@@ -135,8 +135,8 @@ describe('equals', () => {
   });
 
   it('returns false if isActive is different', async (done) => {
-    const first = await TokenModel.fromRemote(defaultRemoteToken());
-    const second = await TokenModel.fromRemote(defaultRemoteToken());
+    const first = await TokenModel.fromRemote(remoteTokenModel());
+    const second = await TokenModel.fromRemote(remoteTokenModel());
     (second as any).isActive = true;
 
     expect(first.equals(second)).toBe(false);
@@ -145,8 +145,8 @@ describe('equals', () => {
   });
 
   it('returns false if inner model is different', async (done) => {
-    const first = await TokenModel.fromRemote(defaultRemoteToken());
-    const second = await TokenModel.fromRemote(defaultRemoteToken());
+    const first = await TokenModel.fromRemote(remoteTokenModel());
+    const second = await TokenModel.fromRemote(remoteTokenModel());
     (second as any).inner.name = 'Herodetus';
 
     expect(first.equals(second)).toBe(false);
@@ -161,35 +161,35 @@ describe('merge', () => {
   const imageDiff = {image: newImage};
 
   it('uses old isActive if not in diff', async (done) => {
-    const token = await TokenModel.fromRemote(defaultRemoteToken());
+    const token = await TokenModel.fromRemote(remoteTokenModel());
     const merged = TokenModel.merge(token, imageDiff);
     expect(merged.isActive).toBe(false);
     done();
   });
 
   it('uses new isActive if in diff', async (done) => {
-    const token = await TokenModel.fromRemote(defaultRemoteToken());
+    const token = await TokenModel.fromRemote(remoteTokenModel());
     const merged = TokenModel.merge(token, isActiveDiff);
     expect(merged.isActive).toBe(false);
     done();
   });
 
   it('uses old image if not in diff', async (done) => {
-    const token = await TokenModel.fromRemote(defaultRemoteToken());
+    const token = await TokenModel.fromRemote(remoteTokenModel());
     const merged = TokenModel.merge(token, isActiveDiff);
     expect(merged.image).toBe(IMAGE);
     done();
   });
 
   it('uses new image if in diff', async (done) => {
-    const token = await TokenModel.fromRemote(defaultRemoteToken());
+    const token = await TokenModel.fromRemote(remoteTokenModel());
     const merged = TokenModel.merge(token, imageDiff);
     expect(merged.image).toBe(newImage);
     done();
   });
 
   it('uses old inner model if not in diff', async (done) => {
-    const remoteToken = defaultRemoteToken();
+    const remoteToken = remoteTokenModel();
     const token = await TokenModel.fromRemote(remoteToken);
     const merged = TokenModel.merge(token, isActiveDiff);
     expect(merged.inner).toBe(remoteToken);
@@ -197,8 +197,8 @@ describe('merge', () => {
   });
 
   it('uses new inner model if in diff', async (done) => {
-    const token = await TokenModel.fromRemote(defaultRemoteToken());
-    const newRemoteModel = defaultRemoteToken();
+    const token = await TokenModel.fromRemote(remoteTokenModel());
+    const newRemoteModel = remoteTokenModel();
     (newRemoteModel as any).name = 'Definitely not the default name';
 
     const merged = TokenModel.merge(token, {inner: newRemoteModel});

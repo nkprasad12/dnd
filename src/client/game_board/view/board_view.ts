@@ -8,6 +8,7 @@ import {
 import {BoardModel} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
+import {Grid} from '_common/util/grid';
 
 const defaultGridColor: string = 'rgba(255, 255, 255, 0.3)';
 const selectedGridColor: string = 'rgba(0, 60, 0, 0.75)';
@@ -94,8 +95,8 @@ export class BoardView {
     if (
       this.model !== undefined &&
       !backgroundChange &&
-      newModel.tileSize === this.model.tileSize &&
-      arePointsEqual(newModel.gridOffset, this.model.gridOffset)
+      newModel.inner.tileSize === this.model.inner.tileSize &&
+      arePointsEqual(newModel.inner.gridOffset, this.model.inner.gridOffset)
     ) {
       return;
     }
@@ -123,10 +124,15 @@ export class BoardView {
 
     for (const canvas of this.allCanvases) {
       if (this.model !== undefined) {
-        getContext(canvas).clearRect(0, 0, this.model.width, this.model.height);
+        getContext(canvas).clearRect(
+          0,
+          0,
+          this.model.inner.width,
+          this.model.inner.height
+        );
       }
-      canvas.width = newModel.width * newModel.scale;
-      canvas.height = newModel.height * newModel.scale;
+      canvas.width = newModel.inner.width * newModel.scale;
+      canvas.height = newModel.inner.height * newModel.scale;
       getContext(canvas).scale(newModel.scale, newModel.scale);
     }
     getContext(this.backgroundCanvas).drawImage(
@@ -141,9 +147,10 @@ export class BoardView {
     let needsUpdate = backgroundChange;
     if (this.model != undefined) {
       const model = this.model;
-      needsUpdate = needsUpdate || model.cols != newModel.cols;
-      needsUpdate = needsUpdate || model.rows != newModel.rows;
-      needsUpdate = needsUpdate || model.tileSize != newModel.tileSize;
+      needsUpdate = needsUpdate || model.inner.cols != newModel.inner.cols;
+      needsUpdate = needsUpdate || model.inner.rows != newModel.inner.rows;
+      needsUpdate =
+        needsUpdate || model.inner.tileSize != newModel.inner.tileSize;
     } else {
       needsUpdate = true;
     }
@@ -153,15 +160,15 @@ export class BoardView {
     }
 
     this.initializeTileGrid(newModel);
-    for (let i = 0; i < newModel.cols; i++) {
-      for (let j = 0; j < newModel.rows; j++) {
+    for (let i = 0; i < newModel.inner.cols; i++) {
+      for (let j = 0; j < newModel.inner.rows; j++) {
         this.tiles[i][j].defaultGrid();
       }
     }
   }
 
   private bindTokens(newModel: BoardModel, backgroundChange: boolean): void {
-    let oldTokens: TokenModel[] = [];
+    let oldTokens: readonly TokenModel[] = [];
     if (this.model != undefined) {
       oldTokens = this.model.tokens;
     }
@@ -197,10 +204,14 @@ export class BoardView {
     newModel: BoardModel,
     backgroundChange: boolean
   ): void {
-    for (let i = 0; i < newModel.cols; i++) {
-      for (let j = 0; j < newModel.rows; j++) {
+    for (let i = 0; i < newModel.inner.cols; i++) {
+      for (let j = 0; j < newModel.inner.rows; j++) {
         const tile = this.tiles[i][j];
-        tile.bindFogOfWar(newModel.fogOfWarState[i][j], backgroundChange);
+        tile.bindFogOfWar(
+          newModel.inner.fogOfWar[i][j],
+          newModel.peekedTiles[i][j],
+          backgroundChange
+        );
       }
     }
   }
@@ -209,11 +220,14 @@ export class BoardView {
     newModel: BoardModel,
     backgroundChange: boolean
   ): void {
-    let oldSelection: Location[] = [];
-    if (this.model != undefined) {
-      oldSelection = this.model.localSelection;
-    }
-    const newSelection = newModel.localSelection;
+    const oldSelection: readonly Location[] =
+      this.model?.localSelection.area !== undefined
+        ? Grid.SimpleArea.toTiles(this.model.localSelection.area)
+        : [];
+    const newSelection: readonly Location[] =
+      newModel.localSelection.area !== undefined
+        ? Grid.SimpleArea.toTiles(newModel.localSelection.area)
+        : [];
 
     for (const oldTile of oldSelection) {
       let hasMatch = false;
@@ -248,11 +262,11 @@ export class BoardView {
     newModel: BoardModel,
     backgroundChange: boolean
   ): void {
-    for (let i = 0; i < newModel.cols; i++) {
-      for (let j = 0; j < newModel.rows; j++) {
+    for (let i = 0; i < newModel.inner.cols; i++) {
+      for (let j = 0; j < newModel.inner.rows; j++) {
         const tile = this.tiles[i][j];
         tile.bindPublicSelection(
-          newModel.publicSelection[i][j],
+          newModel.inner.publicSelection[i][j],
           backgroundChange
         );
       }
@@ -261,17 +275,17 @@ export class BoardView {
 
   private initializeTileGrid(model: BoardModel): void {
     this.tiles = [];
-    for (let i = 0; i < model.cols; i++) {
+    for (let i = 0; i < model.inner.cols; i++) {
       this.tiles.push([]);
-      for (let j = 0; j < model.rows; j++) {
+      for (let j = 0; j < model.inner.rows; j++) {
         const startPoint = getStartPoint(
           {col: i, row: j},
-          model.gridOffset,
-          model.tileSize
+          model.inner.gridOffset,
+          model.inner.tileSize
         );
         this.tiles[i].push(
           new Tile(
-            model.tileSize,
+            model.inner.tileSize,
             startPoint.x,
             startPoint.y,
             this.fogOfWarCanvas,
@@ -285,11 +299,11 @@ export class BoardView {
   }
 
   private drawToken(tokenModel: TokenModel, newModel: BoardModel): void {
-    const tokenSize = tokenModel.inner.size * newModel.tileSize;
+    const tokenSize = tokenModel.inner.size * newModel.inner.tileSize;
     const startPoint = getStartPoint(
       tokenModel.inner.location,
-      newModel.gridOffset,
-      newModel.tileSize
+      newModel.inner.gridOffset,
+      newModel.inner.tileSize
     );
     getContext(this.tokenCanvas).drawImage(
       tokenModel.image,
@@ -308,11 +322,11 @@ export class BoardView {
   }
 
   private clearToken(tokenModel: TokenModel, newModel: BoardModel): void {
-    const tokenSize = tokenModel.inner.size * newModel.tileSize;
+    const tokenSize = tokenModel.inner.size * newModel.inner.tileSize;
     const startPoint = getStartPoint(
       tokenModel.inner.location,
-      newModel.gridOffset,
-      newModel.tileSize
+      newModel.inner.gridOffset,
+      newModel.inner.tileSize
     );
     getContext(this.tokenCanvas).clearRect(
       startPoint.x - 1,
@@ -334,8 +348,8 @@ export class BoardView {
     newModel: BoardModel
   ): Tile[] {
     const result: Tile[] = [];
-    for (let i = 0; i < newModel.cols; i++) {
-      for (let j = 0; j < newModel.rows; j++) {
+    for (let i = 0; i < newModel.inner.cols; i++) {
+      for (let j = 0; j < newModel.inner.rows; j++) {
         const d = tileDistance(tokenModel.inner.location, {col: i, row: j});
         if (0 < d && d <= tokenModel.inner.speed) {
           result.push(this.tiles[i][j]);
@@ -366,6 +380,7 @@ function getStartPoint(tile: Location, offset: Point, tileSize: number): Point {
 class Tile {
   fogState = '0';
   publicSelectionState = '0';
+  peekState = false;
 
   constructor(
     private size: number,
@@ -490,11 +505,20 @@ class Tile {
     );
   }
 
-  bindFogOfWar(fogState: string, backgroundChange: boolean): void {
-    if (fogState === this.fogState && !backgroundChange) {
+  bindFogOfWar(
+    fogState: string,
+    peekState: boolean,
+    backgroundChange: boolean
+  ): void {
+    if (
+      fogState === this.fogState &&
+      this.peekState === peekState &&
+      !backgroundChange
+    ) {
       return;
     }
     this.fogState = fogState;
+    this.peekState = peekState;
     getContext(this.fogOfWarCanvas).clearRect(
       this.startX,
       this.startY,
@@ -505,7 +529,7 @@ class Tile {
       // 0 is for no fog, so we're done.
       return;
     }
-    const color = fogState === '1' ? fogColor : peekFogColor;
+    const color = peekState ? peekFogColor : fogColor;
     fillCanvasTile(
       this.startX,
       this.startY,
