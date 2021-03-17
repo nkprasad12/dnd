@@ -11,9 +11,10 @@ import {FakeImage} from '_client/utils/fake_image';
 import {
   remoteBoardModel,
   RemoteModelParameters,
+  remoteTokenModel,
   TEST_TOKEN_ID,
 } from '_common/board/test_constants';
-import {Point} from '_common/coordinates';
+import {Location, Point} from '_common/coordinates';
 import {prefer} from '_common/verification';
 
 const handleContextAction = jest.fn(() => {
@@ -52,24 +53,50 @@ afterAll(() => {
   FakeImage.invokeAfterAll();
 });
 
+function tileToPoint(tileSize: number, tile: Location) {
+  return {
+    x: tile.col * tileSize + tileSize / 2,
+    y: tile.row * tileSize + tileSize / 2,
+  };
+}
+
+const DEFAULT_TILE_SIZE = 10;
+const FIRST_TOKEN_TILE = {col: 7, row: 1};
+const FIRST_TOKEN_POINT = tileToPoint(DEFAULT_TILE_SIZE, FIRST_TOKEN_TILE);
+const FIRST_TOKEN_ID = TEST_TOKEN_ID;
+const SECOND_TOKEN_TILE = {col: 8, row: 9};
+const SECOND_TOKEN_POINT = tileToPoint(DEFAULT_TILE_SIZE, SECOND_TOKEN_TILE);
+const SECOND_TOKEN_ID = 'AlbertPercival';
+
 async function modelHandler(
   modelParams?: RemoteModelParameters,
   scrollOffset?: {left: number; top: number}
 ): Promise<ModelHandler> {
+  const firstToken = remoteTokenModel();
+  (firstToken as any).location = FIRST_TOKEN_TILE;
+  const secondToken = remoteTokenModel();
+  (secondToken as any).id = SECOND_TOKEN_ID;
+  (secondToken as any).location = SECOND_TOKEN_TILE;
   const base = remoteBoardModel(
     prefer(modelParams, {
-      tileSizeOverride: 10,
+      tileSizeOverride: DEFAULT_TILE_SIZE,
       gridOffsetOverride: {x: 0, y: 0},
       widthOverride: 100,
+      tokensOverride: [firstToken, secondToken],
     })
   );
-  const model = BoardModel.createFromRemote(base);
+  const model = await BoardModel.createFromRemote(base);
+  const modelTokens = model.inner.tokens;
+  expect(modelTokens.length).toBe(2);
+  expect(modelTokens).toContain(firstToken);
+  expect(modelTokens).toContain(secondToken);
+
   const view: any = {
     topCanvas: {
       getBoundingClientRect: () => prefer(scrollOffset, {left: 0, top: 0}),
     },
   };
-  return new ModelHandler(await model, view);
+  return new ModelHandler(model, view);
 }
 
 interface TestObjects {
@@ -142,11 +169,10 @@ describe('InteractionStateMachine from default state', () => {
   });
 
   it('picks up token on token click', async (done) => {
-    const clickPoint = {x: 75, y: 15};
-    const objects = await click(clickPoint, 0);
+    const objects = await click(FIRST_TOKEN_POINT, 0);
 
     const expectedDiff: BoardDiff = {
-      tokenDiffs: [{isActive: true, inner: {id: TEST_TOKEN_ID}}],
+      tokenDiffs: [{isActive: true, inner: {id: FIRST_TOKEN_ID}}],
     };
     expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
     done();
@@ -219,8 +245,7 @@ describe('InteractionStateMachine from default state', () => {
 
 describe('InteractionStateMachine from picked up state', () => {
   async function pickUpToken(): Promise<TestObjects> {
-    const clickPoint = {x: 75, y: 15};
-    const objects = await click(clickPoint, 0);
+    const objects = await click(FIRST_TOKEN_POINT, 0);
     objects.diffListener.mockClear();
     expect(objects.handler.activeTokenIndex()).toBe(0);
     return objects;
@@ -231,7 +256,7 @@ describe('InteractionStateMachine from picked up state', () => {
       tokenDiffs: [
         {
           isActive: false,
-          inner: {id: TEST_TOKEN_ID},
+          inner: {id: FIRST_TOKEN_ID},
         },
       ],
     };
@@ -258,7 +283,7 @@ describe('InteractionStateMachine from picked up state', () => {
       tokenDiffs: [
         {
           isActive: false,
-          inner: {id: TEST_TOKEN_ID, location: {col: 3, row: 2}},
+          inner: {id: FIRST_TOKEN_ID, location: {col: 3, row: 2}},
         },
       ],
     };
@@ -266,7 +291,12 @@ describe('InteractionStateMachine from picked up state', () => {
     done();
   });
 
-  // TODO: Add test for behavior when we click on an occupied tile.
+  it('deselects token when clicking on another token', async (done) => {
+    const objects = await pickUpToken();
+    await click(SECOND_TOKEN_POINT, 0, objects);
+    expectTokenDeselected(objects);
+    done();
+  });
 
   it('deselects token on right click', async (done) => {
     const objects = await pickUpToken();

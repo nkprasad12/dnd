@@ -2,6 +2,8 @@
 
 import {UpdateListener} from '_client/game_board/controller/model_handler';
 
+// TODO: Replace these with jest.fn mocks
+
 /** Fake listener that updates on local state changes. */
 export class FakeLocalListener {
   updatedModel: any = undefined;

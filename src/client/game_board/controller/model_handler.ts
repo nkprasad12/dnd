@@ -101,8 +101,7 @@ export class ModelHandler {
     };
   }
 
-  // TODO: Return undefined instead of INVALID_INDEX
-  activeTokenIndex(): number {
+  activeTokenIndex(): number | undefined {
     const tokens = this.model.tokens;
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
@@ -110,7 +109,7 @@ export class ModelHandler {
         return i;
       }
     }
-    return INVALID_INDEX;
+    return undefined;
   }
 
   /**

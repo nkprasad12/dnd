@@ -35,6 +35,7 @@ export interface RemoteModelParameters {
   widthOverride?: number;
   heightOverride?: number;
   gridOffsetOverride?: Point;
+  tokensOverride?: RemoteTokenModel[];
 }
 
 export function remoteBoardModel(
@@ -49,7 +50,7 @@ export function remoteBoardModel(
     TEST_BOARD_NAME,
     TEST_BOARD_SOURCE,
     tileSize,
-    [remoteTokenModel()],
+    prefer(params?.tokensOverride, [remoteTokenModel()]),
     createGrid(dimensions.rows, dimensions.cols, '0'),
     createGrid(dimensions.rows, dimensions.cols, '0'),
     width,
