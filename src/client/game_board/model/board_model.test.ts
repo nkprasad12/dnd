@@ -6,7 +6,10 @@ import {
 import {TokenDiff} from '_client/game_board/model/token_model';
 import {FakeImage} from '_client/utils/fake_image';
 import {getBackgroundData, LoadedImage} from '_client/utils/image_utils';
-import {RemoteBoardDiff} from '_common/board/remote_board_model';
+import {
+  RemoteBoardDiff,
+  RemoteTokenDiff,
+} from '_common/board/remote_board_model';
 import {
   remoteBoardModel,
   remoteTokenModel,
@@ -425,5 +428,24 @@ describe('BoardDiff.extractRemoteDiff', () => {
     });
     expect(result?.tokenDiffs).toBeDefined();
     expect(checkDefined(result?.tokenDiffs)[0]).toStrictEqual(tokenDiff.inner);
+  });
+});
+
+describe('BoardDiff.fromRemoteDiff', () => {
+  const tokenDiff: RemoteTokenDiff = {
+    id: TEST_TOKEN_ID,
+    speed: 444,
+  };
+  const remoteDiff: RemoteBoardDiff = {
+    id: TEST_BOARD_ID,
+    tokenDiffs: [tokenDiff],
+  };
+
+  const result = BoardDiff.fromRemoteDiff(remoteDiff);
+  expect(result).toStrictEqual({
+    inner: {
+      id: TEST_BOARD_ID,
+    },
+    tokenDiffs: [{inner: tokenDiff}],
   });
 });

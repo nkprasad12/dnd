@@ -68,14 +68,16 @@ export class ModelHandler {
       .forEach((listener) => listener.listener(this.model, diff));
   }
 
-  async applyRemoteDiff(diff: RemoteBoardDiff): Promise<void> {
-    console.log('applyRemoteDiff');
+  async applyRemoteDiff(remoteDiff: RemoteBoardDiff): Promise<void> {
+    const diff = BoardDiff.fromRemoteDiff(remoteDiff);
+    console.log('applyRemoteDiff transformed diff:');
     console.log(diff);
-    const newModel = await this.model.mergedWith({inner: diff});
+
+    const newModel = await this.model.mergedWith(diff);
     this.model = newModel;
     this.listeners
       .filter((listener) => listener.updateOnRemote === true)
-      .forEach((listener) => listener.listener(this.model, {inner: diff}));
+      .forEach((listener) => listener.listener(this.model, diff));
   }
 
   /** Returns the tile for the input client point, relative to the canvas. */

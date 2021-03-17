@@ -3,6 +3,7 @@ import {
   FakeLocalListener,
 } from '_client/game_board/controller/fake_listeners';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
+import {RemoteTokenDiff} from '_common/board/remote_board_model';
 
 class FakeModel {
   name: string;
@@ -51,21 +52,43 @@ test('applyLocalDiff updates all listener on update', async (done) => {
   done();
 });
 
-test('applyLocalDiff updates only remote on remote update', async (done) => {
-  const allListener = new FakeAllListener();
-  const localListener = new FakeLocalListener();
-  const initialModel = new FakeModel('Tacitus');
-  const newName = 'Cassius Dio';
+describe('applyRemoteDiff', () => {
+  it('updates only remote', async (done) => {
+    const allListener = new FakeAllListener();
+    const localListener = new FakeLocalListener();
+    const initialModel = new FakeModel('Tacitus');
+    const newName = 'Cassius Dio';
 
-  const handler = new ModelHandler(initialModel as any, {} as any);
-  handler.addListeners([allListener.listener, localListener.listener]);
-  await handler.applyRemoteDiff({name: newName} as any);
+    const handler = new ModelHandler(initialModel as any, {} as any);
+    handler.addListeners([allListener.listener, localListener.listener]);
+    await handler.applyRemoteDiff({name: newName} as any);
 
-  expect(allListener.updatedModel.name).toBe(newName);
-  expect(localListener.updatedModel).toStrictEqual(initialModel);
-  expect(allListener.lastDiff).toStrictEqual({inner: {name: newName}});
-  expect(localListener.lastDiff).toStrictEqual({});
-  done();
+    expect(allListener.updatedModel.name).toBe(newName);
+    expect(localListener.updatedModel).toStrictEqual(initialModel);
+    expect(allListener.lastDiff).toStrictEqual({inner: {name: newName}});
+    expect(localListener.lastDiff).toStrictEqual({});
+    done();
+  });
+
+  it('extracts tokenDiffs to outer diff', async (done) => {
+    const allListener = new FakeAllListener();
+    const initialModel = new FakeModel('Tacitus');
+    const tokenDiffs: RemoteTokenDiff[] = [];
+    const newName = 'Cassius Dio';
+
+    const handler = new ModelHandler(initialModel as any, {} as any);
+    handler.addListeners([allListener.listener]);
+    await handler.applyRemoteDiff({
+      name: newName,
+      tokenDiffs: tokenDiffs,
+    } as any);
+
+    expect(allListener.lastDiff).toStrictEqual({
+      inner: {name: newName},
+      tokenDiffs: tokenDiffs,
+    });
+    done();
+  });
 });
 
 test('getModel returns current model', async (done) => {

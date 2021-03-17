@@ -221,4 +221,16 @@ export namespace BoardDiff {
     (result as any).tokenDiffs = remoteTokenDiffs;
     return result as RemoteBoardDiff;
   }
+
+  export function fromRemoteDiff(diff: RemoteBoardDiff): BoardDiff {
+    const boardDiff: BoardDiff = {inner: diff};
+    if (diff.tokenDiffs) {
+      const tokenDiffs = diff.tokenDiffs;
+      delete (diff as any).tokenDiffs;
+      boardDiff.tokenDiffs = tokenDiffs.map((tokenDiff) => {
+        return {inner: tokenDiff};
+      });
+    }
+    return boardDiff;
+  }
 }
