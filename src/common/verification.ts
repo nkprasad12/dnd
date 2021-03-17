@@ -58,3 +58,8 @@ export function maybeMerge<T, S>(
 export function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
 }
+
+/** Returns whether the value is in the specified inclusive range. */
+export function inRange(value: number, lower: number, higher: number) {
+  return lower <= value && value <= higher;
+}

@@ -1,4 +1,5 @@
 import {getOrigin} from '_client/common/get_origin';
+import {Point} from '_common/coordinates';
 import {checkState} from '_common/preconditions';
 import {gridDimensions} from '_common/util/grid';
 
@@ -55,11 +56,12 @@ export interface BackgroundData {
 
 export function getBackgroundData(
   image: LoadedImage,
-  tileSize: number
+  tileSize: number,
+  gridOffset: Point
 ): BackgroundData {
   const width = <number>image.image.width;
   const height = <number>image.image.height;
-  const dimensions = gridDimensions(width, height, tileSize);
+  const dimensions = gridDimensions(width, height, tileSize, gridOffset);
   return {
     backgroundImage: image,
     width: width,

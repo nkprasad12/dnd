@@ -45,7 +45,10 @@ export class BoardModel implements Readonly<MutableBoardModel> {
     backgroundImage: LoadedImage,
     tileSize: number
   ): BoardModel {
-    const backgroundData = getBackgroundData(backgroundImage, tileSize);
+    const backgroundData = getBackgroundData(backgroundImage, tileSize, {
+      x: 0,
+      y: 0,
+    });
     const inner: RemoteBoardModel = {
       id: getId(),
       tileSize: tileSize,
@@ -90,11 +93,13 @@ export class BoardModel implements Readonly<MutableBoardModel> {
       throw new Error('Inner diff of BoardDiff cannot have tokenDiffs');
     }
     const tokens = await this.mergeTokens(diff.inner, diff.tokenDiffs);
-    let peekedTiles = this.peekedTiles;
+
     const dimsChanged =
       (diff.inner?.rows !== undefined &&
         diff.inner?.rows !== this.inner.rows) ||
       (diff.inner?.cols !== undefined && diff.inner?.cols !== this.inner.cols);
+
+    let peekedTiles = this.peekedTiles;
     if (diff.peekDiff !== undefined && !dimsChanged) {
       const newValue = diff.peekDiff.isPeeked;
       const colTest = inRange(diff.peekDiff.start.col, diff.peekDiff.end.col);

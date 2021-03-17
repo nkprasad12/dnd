@@ -1,4 +1,5 @@
 import {
+  inRange,
   isGrid,
   isStringArray,
   maybeMerge,
@@ -139,5 +140,27 @@ describe('notUndefined', () => {
 
   it('returns false on undefined', () => {
     expect(notUndefined(undefined)).toBe(false);
+  });
+});
+
+describe('inRange', () => {
+  it('Returns true for number in inclusive range', () => {
+    expect(inRange(7, 1, 10)).toBe(true);
+  });
+
+  it('Returns true for number on lower boundary', () => {
+    expect(inRange(1, 1, 10)).toBe(true);
+  });
+
+  it('Returns true for number on upper boundary', () => {
+    expect(inRange(10, 1, 10)).toBe(true);
+  });
+
+  it('Returns false for number below range', () => {
+    expect(inRange(0, 1, 10)).toBe(false);
+  });
+
+  it('Returns false for number above range', () => {
+    expect(inRange(11, 1, 10)).toBe(false);
   });
 });

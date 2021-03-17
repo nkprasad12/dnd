@@ -654,6 +654,7 @@ describe('RemoteBoardModel.mergedWith', () => {
       rows: 5,
       cols: 2,
       tileSize: 30,
+      gridOffset: {x: 0, y: 0},
     };
     const merged = RemoteBoardModel.mergedWith(board, diff);
 
@@ -668,6 +669,7 @@ describe('RemoteBoardModel.mergedWith', () => {
       rows: 3,
       cols: 1,
       tileSize: 60,
+      gridOffset: {x: 0, y: 0},
     };
     const merged = RemoteBoardModel.mergedWith(board, diff);
 

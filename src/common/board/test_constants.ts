@@ -44,7 +44,8 @@ export function remoteBoardModel(
   const tileSize = prefer(params?.tileSizeOverride, 57);
   const width = prefer(params?.widthOverride, 60);
   const height = prefer(params?.heightOverride, 150);
-  const dimensions = gridDimensions(width, height, tileSize);
+  const gridOffset = prefer(params?.gridOffsetOverride, {x: 57, y: 57});
+  const dimensions = gridDimensions(width, height, tileSize, gridOffset);
   return new RemoteBoardModel(
     TEST_BOARD_ID,
     TEST_BOARD_NAME,
@@ -55,7 +56,7 @@ export function remoteBoardModel(
     createGrid(dimensions.rows, dimensions.cols, '0'),
     width,
     height,
-    prefer(params?.gridOffsetOverride, {x: 57, y: 57}),
+    gridOffset,
     dimensions.cols,
     dimensions.rows
   );

@@ -451,7 +451,8 @@ export class BoardUpdateForm extends BaseSimpleForm {
       }
       const backgroundData = getBackgroundData(
         modelHandler.getModel().backgroundImage,
-        tileSize
+        tileSize,
+        {x: offsetX, y: offsetY}
       );
       onUpdate({
         tileSize: tileSize,

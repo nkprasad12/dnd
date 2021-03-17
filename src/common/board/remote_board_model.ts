@@ -184,7 +184,8 @@ export class RemoteBoardModel {
     const expectedDimensions = gridDimensions(
       model.width,
       model.height,
-      prefer(diff.tileSize, model.tileSize)
+      prefer(diff.tileSize, model.tileSize),
+      prefer(diff.gridOffset, model.gridOffset)
     );
     if (
       expectedDimensions.cols !== prefer(diff.cols, model.cols) ||

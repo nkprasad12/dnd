@@ -74,7 +74,10 @@ describe('BoardModel.fromRemoteModel', () => {
 
 describe('BoardModel.createNew', () => {
   const model = BoardModel.createNew(TEST_TOKEN_NAME, LOADED_IMAGE, TILE_SIZE);
-  const backgroundData = getBackgroundData(LOADED_IMAGE, TILE_SIZE);
+  const backgroundData = getBackgroundData(LOADED_IMAGE, TILE_SIZE, {
+    x: 0,
+    y: 0,
+  });
 
   it('makes an inner model with the expected dimensions', () => {
     expect(model.inner.cols).toBe(backgroundData.cols);

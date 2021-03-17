@@ -80,7 +80,7 @@ test('loadImages produces expected result', () => {
 describe('getBackgroundData', () => {
   const image: any = new FakeImage.FakeImage();
   const loadedImage = new LoadedImage(image, 'whatever');
-  const data = getBackgroundData(loadedImage, 10);
+  const data = getBackgroundData(loadedImage, 10, {x: 0, y: 0});
 
   it('reads from the input loadedImage', () => {
     expect(data.backgroundImage).toBe(loadedImage);
@@ -91,6 +91,12 @@ describe('getBackgroundData', () => {
   it('computes rows and columns correctly', () => {
     // Rounding up from 57 / 10
     expect(data.cols).toBe(6);
+    expect(data.rows).toBe(42);
+  });
+
+  it('computes rows and columns correctly with offset', () => {
+    const data = getBackgroundData(loadedImage, 10, {x: 2, y: 0});
+    expect(data.cols).toBe(7);
     expect(data.rows).toBe(42);
   });
 });
