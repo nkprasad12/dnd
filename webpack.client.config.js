@@ -9,6 +9,11 @@ module.exports = {
     BoardTools: './src/client/entrypoints/board_tools/board_tools.ts',
     Sandbox: './src/client/entrypoints/sandbox/sandbox.ts',
   },
+  watchOptions: {
+    ignored: /node_modules/,
+    aggregateTimeout: 500,
+    poll: 1500,
+  },
   module: {
     rules: [
       {
