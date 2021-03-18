@@ -246,16 +246,14 @@ async function handleInitiativeCommand(
       return parsed.error;
     }
 
-    if (parsed.characters.length > 1) {
-      const characterError = checkAmbiguousCharacter('Check', parsed);
+    if (parsed.characters.length !== 0) {
+      const characterError = checkAmbiguousCharacter('Initiative', parsed);
       if (characterError) {
         return characterError;
       }
     }
 
-    if (parsed.characters.length == 1) {
-      characters = [parsed.characters[0]];
-    }
+    characters = [parsed.characters[0]];
   } else {
     characters = resolver.complete('');
   }
