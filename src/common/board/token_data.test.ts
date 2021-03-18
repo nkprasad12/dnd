@@ -1,7 +1,7 @@
 import {
-  DEFAULT_ID,
-  DEFAULT_NAME,
-  DEFAULT_IMAGE_SOURCE,
+  TEST_TOKEN_ID,
+  TEST_TOKEN_NAME,
+  TEST_TOKEN_SOURCE,
   DEFAULT_SPEED,
   DEFAULT_SIZE,
 } from '_common/board/test_constants';
@@ -9,16 +9,16 @@ import {BoardOnlyTokenData, TokenData} from '_common/board/token_data';
 
 function defaultTokenData(): TokenData {
   return {
-    id: DEFAULT_ID,
-    name: DEFAULT_NAME,
-    imageSource: DEFAULT_IMAGE_SOURCE,
+    id: TEST_TOKEN_ID,
+    name: TEST_TOKEN_NAME,
+    imageSource: TEST_TOKEN_SOURCE,
     speed: DEFAULT_SPEED,
   };
 }
 
 function defaultBoardOnlyData(): BoardOnlyTokenData {
   return {
-    id: DEFAULT_ID,
+    id: TEST_TOKEN_ID,
     location: {row: 1, col: 1},
     size: DEFAULT_SIZE,
   };

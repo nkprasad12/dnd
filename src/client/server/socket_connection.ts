@@ -1,27 +1,17 @@
 import io from 'socket.io-client';
 
 import {getOrigin} from '_client/common/get_origin';
-
-export abstract class Socket {
-  /** Represents socket.on */
-  abstract on(eventName: string, callback: (arg: any) => any): void;
-
-  /** Represents socket.emit */
-  abstract emit(eventName: string, message: any): void;
-}
+import {Socket} from './socket';
 
 const baseUrl = getOrigin() + '/';
 
 class SocketConnection extends Socket {
-  constructor(
-    private readonly socket: Socket,
-    private readonly namespace: string
-  ) {
-    super();
+  constructor(private readonly socket: Socket, namespace: string) {
+    super(namespace);
   }
 
   on(event: string, listener: (message: any) => any): void {
-    const namespaceStr = '[' + this.namespace + '] ';
+    const namespaceStr = '[' + this.nsp + '] ';
     this.socket.on(event, (message) => {
       const eventStr = 'Received Event: ' + event + ', ';
       const messageStr = 'message: ' + JSON.stringify(message);
@@ -31,7 +21,7 @@ class SocketConnection extends Socket {
   }
 
   emit(event: string, message: any): void {
-    const namespaceStr = '[' + this.namespace + '] ';
+    const namespaceStr = '[' + this.nsp + '] ';
     const eventStr = 'Sending Event: ' + event + ', ';
     const messageStr = 'message: ' + JSON.stringify(message);
     console.log(namespaceStr + eventStr + messageStr);

@@ -106,8 +106,9 @@ export class TokenModel {
   }
 }
 
-export interface TokenDiff {
+interface RemoteTokenDiffHolder {
   inner?: RemoteTokenDiff;
-  image?: CanvasImageSource;
-  isActive?: boolean;
 }
+
+export type TokenDiff = Partial<Omit<TokenModel, 'inner' | 'equals'>> &
+  RemoteTokenDiffHolder;

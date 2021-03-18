@@ -1,12 +1,10 @@
 import {getOrigin} from '_client/common/get_origin';
+import {Point} from '_common/coordinates';
 import {checkState} from '_common/preconditions';
+import {gridDimensions} from '_common/util/grid';
 
 export class LoadedImage {
   constructor(readonly image: CanvasImageSource, readonly source: string) {}
-
-  deepCopy(): LoadedImage {
-    return new LoadedImage(this.image, this.source);
-  }
 }
 
 const SERVER_PREFIX = 'server@';
@@ -46,4 +44,29 @@ export async function loadImages(
     imageMap.set(loadedImage.source, loadedImage.image);
   }
   return imageMap;
+}
+
+export interface BackgroundData {
+  backgroundImage: LoadedImage;
+  width: number;
+  height: number;
+  cols: number;
+  rows: number;
+}
+
+export function getBackgroundData(
+  image: LoadedImage,
+  tileSize: number,
+  gridOffset: Point
+): BackgroundData {
+  const width = <number>image.image.width;
+  const height = <number>image.image.height;
+  const dimensions = gridDimensions(width, height, tileSize, gridOffset);
+  return {
+    backgroundImage: image,
+    width: width,
+    height: height,
+    cols: dimensions.cols,
+    rows: dimensions.rows,
+  };
 }
