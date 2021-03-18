@@ -233,6 +233,64 @@ async function handleAttackCommand(
   };
 }
 
+async function handleInitiativeCommand(
+  query: string,
+  resolver: CharacterResolver
+): Promise<ChatMessage> {
+  let characters: CharacterSheetData[] = [];
+
+  if (query !== '') {
+    const parsed = parseQuery(query, resolver);
+
+    if (parsed.error) {
+      return parsed.error;
+    }
+
+    if (parsed.characters.length > 1) {
+      const characterError = checkAmbiguousCharacter('Check', parsed);
+      if (characterError) {
+        return characterError;
+      }
+    }
+
+    if (parsed.characters.length == 1) {
+      characters = [parsed.characters[0]];
+    }
+  } else {
+    characters = resolver.complete('');
+  }
+
+  let results: string = '';
+
+  for (const character of characters) {
+    const dexterity = abilityCompleter.getOptions('dexterity');
+
+    if (dexterity.length !== 1) {
+      return {
+        header: 'Initiative role failed',
+        body: 'Could not get dexterity',
+      };
+    }
+
+    const rolls = rollDice(20, 1);
+    const modifier = getIgnoringCase(character.abilityBonuses, dexterity[0]);
+
+    if (modifier === undefined) {
+      return {
+        header: 'Could not resolve request',
+        body: query,
+      };
+    }
+    const result = modifier + Math.max(...rolls);
+    results += `${character.name}: ${result} <br />`;
+  }
+
+  return {
+    body: results,
+    header: 'Initiative Check',
+  };
+}
+
 export function saveCommandHandler(
   resolver: CharacterResolver
 ): CommandHandler {
@@ -249,4 +307,10 @@ export function attackCommandHandler(
   resolver: CharacterResolver
 ): CommandHandler {
   return (query) => handleAttackCommand(query, resolver);
+}
+
+export function initiativeCommandHandler(
+  resolver: CharacterResolver
+): CommandHandler {
+  return (query) => handleInitiativeCommand(query, resolver);
 }

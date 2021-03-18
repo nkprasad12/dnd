@@ -47,9 +47,11 @@ async function handleHelpCommand(): Promise<ChatMessage> {
     '------------------------------------',
     '!roll AdB (+ ... + XdY)? + number? @[dis(advantage)]?',
     '!attack [weapon] @[dis(advantage)]? @[character name]',
-    '!check [skill] @[dis(advantage)]? @[character name]',
+    '!check [skill|ability] @[dis(advantage)]? @[character name]',
     '!save [ability] @[dis(advantage)]? @[character name]',
     '!load [character sheet URL]',
+    '!spell [spell]',
+    '!initiative @[character name]?',
   ];
   return {header: header, body: body.join('<br>')};
 }

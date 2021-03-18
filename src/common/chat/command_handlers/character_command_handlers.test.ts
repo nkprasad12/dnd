@@ -2,6 +2,7 @@ import {CommandHandler} from '_common/chat/chat_resolver';
 import {
   attackCommandHandler,
   checkCommandHandler,
+  initiativeCommandHandler,
   saveCommandHandler,
 } from '_common/chat/command_handlers/character_command_handlers';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
@@ -16,7 +17,10 @@ const BOBBY_DATA: CharacterSheetData = {
     ['Dexterity', 0],
     ['Wisdom', -2],
   ]),
-  abilityBonuses: new Map(),
+  abilityBonuses: new Map([
+    ['Dexterity', 0],
+    ['Wisdom', -2],
+  ]),
   attackBonuses: new Map([['Words', {toHit: 1, damageRoll: '1d8+2'}]]),
   checkBonuses: new Map([
     ['Perception', 0],
@@ -82,6 +86,10 @@ async function checkHandler(): Promise<CommandHandler> {
 
 async function attackHandler(): Promise<CommandHandler> {
   return attackCommandHandler(await getResolver());
+}
+
+async function initiativeHandler(): Promise<CommandHandler> {
+  return initiativeCommandHandler(await getResolver());
 }
 
 test('saveHandler on invalid formatted input', async (done) => {
@@ -320,5 +328,24 @@ test('attackHandler disadvantage', async (done) => {
   const result = await handler('da @D @bru');
   expect(result.header).toContain('dagger attack roll:');
   expect(result.header).toContain('Brutus');
+  done();
+});
+
+test('initiativeHandler character check', async (done) => {
+  const handler = await initiativeHandler();
+
+  const result = await handler('@bru');
+  expect(result.header).toContain('Initiative');
+  expect(result.body).toContain('Brutus');
+  done();
+});
+
+test('initiativeHandler all characters', async (done) => {
+  const handler = await initiativeHandler();
+
+  const result = await handler('');
+  expect(result.header).toContain('Initiative');
+  expect(result.body).toContain('Brutus');
+  expect(result.body).toContain('Bobby');
   done();
 });

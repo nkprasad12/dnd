@@ -9,6 +9,7 @@ export enum CommandType {
   Load = '!load',
   Help = '!help',
   Lookup = '!spell',
+  Initiative = '!initiative',
 }
 
 const COMMAND_TYPE_LOOKUP: Map<string, CommandType> = new Map();
@@ -19,6 +20,7 @@ COMMAND_TYPE_LOOKUP.set('!attack', CommandType.Attack);
 COMMAND_TYPE_LOOKUP.set('!load', CommandType.Load);
 COMMAND_TYPE_LOOKUP.set('!help', CommandType.Help);
 COMMAND_TYPE_LOOKUP.set('!spell', CommandType.Lookup);
+COMMAND_TYPE_LOOKUP.set('!initiative', CommandType.Initiative);
 
 /** Represents a partially parsed command. */
 export interface Command {
