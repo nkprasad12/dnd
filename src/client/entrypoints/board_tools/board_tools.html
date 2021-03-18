@@ -17,7 +17,7 @@
 
   <body style="background-color: rgb(39, 39, 39)">
     <div id="panel1" class="split left">
-      <div id="previewBoardStub" style="position: relative"></div>
+      <div id="mainBoard" style="position: relative"></div>
       <div id="rightClickMenuStub"></div>
       <div
         id="addNewIconFormStub"
@@ -31,24 +31,26 @@
         <a class="active" href="./boardTools">Board Tools</a>
       </div>
       <br />
-      <div style="display: flex; flex-direction: row">
-        <div id="activeSelectorStub"></div>
-        <div class="divider"></div>
-        <div id="editSelectorStub"></div>
-        <div class="divider"></div>
+      <div id="sidePanelContent">
+        <div style="display: flex; flex-direction: row">
+          <div id="activeSelectorStub"></div>
+          <div class="divider"></div>
+          <div id="editSelectorStub"></div>
+          <div class="divider"></div>
+        </div>
+        <br />
+        <div style="display: flex; flex-direction: row">
+          <button id="createNewBoard" type="button" class="btn btn-primary">
+            Create New
+          </button>
+        </div>
+
+        <div id="createNewBoardFormStub" style="z-index: 30"></div>
+
+        <br /><br />
+
+        <div id="editingAreaStub"></div>
       </div>
-      <br />
-      <div style="display: flex; flex-direction: row">
-        <button id="createNewBoard" type="button" class="btn btn-primary">
-          Create New
-        </button>
-      </div>
-
-      <div id="createNewBoardFormStub" style="z-index: 30"></div>
-
-      <br /><br />
-
-      <div id="editingAreaStub"></div>
     </div>
   </body>
 </html>

@@ -9,7 +9,7 @@ import {DropdownSelector} from '_client/common/ui_components/dropdown';
 const NEW_BOARD_BUTTON = 'createNewBoard';
 const BOARD_FORM_STUB = 'createNewBoardFormStub';
 
-const PREVIEW_BOARD_STUB = 'previewBoardStub';
+const MAIN_BOARD_STUB = 'mainBoard';
 
 const ACTIVE_SELECTOR_STUB = 'activeSelectorStub';
 const EDIT_SELECTOR_STUB = 'editSelectorStub';
@@ -60,8 +60,8 @@ NewBoardForm.createOnClick(NEW_BOARD_BUTTON, BOARD_FORM_STUB, (model) => {
 });
 
 async function setupEditing(model: BoardModel): Promise<void> {
-  removeChildrenOf(PREVIEW_BOARD_STUB);
-  const board = new GameBoard(PREVIEW_BOARD_STUB, model, await serverPromise);
+  removeChildrenOf(MAIN_BOARD_STUB);
+  const board = new GameBoard(MAIN_BOARD_STUB, model, await serverPromise);
   (await serverPromise).createBoard(model.inner);
   selectorsPromise.then((selectors) => selectors.add(model.inner.id));
   removeChildrenOf(EDITING_AREA_STUB);
