@@ -5,7 +5,6 @@ const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 module.exports = {
   mode: 'production',
   entry: {
-    Info: './src/client/entrypoints/index/index.ts',
     GameBoard: './src/client/entrypoints/game_board/game_board.ts',
     BoardTools: './src/client/entrypoints/board_tools/board_tools.ts',
     Sandbox: './src/client/entrypoints/sandbox/sandbox.ts',
@@ -35,12 +34,6 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      chunks: ['Info'],
-      filename: 'info.html',
-      template: 'src/client/entrypoints/index/index.html',
-      minify: false,
-    }),
     new HtmlWebpackPlugin({
       chunks: ['GameBoard'],
       filename: 'game_board.html',

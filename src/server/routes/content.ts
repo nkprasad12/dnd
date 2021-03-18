@@ -9,10 +9,6 @@ export const contentRouter = express.Router();
 contentRouter.use(ensureLoggedIn('/'));
 contentRouter.use(express.static('genfiles_static'));
 
-contentRouter.get('/index', (_req, res) => {
-  res.sendFile('genfiles_static/info.html', {root: ROOT});
-});
-
 contentRouter.get('/boardTools', (_req, res) => {
   res.sendFile('genfiles_static/board_tools.html', {root: ROOT});
 });
