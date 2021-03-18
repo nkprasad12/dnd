@@ -45,6 +45,7 @@ module.exports = {
   externals: {
     '@google-cloud/storage': 'commonjs @google-cloud/storage',
     'express': 'commonjs express',
+    'express-static-gzip': 'commonjs express-static-gzip',
     'body-parser': 'commonjs body-parser',
     'express-session': 'commonjs express-session',
     'multer': 'commonjs multer',

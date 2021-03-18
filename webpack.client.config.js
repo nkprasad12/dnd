@@ -1,13 +1,16 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const CompressionPlugin = require("compression-webpack-plugin");
+
+const shouldMinimize = false;
 
 module.exports = {
   mode: 'production',
   entry: {
     GameBoard: './src/client/entrypoints/game_board/game_board.ts',
     BoardTools: './src/client/entrypoints/board_tools/board_tools.ts',
-    Sandbox: './src/client/entrypoints/sandbox/sandbox.ts',
+    Sandbox: './src/client/entrypoints/sandbox/sandbox.tsx',
   },
   watchOptions: {
     ignored: /node_modules/,
@@ -43,23 +46,24 @@ module.exports = {
       chunks: ['GameBoard'],
       filename: 'game_board.html',
       template: 'src/client/entrypoints/game_board/game_board.html',
-      minify: false,
+      minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({
       chunks: ['BoardTools'],
       filename: 'board_tools.html',
       template: 'src/client/entrypoints/board_tools/board_tools.html',
-      minify: false,
+      minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({
       chunks: ['Sandbox'],
       filename: 'sandbox.html',
       template: 'src/client/entrypoints/sandbox/sandbox.html',
-      minify: false,
+      minify: shouldMinimize,
     }),
+    new CompressionPlugin(),
   ],
   optimization: {
-    minimize: false,
+    minimize: shouldMinimize,
     splitChunks: {
       chunks: 'all',
     },
