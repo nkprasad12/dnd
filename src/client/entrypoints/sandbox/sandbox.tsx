@@ -8,12 +8,12 @@ interface HTMLInputEvent extends Event {
   target: HTMLInputElement & EventTarget;
 }
 
-const textStyle = {
+const textStyle: React.CSSProperties = {
   color: 'rgb(143, 77, 23)',
 };
 
 class ShoppingList extends React.Component {
-  render() {
+  render(): JSX.Element {
     return (
       <div className="shopping-list">
         <h1 style={textStyle}>Shopping List for Nitin</h1>
