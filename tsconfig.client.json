@@ -9,6 +9,7 @@
     "module": "es2015",
     "target": "es2015",
     "moduleResolution": "node",
+    "jsx": "react",
 
     /* Strict Type-Checking Options */
     "strict": true,                           /* Enable all strict type-checking options. */

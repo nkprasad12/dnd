@@ -7,7 +7,7 @@ import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {ChatBox} from '_client/chat_box/chat_box';
 
-const GAME_HOLDER_STUB = 'canvasHolder';
+const MAIN_BOARD_STUB = 'mainBoard';
 
 async function loadActiveBoard(): Promise<void> {
   setLabel('Connecting to game server');
@@ -21,13 +21,13 @@ async function loadActiveBoard(): Promise<void> {
   const remoteModel = await server.requestBoard(boardId);
   setLabel('Loading images (may take a few moments)');
   const model = await BoardModel.createFromRemote(remoteModel);
-  removeChildrenOf(GAME_HOLDER_STUB);
-  new GameBoard(GAME_HOLDER_STUB, model, server);
+  removeChildrenOf(MAIN_BOARD_STUB);
+  new GameBoard(MAIN_BOARD_STUB, model, server);
 }
 
 function setLabel(message: string) {
-  removeChildrenOf(GAME_HOLDER_STUB);
-  addLabel(getElementById(GAME_HOLDER_STUB), message, TEXT_COLOR);
+  removeChildrenOf(MAIN_BOARD_STUB);
+  addLabel(getElementById(MAIN_BOARD_STUB), message, TEXT_COLOR);
 }
 
 const boardClientPromise = BoardClient.get();
