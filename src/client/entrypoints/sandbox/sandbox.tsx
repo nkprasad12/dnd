@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import {connectTo} from '_client/server/socket_connection';
 import {Socket} from '_client/server/socket';
 import {saveImageToServer} from '_client/board_tools/board_form';
