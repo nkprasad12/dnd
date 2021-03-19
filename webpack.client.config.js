@@ -78,12 +78,8 @@ module.exports = {
           test: /[\\/]node_modules[\\/]/,
           priority: 0,
           reuseExistingChunk: true,
-          name(module, chunks, cacheGroupKey) {
-            const moduleFileName = module
-              .identifier()
-              .split('/')
-              .reduceRight((item) => item);
-            return `${cacheGroupKey}.${moduleFileName}`;
+          name(_module, _chunks, cacheGroupKey) {
+            return `${cacheGroupKey}`;
           },
         },
         srcBundle: {
