@@ -52,7 +52,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       chunks: ['BoardTools'],
       filename: 'board_tools.html',
-      template: 'src/client/entrypoints/board_tools/board_tools.html',
+      template: 'src/client/entrypoints/game_board/game_board.html',
       minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({
