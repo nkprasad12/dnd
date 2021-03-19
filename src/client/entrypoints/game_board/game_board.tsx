@@ -17,7 +17,7 @@ MainPanels.setupWithNavbar(GAME_BOARD_NAVBAR);
 
 async function loadActiveBoard(): Promise<void> {
   setLabel('Connecting to game server');
-  const server = await boardClientPromise;
+  const server = await BoardClient.get();
   const boardId = await server.requestActiveBoardId();
   if (boardId === undefined) {
     setLabel('Either there is no active board, or an error occurred.');
@@ -35,8 +35,6 @@ function setLabel(message: string) {
   removeChildrenOf(MAIN_BOARD_STUB);
   addLabel(getElementById(MAIN_BOARD_STUB), message, TEXT_COLOR);
 }
-
-const boardClientPromise = BoardClient.get();
 
 connectTo('chat').then((socket) => {
   const client = new ChatClient(socket);

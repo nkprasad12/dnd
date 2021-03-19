@@ -28,6 +28,31 @@ body {
   color: white;
 }
 
+.topnav div.inactive {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 10px 8px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.topnav div:hover {
+  background-color: #ddd;
+  color: black;
+  cursor: pointer;
+}
+
+.topnav div.active {
+  background-color: #4caf50;
+  color: white;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 10px 8px;
+  text-align: center;
+  float: left;
+}
+
 li a:hover {
   background-color: #111;
 }
@@ -66,17 +91,6 @@ li a:hover {
   height: 100%;
   float: left;
 }
-
-/* .flex-parent {
-  display: flex;
-}
-.flex-child {
-  flex: 1;
-} */
-
-/* .inline-block-child {
-  display: inline-block;
-} */
 
 .split {
   height: 100%;

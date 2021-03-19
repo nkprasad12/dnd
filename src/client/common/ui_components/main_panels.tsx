@@ -4,10 +4,22 @@ import ReactDOM from 'react-dom';
 export const BOARD_TOOLS_NAVBAR: JSX.Element = (
   <div>
     <div className="topnav">
-      <a href="./gameBoard">Game Board</a>
-      <a className="active" href="./boardTools">
+      <div
+        className="inactive"
+        onClick={() => {
+          window.location.href = './gameBoard';
+        }}
+      >
+        Game Board
+      </div>
+      <div
+        className="active"
+        onClick={() => {
+          window.location.href = './boardTools';
+        }}
+      >
         Board Tools
-      </a>
+      </div>
     </div>
     <br />
   </div>
@@ -15,10 +27,22 @@ export const BOARD_TOOLS_NAVBAR: JSX.Element = (
 
 export const GAME_BOARD_NAVBAR: JSX.Element = (
   <div className="topnav">
-    <a className="active" href="./gameBoard">
+    <div
+      className="active"
+      onClick={() => {
+        window.location.href = './gameBoard';
+      }}
+    >
       Game Board
-    </a>
-    <a href="./boardTools">Board Tools</a>
+    </div>
+    <div
+      className="inactive"
+      onClick={() => {
+        window.location.href = './boardTools';
+      }}
+    >
+      Board Tools
+    </div>
   </div>
 );
 
