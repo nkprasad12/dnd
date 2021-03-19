@@ -6,3 +6,4 @@ genfiles_static/
 data/
 coverage/
 .eslintcache
+app.yaml
