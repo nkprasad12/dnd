@@ -8,8 +8,8 @@ const shouldMinimize = false;
 module.exports = {
   mode: 'production',
   entry: {
-    GameBoard: './src/client/entrypoints/game_board/game_board.ts',
-    BoardTools: './src/client/entrypoints/board_tools/board_tools.ts',
+    GameBoard: './src/client/entrypoints/game_board/game_board.tsx',
+    BoardTools: './src/client/entrypoints/board_tools/board_tools.tsx',
     Sandbox: './src/client/entrypoints/sandbox/sandbox.tsx',
   },
   watchOptions: {

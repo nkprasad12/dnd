@@ -6,8 +6,14 @@ import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {ChatBox} from '_client/chat_box/chat_box';
+import {
+  GAME_BOARD_NAVBAR,
+  MainPanels,
+} from '_client/common/ui_components/main_panels';
 
 const MAIN_BOARD_STUB = 'mainBoard';
+
+MainPanels.setupWithNavbar(GAME_BOARD_NAVBAR);
 
 async function loadActiveBoard(): Promise<void> {
   setLabel('Connecting to game server');
