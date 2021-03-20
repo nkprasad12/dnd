@@ -1,10 +1,11 @@
+import {Hideable} from '_client/common/ui_components/hideable';
 import * as UiUtil from '_client/common/ui_util';
 import {ChatMessage} from '_common/chat/chat_model';
 
 const INPUT_HINT = 'Type !help for commands';
 const SIDE_PANEL = 'sidePanelContent';
 
-export class ChatBoxView {
+export class ChatBoxView implements Hideable {
   static create(
     parent: HTMLElement,
     listener: (message: ChatMessage) => any
@@ -18,13 +19,15 @@ export class ChatBoxView {
 
   private input: HTMLTextAreaElement;
   private messages: HTMLDivElement;
+  private root: HTMLElement;
 
   private constructor(
-    parent: HTMLElement,
+    private readonly parent: HTMLElement,
     listener: (message: ChatMessage) => any
   ) {
-    this.input = UiUtil.addTextArea(parent, 'chat-input', INPUT_HINT, 1);
-    this.messages = UiUtil.addDiv(parent);
+    this.root = document.createElement('div');
+    this.input = UiUtil.addTextArea(this.root, 'chat-input', INPUT_HINT, 1);
+    this.messages = UiUtil.addDiv(this.root);
     this.messages.style.overflowY = 'auto';
     this.messages.style.height = '100%';
     this.input.onkeyup = (event) => {
@@ -50,5 +53,13 @@ export class ChatBoxView {
       UiUtil.addParagraph(message, content.header);
     }
     UiUtil.addParagraph(message, content.body);
+  }
+
+  show(): void {
+    this.parent.appendChild(this.root);
+  }
+
+  hide(): void {
+    this.parent.removeChild(this.root);
   }
 }

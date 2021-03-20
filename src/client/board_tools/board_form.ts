@@ -411,11 +411,11 @@ export interface BoardUpdateData {
 /** Class for a form requesting information to make a game board. */
 export class BoardUpdateForm extends BaseSimpleForm {
   static create(
-    parentId: string,
+    parent: HTMLElement,
     modelHandler: ModelHandler,
     onUpdate: (data: BoardUpdateData) => any
   ): void {
-    new BoardUpdateForm(getElementById(parentId), modelHandler, onUpdate);
+    new BoardUpdateForm(parent, modelHandler, onUpdate);
   }
 
   private constructor(
@@ -522,12 +522,12 @@ abstract class BaseDialogForm {
 /** Class for a form requesting information to make a game board. */
 export class NewBoardForm extends BaseDialogForm {
   static createOnClick(
-    bindingElementId: string,
-    parentId: string,
+    bindingElement: HTMLElement,
+    parent: HTMLElement,
     onNewBoard: (model: BoardModel) => any
   ): void {
-    const boardForm = new NewBoardForm(getElementById(parentId), onNewBoard);
-    getElementById(bindingElementId).onclick = () => {
+    const boardForm = new NewBoardForm(parent, onNewBoard);
+    bindingElement.onclick = () => {
       boardForm.show();
     };
   }
