@@ -24,6 +24,7 @@ const optionBoxMap: Map<NavbarOption, Promise<Hideable>> = new Map([
   [NavbarOption.EDITOR, Promise.resolve(setupEditorPanel())],
 ]);
 ReactDOM.render(<Navbar />, document.querySelector('#navbarStub'));
+showBoxFor(NavbarOption.MAIN);
 
 async function showBoxFor(option: NavbarOption): Promise<void> {
   const boxes = Array(...optionBoxMap.values());
@@ -51,6 +52,7 @@ export function Navbar(): JSX.Element {
         onClick={() => {
           setSelected(NavbarOption.MAIN);
           showBoxFor(NavbarOption.MAIN);
+          setupActiveBoard();
         }}
       >
         Game Board
