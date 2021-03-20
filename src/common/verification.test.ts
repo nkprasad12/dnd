@@ -1,4 +1,11 @@
-import {isGrid, isStringArray, maybeMerge, prefer} from '_common/verification';
+import {
+  inRange,
+  isGrid,
+  isStringArray,
+  maybeMerge,
+  notUndefined,
+  prefer,
+} from '_common/verification';
 
 describe('isStringArray', () => {
   it('on empty array returns true', () => {
@@ -123,5 +130,37 @@ describe('maybeMerge', () => {
       num: 420,
       str: 'Blaze it',
     });
+  });
+});
+
+describe('notUndefined', () => {
+  it('returns true on defined', () => {
+    expect(notUndefined(0)).toBe(true);
+  });
+
+  it('returns false on undefined', () => {
+    expect(notUndefined(undefined)).toBe(false);
+  });
+});
+
+describe('inRange', () => {
+  it('Returns true for number in inclusive range', () => {
+    expect(inRange(1, 10)(7)).toBe(true);
+  });
+
+  it('Returns true for number on lower boundary', () => {
+    expect(inRange(1, 10)(1)).toBe(true);
+  });
+
+  it('Returns true for number on upper boundary', () => {
+    expect(inRange(1, 10)(10)).toBe(true);
+  });
+
+  it('Returns false for number below range', () => {
+    expect(inRange(1, 10)(0)).toBe(false);
+  });
+
+  it('Returns false for number above range', () => {
+    expect(inRange(1, 10)(11)).toBe(false);
   });
 });

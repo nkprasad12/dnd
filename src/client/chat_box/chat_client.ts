@@ -1,4 +1,4 @@
-import {Socket} from '_client/server/socket_connection';
+import {Socket} from '_client/server/socket';
 import * as Events from '_common/chat/chat_events';
 import {ChatMessage, isChatMessage} from '_common/chat/chat_model';
 

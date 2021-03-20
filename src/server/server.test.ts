@@ -1,8 +1,10 @@
 import fs from 'fs';
+import mockfs from 'mock-fs';
 import path from 'path';
 import supertest from 'supertest';
 
 import {checkDefined} from '_common/preconditions';
+import {FakeBackupStorage} from '_server/storage/fake_backup_storage';
 import {ROOT} from '_server/util/file_util';
 
 const EXPECTED_FILE = 'Hasdrubal.txt';
@@ -26,6 +28,12 @@ function request(): supertest.SuperTest<supertest.Test> {
   return checkDefined(requestSingleton);
 }
 
+jest.mock('_server/storage/google_cloud_storage', () => {
+  return {
+    GoogleCloudStorage: FakeBackupStorage,
+  };
+});
+
 beforeAll(() => {
   jest.resetModules();
   requestSingleton = supertest.agent(prepareServer());
@@ -37,9 +45,20 @@ afterAll(() => {
   fs.rmdirSync(path.join(ROOT, 'data'));
 });
 
-beforeEach(() => {});
+const TEMPLATE_ROOT = path.join(ROOT, 'public', 'templates');
+const LOGIN_PAGE = '<html>login page</html>';
 
-afterEach(() => {});
+beforeEach(() => {
+  mockfs({
+    [TEMPLATE_ROOT]: {
+      'login.html': LOGIN_PAGE,
+    },
+  });
+});
+
+afterEach(() => {
+  mockfs.restore();
+});
 
 test('Unauthenticated static request performs redirect', async (done) => {
   const response = await request().get('/templates/board_tools.html');
@@ -77,7 +96,7 @@ test('Unauthenticated home route succeeds', async (done) => {
   const response = await request().get('/');
 
   expect(response.status).toBe(200);
-  expect(response.text).toBe('TODO: Find a better solution for this.\n');
+  expect(response.text).toBe(LOGIN_PAGE);
   done();
 });
 

@@ -2,6 +2,7 @@ import {Location} from '_common/coordinates';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
 import {BoardModel} from '_client/game_board/model/board_model';
+import {Grid} from '_common/util/grid';
 
 export class ContextMenu {
   static create(
@@ -16,17 +17,23 @@ export class ContextMenu {
 
   onNewModel(model: BoardModel): void {
     const invalidItems: ContextMenuItem[] = [];
-    const selectedTiles = model.localSelection.length;
+    const selectedTiles =
+      model.localSelection.area === undefined
+        ? []
+        : Grid.SimpleArea.toTiles(model.localSelection.area);
+    const selection = model.localSelection.area;
     const hasToken =
-      selectedTiles > 0 && this.hasTokenAt(model, model.localSelection[0]);
-    if (selectedTiles > 1) {
+      selection !== undefined && this.hasTokenAt(model, selection.start);
+    const oneTileSelected = selectedTiles.length === 1;
+    const multipleTilesSelected = selectedTiles.length > 1;
+    if (multipleTilesSelected) {
       invalidItems.push(ContextMenuItem.AddToken);
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
-    } else if (selectedTiles === 1 && !hasToken) {
+    } else if (oneTileSelected && !hasToken) {
       invalidItems.push(ContextMenuItem.EditToken);
       invalidItems.push(ContextMenuItem.CopyToken);
-    } else if (selectedTiles === 1 && hasToken) {
+    } else if (oneTileSelected && hasToken) {
       invalidItems.push(ContextMenuItem.AddToken);
     }
 
@@ -35,13 +42,15 @@ export class ContextMenu {
     let noFogTiles = 0;
     let highlightedTiles = 0;
 
-    for (const tile of model.localSelection) {
-      const fogValue = model.fogOfWarState[tile.col][tile.row];
-      fullFogTiles += fogValue === '1' ? 1 : 0;
-      peekedFogTiles += fogValue === '2' ? 1 : 0;
-      noFogTiles += fogValue === '0' ? 1 : 0;
+    for (const tile of selectedTiles) {
+      const fogValue = model.inner.fogOfWar[tile.col][tile.row];
+      const isFoggy = fogValue === '1';
+      const isPeeked = model.peekedTiles[tile.col][tile.row];
+      fullFogTiles += isFoggy && !isPeeked ? 1 : 0;
+      peekedFogTiles += isFoggy && isPeeked ? 1 : 0;
+      noFogTiles += !isFoggy ? 1 : 0;
       highlightedTiles +=
-        model.publicSelection[tile.col][tile.row] === '0' ? 0 : 1;
+        model.inner.publicSelection[tile.col][tile.row] === '0' ? 0 : 1;
     }
 
     if (fullFogTiles + peekedFogTiles === 0) {

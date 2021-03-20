@@ -15,7 +15,7 @@ export interface Location {
 }
 
 export function areLocationsEqual(a: Location, b: Location): boolean {
-  return a.col == b.col && a.row == b.row;
+  return a.col === b.col && a.row === b.row;
 }
 
 /** Distance by the DnD metric. */

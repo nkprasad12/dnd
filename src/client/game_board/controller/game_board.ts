@@ -5,7 +5,6 @@ import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
-import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {getElementById} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {BoardUpdateData} from '_client/board_tools/board_form';
@@ -14,7 +13,7 @@ import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_mode
 
 export class GameBoard {
   private readonly view: BoardView;
-  private readonly modelHandler: ModelHandler;
+  readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
 
@@ -24,22 +23,15 @@ export class GameBoard {
       getElementById('rightClickMenuStub'),
       (item) => this.onContextMenuClick(item)
     );
-    const remoteBoard = new RemoteBoard(
-      BoardModel.createRemote(model),
-      server,
-      (remoteDiff) => {
-        this.modelHandler.applyRemoteDiff(remoteDiff);
-      }
-    );
-    this.modelHandler = new ModelHandler(
-      model,
-      [
-        UpdateListener.forAll((update) => this.view.bind(update)),
-        UpdateListener.forLocal((update) => menu.onNewModel(update)),
-        UpdateListener.forLocal((update) => remoteBoard.onLocalUpdate(update)),
-      ],
-      this.view
-    );
+    this.modelHandler = new ModelHandler(model, this.view);
+    const remoteBoard = new RemoteBoard(server, this.modelHandler);
+    this.modelHandler.addListeners([
+      UpdateListener.forAll((board) => this.view.bind(board)),
+      UpdateListener.forLocal((board) => menu.onNewModel(board)),
+      UpdateListener.forLocal((board, diff) =>
+        remoteBoard.onLocalUpdate(board, diff)
+      ),
+    ]);
     this.inputHandler = new InteractionStateMachine(this.modelHandler);
     this.canvasListener = new InputListener(
       this.view.topCanvas,
@@ -48,17 +40,19 @@ export class GameBoard {
   }
 
   updateGridParameters(options: BoardUpdateData): void {
-    const model = this.modelHandler.copyModel();
-    model.tileSize = options.tileSize;
-    model.gridOffset = options.offset;
-    this.modelHandler.update(model);
+    const model = this.modelHandler.getModel().inner;
+    this.modelHandler.applyLocalDiff({
+      inner: {
+        tileSize: options.tileSize,
+        gridOffset: options.offset,
+        rows: options.rows,
+        cols: options.cols,
+        id: model.id,
+      },
+    });
   }
 
   private onContextMenuClick(item: ContextMenuItem): void {
     this.inputHandler.onContextMenuClick(item);
-  }
-
-  getRemoteModel(): RemoteBoardModel {
-    return BoardModel.createRemote(this.modelHandler.copyModel());
   }
 }

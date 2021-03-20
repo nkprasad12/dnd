@@ -1,6 +1,7 @@
 import Split from 'split.js';
 
-import {Socket, connectTo} from '_client/server/socket_connection';
+import {connectTo} from '_client/server/socket_connection';
+import {Socket} from '_client/server/socket';
 import {saveImageToServer} from '_client/board_tools/board_form';
 
 interface HTMLInputEvent extends Event {

@@ -1,308 +1,215 @@
 import {ContextMenuModel} from '_client/game_board/context_menu/context_menu_model';
-import {Location, Point} from '_common/coordinates';
-import {getId} from '_client/common/id_generator';
 import {
   RemoteBoardDiff,
   RemoteBoardModel,
 } from '_common/board/remote_board_model';
-import {LoadedImage, loadImage, loadImages} from '_client/utils/image_utils';
+import {
+  getBackgroundData,
+  LoadedImage,
+  loadImages,
+} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
-import {TokenModel} from './token_model';
+import {TokenDiff, TokenModel} from './token_model';
+import {maybeMerge, notUndefined, prefer} from '_common/verification';
+import {getId} from '_client/common/id_generator';
+import {Grid, createGrid} from '_common/util/grid';
 
 /** Data model representing the game board. */
-export class BoardModel {
-  width: number;
-  height: number;
-  rows: number;
-  cols: number;
-
-  private constructor(
-    readonly id: string,
-    public name: string,
-    public backgroundImage: LoadedImage,
-    public tileSize: number,
-    public tokens: TokenModel[],
-    public contextMenuState: ContextMenuModel,
-    public publicSelection: string[][],
-    public localSelection: Location[],
-    public gridOffset: Point,
-    public scale: number,
-    public fogOfWarState: string[][]
-  ) {
-    this.backgroundImage = backgroundImage.deepCopy();
-    this.tileSize = Math.round(tileSize);
-    if (this.tileSize != tileSize) {
-      console.log('Rounded input tileSize to ' + this.tileSize);
-    }
-
-    this.width = <number>backgroundImage.image.width;
-    this.height = <number>backgroundImage.image.height;
-    this.cols = Math.ceil(this.width / this.tileSize);
-    this.rows = Math.ceil(this.height / this.tileSize);
-
-    if (
-      gridOffset.x < 0 ||
-      gridOffset.x >= tileSize ||
-      gridOffset.y < 0 ||
-      gridOffset.y >= tileSize
-    ) {
-      console.log('Grid offset is invalid! Ignoring.');
-      this.gridOffset = {x: 0, y: 0};
-    }
-    this.tokens = tokens.slice();
-    this.localSelection = localSelection.slice();
-    this.contextMenuState = contextMenuState.deepCopy();
-    const usePublicSelection =
-      publicSelection.length == this.cols &&
-      publicSelection[0].length == this.rows;
-    this.publicSelection = Array(this.cols);
-    for (let i = 0; i < this.cols; i++) {
-      if (usePublicSelection) {
-        this.publicSelection[i] = publicSelection[i].slice();
-      } else {
-        this.publicSelection[i] = Array(this.rows).fill('0');
-      }
-    }
-    const useFowState =
-      fogOfWarState.length == this.cols && fogOfWarState[0].length == this.rows;
-    this.fogOfWarState = Array(this.cols);
-    for (let i = 0; i < this.cols; i++) {
-      if (useFowState) {
-        this.fogOfWarState[i] = fogOfWarState[i].slice();
-      } else {
-        this.fogOfWarState[i] = Array(this.rows).fill('0');
-      }
-    }
-  }
-
-  deepCopy(): BoardModel {
-    return BoardModel.Builder.from(this).build();
-  }
-
-  static createRemote(model: BoardModel): RemoteBoardModel {
-    const fogOfWar: string[][] = [];
-    for (const column of model.fogOfWarState) {
-      fogOfWar.push(column.map((item) => (item === '2' ? '1' : item)));
-    }
-    return new RemoteBoardModel(
-      model.id,
-      model.name,
-      model.backgroundImage.source,
-      model.tileSize,
-      model.tokens.map((tokenModel) => tokenModel.inner),
-      fogOfWar,
-      model.publicSelection.map((col) => col.slice()),
-      model.gridOffset,
-      model.cols,
-      model.rows
-    );
-  }
-
+export class BoardModel implements Readonly<MutableBoardModel> {
+  /** Creates a new full model from a remote board model. */
   static async createFromRemote(
     remoteModel: RemoteBoardModel
   ): Promise<BoardModel> {
     const imageSources = remoteModel.tokens.map((token) => token.imageSource);
     imageSources.push(remoteModel.imageSource);
     const imageMap = await loadImages(imageSources);
-    return BoardModel.Builder.fromRemote(remoteModel, imageMap).build();
+    const background = new LoadedImage(
+      checkDefined(imageMap.get(remoteModel.imageSource)),
+      remoteModel.imageSource
+    );
+    const tokens = remoteModel.tokens.map((remoteToken) =>
+      TokenModel.fromRemoteAndMap(remoteToken, imageMap)
+    );
+    return new BoardModel(
+      remoteModel,
+      background,
+      {clickPoint: {x: 0, y: 0}, isVisible: false},
+      createGrid(remoteModel.rows, remoteModel.cols, false),
+      tokens
+    );
   }
 
-  async mergedFrom(diff: RemoteBoardDiff): Promise<BoardModel> {
-    const newModel = this.deepCopy();
-    for (const tokenDiff of diff.tokenDiffs) {
-      for (let i = 0; i < newModel.tokens.length; i++) {
-        if (newModel.tokens[i].inner.id === tokenDiff.id) {
-          newModel.tokens[i] = TokenModel.merge(newModel.tokens[i], {
-            inner: tokenDiff,
-          });
-        }
-      }
-    }
-    newModel.tokens.filter(
-      (token) => !diff.removedTokens.includes(token.inner.id)
+  static createNew(
+    name: string,
+    backgroundImage: LoadedImage,
+    tileSize: number
+  ): BoardModel {
+    const backgroundData = getBackgroundData(backgroundImage, tileSize, {
+      x: 0,
+      y: 0,
+    });
+    const inner: RemoteBoardModel = {
+      id: getId(),
+      tileSize: tileSize,
+      name: name,
+      imageSource: backgroundImage.source,
+      tokens: [],
+      gridOffset: {x: 0, y: 0},
+      rows: backgroundData.rows,
+      cols: backgroundData.cols,
+      width: backgroundData.width,
+      height: backgroundData.height,
+      publicSelection: createGrid(
+        backgroundData.rows,
+        backgroundData.cols,
+        '0'
+      ),
+      fogOfWar: createGrid(backgroundData.rows, backgroundData.cols, '0'),
+    };
+    return new BoardModel(
+      inner,
+      backgroundImage,
+      {clickPoint: {x: 0, y: 0}, isVisible: false},
+      createGrid(backgroundData.rows, backgroundData.cols, false)
     );
-    const newTokens = await Promise.all(
-      diff.newTokens.map(TokenModel.fromRemote)
-    );
-    newModel.tokens = newModel.tokens.concat(newTokens);
-    console.log(newModel.tokens);
-    if (diff.tileSize) {
-      newModel.tileSize = diff.tileSize;
-    }
-    if (diff.gridOffset) {
-      newModel.gridOffset = diff.gridOffset;
-    }
-    if (diff.imageSource) {
-      newModel.backgroundImage = await loadImage(diff.imageSource);
-    }
-    newModel.fogOfWarState = this.fogOfWarState.map((col) => col.slice());
-    if (diff.fogOfWarDiffs !== undefined) {
-      for (const d of diff.fogOfWarDiffs) {
-        newModel.fogOfWarState[d.col][d.row] = d.isFogOn ? '1' : '0';
-      }
-    }
-    newModel.publicSelection = this.publicSelection;
-    if (diff.publicSelectionDiffs !== undefined) {
-      for (const d of diff.publicSelectionDiffs) {
-        newModel.publicSelection[d.col][d.row] = d.value;
-      }
-    }
-
-    return BoardModel.Builder.from(newModel).build();
   }
 
-  static Builder = class {
-    static from(model: BoardModel): BoardModel.Builder {
-      return new BoardModel.Builder()
-        .setId(model.id)
-        .setName(model.name)
-        .setBackgroundImage(model.backgroundImage)
-        .setTileSize(model.tileSize)
-        .setTokens(model.tokens)
-        .setContextMenu(model.contextMenuState)
-        .setLocalSelection(model.localSelection)
-        .setPublicSelection(model.publicSelection)
-        .setGridOffset(model.gridOffset)
-        .setScale(model.scale)
-        .setFogOfWarState(model.fogOfWarState);
+  private constructor(
+    readonly inner: RemoteBoardModel,
+    readonly backgroundImage: LoadedImage,
+    readonly contextMenuState: ContextMenuModel,
+    readonly peekedTiles: ReadonlyArray<ReadonlyArray<boolean>>,
+    readonly tokens: readonly TokenModel[] = [],
+    readonly localSelection: {readonly area?: Grid.SimpleArea} = {},
+    readonly scale: number = 1
+  ) {}
+
+  async mergedWith(diff: BoardDiff): Promise<BoardModel> {
+    if (
+      diff.inner !== undefined &&
+      (diff.inner as any).tokenDiffs !== undefined
+    ) {
+      throw new Error('Inner diff of BoardDiff cannot have tokenDiffs');
     }
+    const tokens = await this.mergeTokens(diff.inner, diff.tokenDiffs);
 
-    static fromRemote(
-      model: RemoteBoardModel,
-      imageMap: Map<string, CanvasImageSource>
-    ): BoardModel.Builder {
-      const image = checkDefined(imageMap.get(model.imageSource));
-      const loadedImage = new LoadedImage(image, model.imageSource);
-      const tokens = model.tokens.map((token) =>
-        TokenModel.fromRemoteAndMap(token, imageMap)
-      );
-      return new BoardModel.Builder()
-        .setId(model.id)
-        .setName(model.name)
-        .setBackgroundImage(loadedImage)
-        .setTileSize(model.tileSize)
-        .setTokens(tokens)
-        .setPublicSelection(model.publicSelection)
-        .setGridOffset(model.gridOffset)
-        .setFogOfWarState(model.fogOfWar);
+    const dimsChanged =
+      (diff.inner?.rows !== undefined &&
+        diff.inner?.rows !== this.inner.rows) ||
+      (diff.inner?.cols !== undefined && diff.inner?.cols !== this.inner.cols);
+
+    let peekedTiles = this.peekedTiles;
+    if (diff.peekDiff !== undefined && !dimsChanged) {
+      peekedTiles = Grid.applySimpleDiff(peekedTiles, diff.peekDiff);
     }
-
-    static forNewBoard(): BoardModel.Builder {
-      const id = getId();
-      console.log('Warning: creating new board with id: ' + id);
-      return new BoardModel.Builder().setId(id);
-    }
-
-    constructor() {}
-
-    private id?: string = undefined;
-    private name?: string = undefined;
-    private backgroundImage?: LoadedImage = undefined;
-    private tileSize = -1;
-    private tokens: TokenModel[] = [];
-    private contextMenu: ContextMenuModel = new ContextMenuModel(
-      {x: 0, y: 0},
-      false
+    peekedTiles = dimsChanged
+      ? createGrid(
+          prefer(diff.inner?.rows, this.inner.rows),
+          prefer(diff.inner?.cols, this.inner.cols),
+          false
+        )
+      : peekedTiles;
+    return new BoardModel(
+      maybeMerge(
+        this.inner,
+        BoardDiff.extractRemoteDiff(this.inner.id, diff),
+        RemoteBoardModel.mergedWith
+      ),
+      this.backgroundImage,
+      prefer(diff.contextMenuState, this.contextMenuState),
+      peekedTiles,
+      tokens,
+      prefer(diff.localSelection, this.localSelection),
+      prefer(diff.scale, this.scale)
     );
-    private localSelection: Location[] = [];
-    private fogOfWarState: string[][] = [];
-    private gridOffset: Point = {x: 0, y: 0};
-    private publicSelection: string[][] = [];
-    private scale = 1;
+  }
 
-    private setId(id: string): BoardModel.Builder {
-      this.id = id;
-      return this;
-    }
-
-    setBackgroundImage(image: LoadedImage): BoardModel.Builder {
-      this.backgroundImage = image;
-      return this;
-    }
-
-    setTileSize(tileSize: number): BoardModel.Builder {
-      this.tileSize = tileSize;
-      return this;
-    }
-
-    setTokens(tokens: TokenModel[]): BoardModel.Builder {
-      this.tokens = tokens;
-      return this;
-    }
-
-    addToken(token: TokenModel): BoardModel.Builder {
-      this.tokens.push(token);
-      return this;
-    }
-
-    setContextMenu(contextMenu: ContextMenuModel): BoardModel.Builder {
-      this.contextMenu = contextMenu;
-      return this;
-    }
-
-    setFogOfWarState(state: string[][]): BoardModel.Builder {
-      this.fogOfWarState = state;
-      return this;
-    }
-
-    setLocalSelection(selection: Location[]): BoardModel.Builder {
-      this.localSelection = selection;
-      return this;
-    }
-
-    setPublicSelection(selection: string[][]): BoardModel.Builder {
-      this.publicSelection = selection;
-      return this;
-    }
-
-    setScale(scale: number): BoardModel.Builder {
-      this.scale = scale;
-      return this;
-    }
-
-    setGridOffset(gridOffset: Point): BoardModel.Builder {
-      this.gridOffset = gridOffset;
-      return this;
-    }
-
-    setName(name: string): BoardModel.Builder {
-      if (name.length === 0) {
-        throw new Error('Board name can not be empty!');
-      }
-      this.name = name;
-      return this;
-    }
-
-    build(): BoardModel {
-      if (this.id === undefined) {
-        throw new Error('BoardModel.Builder requires id');
-      }
-      if (this.backgroundImage === undefined) {
-        throw new Error('BoardModel.Builder requires backgroundImage');
-      }
-      if (this.tileSize < 1) {
-        throw new Error('BoardModel.Builder requires a tileSize >= 1');
-      }
-      if (this.name === undefined) {
-        throw new Error('BoardModel.Builder must have a name');
-      }
-      return new BoardModel(
-        this.id,
-        this.name,
-        this.backgroundImage,
-        this.tileSize,
-        this.tokens,
-        this.contextMenu,
-        this.publicSelection,
-        this.localSelection,
-        this.gridOffset,
-        this.scale,
-        this.fogOfWarState
+  private async mergeTokens(
+    diff?: PrunedRemoteBoardDiff,
+    tokenDiffs?: TokenDiff[]
+  ): Promise<readonly TokenModel[]> {
+    let result = this.tokens;
+    if (
+      diff !== undefined &&
+      diff.removedTokens &&
+      diff.removedTokens.length > 0
+    ) {
+      result = result.filter(
+        (token) => !prefer(diff.removedTokens, []).includes(token.inner.id)
       );
     }
-  }; // Builder
+    if (tokenDiffs !== undefined && tokenDiffs.length > 0) {
+      result = result.map((token) => {
+        const diffMatch = tokenDiffs.find(
+          (tokenDiff) => tokenDiff.inner?.id === token.inner.id
+        );
+        return diffMatch === undefined
+          ? token
+          : TokenModel.merge(token, diffMatch);
+      });
+    }
+    if (diff !== undefined && diff.newTokens && diff.newTokens.length > 0) {
+      result = result.concat(
+        await Promise.all(diff.newTokens.map(TokenModel.fromRemote))
+      );
+    }
+    return result;
+  }
 }
 
-export namespace BoardModel {
-  export type Builder = InstanceType<typeof BoardModel.Builder>;
+interface MutableBoardModel {
+  backgroundImage: LoadedImage;
+  inner: RemoteBoardModel;
+  contextMenuState: ContextMenuModel;
+  peekedTiles: ReadonlyArray<ReadonlyArray<boolean>>;
+  tokens: readonly TokenModel[];
+  localSelection: {area?: Grid.SimpleArea};
+  scale: number;
+}
+
+type PrunedRemoteBoardDiff = Omit<RemoteBoardDiff, 'tokenDiffs'>;
+
+interface AdditionalFields {
+  inner?: PrunedRemoteBoardDiff;
+  tokenDiffs?: TokenDiff[];
+  peekDiff?: Grid.SimpleDiff<boolean>;
+}
+
+export type BoardDiff = Partial<
+  Omit<MutableBoardModel, 'inner' | 'mergedFrom'>
+> &
+  AdditionalFields;
+
+export namespace BoardDiff {
+  export function extractRemoteDiff(
+    boardId: string,
+    diff: BoardDiff
+  ): RemoteBoardDiff | undefined {
+    const remoteDiff = diff.inner;
+    const tokenDiffs = diff.tokenDiffs;
+    if (remoteDiff === undefined && tokenDiffs === undefined) {
+      return undefined;
+    }
+    const remoteTokenDiffs = prefer(
+      tokenDiffs?.map((tokenDiff) => tokenDiff.inner).filter(notUndefined),
+      []
+    );
+    const result = prefer(remoteDiff, {
+      id: boardId,
+    });
+    (result as any).tokenDiffs = remoteTokenDiffs;
+    return result as RemoteBoardDiff;
+  }
+
+  export function fromRemoteDiff(diff: RemoteBoardDiff): BoardDiff {
+    const boardDiff: BoardDiff = {inner: diff};
+    if (diff.tokenDiffs) {
+      const tokenDiffs = diff.tokenDiffs;
+      delete (diff as any).tokenDiffs;
+      boardDiff.tokenDiffs = tokenDiffs.map((tokenDiff) => {
+        return {inner: tokenDiff};
+      });
+    }
+    return boardDiff;
+  }
 }
