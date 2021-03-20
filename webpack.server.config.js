@@ -7,6 +7,11 @@ module.exports = {
     prestart: ['./src/server/prestart.ts'],
     server: ['./src/server/main.ts'],
   },
+  watchOptions: {
+    ignored: /node_modules/,
+    aggregateTimeout: 500,
+    poll: 1500,
+  },
   module: {
     rules: [
       {
@@ -40,6 +45,7 @@ module.exports = {
   externals: {
     '@google-cloud/storage': 'commonjs @google-cloud/storage',
     'express': 'commonjs express',
+    'express-static-gzip': 'commonjs express-static-gzip',
     'body-parser': 'commonjs body-parser',
     'express-session': 'commonjs express-session',
     'multer': 'commonjs multer',

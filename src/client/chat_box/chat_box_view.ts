@@ -2,7 +2,7 @@ import * as UiUtil from '_client/common/ui_util';
 import {ChatMessage} from '_common/chat/chat_model';
 
 const INPUT_HINT = 'Type !help for commands';
-const CHAT_BOX_STUB = 'chatBoxStub';
+const SIDE_PANEL = 'sidePanelContent';
 
 export class ChatBoxView {
   static create(
@@ -13,7 +13,7 @@ export class ChatBoxView {
   }
 
   static createDefault(listener: (message: ChatMessage) => any): ChatBoxView {
-    return ChatBoxView.create(UiUtil.getElementById(CHAT_BOX_STUB), listener);
+    return ChatBoxView.create(UiUtil.getElementById(SIDE_PANEL), listener);
   }
 
   private input: HTMLTextAreaElement;

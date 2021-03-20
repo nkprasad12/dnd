@@ -1,14 +1,22 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const CompressionPlugin = require("compression-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+
+const shouldMinimize = true;
 
 module.exports = {
   mode: 'production',
   entry: {
-    Info: './src/client/entrypoints/index/index.ts',
-    GameBoard: './src/client/entrypoints/game_board/game_board.ts',
-    BoardTools: './src/client/entrypoints/board_tools/board_tools.ts',
-    Sandbox: './src/client/entrypoints/sandbox/sandbox.ts',
+    GameBoard: './src/client/entrypoints/game_board/game_board.tsx',
+    BoardTools: './src/client/entrypoints/board_tools/board_tools.tsx',
+    Sandbox: './src/client/entrypoints/sandbox/sandbox.tsx',
+  },
+  watchOptions: {
+    ignored: /node_modules/,
+    aggregateTimeout: 500,
+    poll: 1500,
   },
   module: {
     rules: [
@@ -36,34 +44,50 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      chunks: ['Info'],
-      filename: 'info.html',
-      template: 'src/client/entrypoints/index/index.html',
-      minify: false,
-    }),
-    new HtmlWebpackPlugin({
       chunks: ['GameBoard'],
       filename: 'game_board.html',
       template: 'src/client/entrypoints/game_board/game_board.html',
-      minify: false,
+      minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({
       chunks: ['BoardTools'],
       filename: 'board_tools.html',
-      template: 'src/client/entrypoints/board_tools/board_tools.html',
-      minify: false,
+      template: 'src/client/entrypoints/game_board/game_board.html',
+      minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({
       chunks: ['Sandbox'],
       filename: 'sandbox.html',
       template: 'src/client/entrypoints/sandbox/sandbox.html',
-      minify: false,
+      minify: shouldMinimize,
     }),
+    new CompressionPlugin(),
   ],
   optimization: {
-    minimize: false,
+    minimize: shouldMinimize,
+    minimizer: [
+      new TerserPlugin({
+        include: 'vendorBundle'
+      }),
+    ],
     splitChunks: {
       chunks: 'all',
+      minSize: 10000,
+      cacheGroups: {
+        vendorBundle: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: 0,
+          reuseExistingChunk: true,
+          name(_module, _chunks, cacheGroupKey) {
+            return `${cacheGroupKey}`;
+          },
+        },
+        srcBundle: {
+          minChunks: 2,
+          priority: -5,
+          reuseExistingChunk: true,
+        },
+      }
     },
   },
   performance: {
@@ -72,5 +96,9 @@ module.exports = {
   output: {
     filename: '[name].[contenthash].client-bundle.js',
     path: path.resolve(__dirname, 'genfiles_static'),
+  },
+  stats: {
+    builtAt: true,
+    entrypoints: true,
   },
 };
