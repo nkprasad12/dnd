@@ -20,7 +20,7 @@ const AMBIGUOUS_ATTR = 'Multiple abilities could match: ';
 const AMBIGUOUS_HEADER = ' request was ambiguous';
 
 const advantageCompleter = Autocompleter.create([ADVANTAGE, DISADVANTAGE]);
-const skillCompleter = Autocompleter.create(SKILL_ORDER);
+const skillCompleter = Autocompleter.create(SKILL_ORDER.concat(ABILITY_ORDER));
 const abilityCompleter = Autocompleter.create(ABILITY_ORDER);
 
 interface ParseResult {
@@ -130,7 +130,6 @@ async function handleCheckCommand(
   resolver: CharacterResolver
 ): Promise<ChatMessage> {
   const parsed = parseQuery(query, resolver);
-  let isAbility = false;
   if (parsed.error) {
     return parsed.error;
   }
@@ -148,7 +147,6 @@ async function handleCheckCommand(
     };
   } else if (skill.length === 0) {
     skill = abilityCompleter.getOptions(parsed.queryBase);
-    isAbility = true;
   }
 
   if (skill.length !== 1) {
@@ -160,7 +158,7 @@ async function handleCheckCommand(
 
   const rolls = rollDice(20, parsed.advantage === 0 ? 1 : 2);
   const modifier = getIgnoringCase(
-    isAbility ? character.abilityBonuses : character.checkBonuses,
+    new Map([...character.abilityBonuses, ...character.checkBonuses]),
     skill[0]
   );
 
@@ -265,7 +263,7 @@ async function handleInitiativeCommand(
 
     if (dexterity.length !== 1) {
       return {
-        header: 'Initiative role failed',
+        header: 'Initiative roll failed',
         body: 'Could not get dexterity',
       };
     }

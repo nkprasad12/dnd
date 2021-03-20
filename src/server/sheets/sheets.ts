@@ -79,8 +79,7 @@ function processSaveBonuses(
 }
 
 function processCheckBonuses(
-  skillData: sheetsV4.Schema$ValueRange,
-  abilityData: sheetsV4.Schema$ValueRange
+  skillData: sheetsV4.Schema$ValueRange
 ): Map<string, number> {
   if (skillData.range !== RANGES[4]) {
     throw new Error('Invalid value range for skill checks.');
@@ -91,15 +90,6 @@ function processCheckBonuses(
   const values = checkDefined(skillData.values, 'skillChecks:data.values')[0];
   for (const i of items) {
     result.set(SKILL_ORDER[i], Number.parseInt(values[i]));
-  }
-
-  const abilityItems = Array.from(Array(ABILITY_ORDER.length).keys());
-  const abilityValues = checkDefined(
-    abilityData.values,
-    'abilities:data.values'
-  )[0];
-  for (const i of abilityItems) {
-    result.set(ABILITY_ORDER[i], Number.parseInt(abilityValues[i]));
   }
 
   return result;
@@ -173,13 +163,15 @@ export async function extractSheetData(
   sheetId: string
 ): Promise<CharacterSheetData> {
   const data = await requestFromAxios(sheetId);
+  const skillBonuses = processCheckBonuses(data[4]);
+  const abilityBonuses = processAbilityBonuses(data[2]);
 
   return {
     name: processName(data[0]),
     proficiencyBonus: processProficiency(data[1]),
     abilityBonuses: processAbilityBonuses(data[2]),
     saveBonuses: processSaveBonuses(data[3]),
-    checkBonuses: processCheckBonuses(data[4], data[2]),
+    checkBonuses: new Map([...skillBonuses, ...abilityBonuses]),
     attackBonuses: processAttackBonuses(data[5]),
   };
 }
