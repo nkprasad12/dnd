@@ -12,6 +12,7 @@ import {CharacterResolver} from '_common/chat/command_handlers/character_resolve
 import {
   attackCommandHandler,
   checkCommandHandler,
+  initiativeCommandHandler,
   saveCommandHandler,
 } from '_common/chat/command_handlers/character_command_handlers';
 import {storageUtil} from '_server/storage/storage_util';
@@ -46,6 +47,10 @@ export async function registerChatRoutes(ioServer: Server): Promise<void> {
   commandResolver().addCommandHandler(
     CommandType.Lookup,
     lookupCommandHandler(spells)
+  );
+  commandResolver().addCommandHandler(
+    CommandType.Initiative,
+    initiativeCommandHandler(resolver)
   );
 
   ioServer.of('/chat').on('connection', (socket) => {

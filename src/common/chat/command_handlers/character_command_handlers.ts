@@ -20,7 +20,7 @@ const AMBIGUOUS_ATTR = 'Multiple abilities could match: ';
 const AMBIGUOUS_HEADER = ' request was ambiguous';
 
 const advantageCompleter = Autocompleter.create([ADVANTAGE, DISADVANTAGE]);
-const skillCompleter = Autocompleter.create(SKILL_ORDER);
+const skillCompleter = Autocompleter.create(SKILL_ORDER.concat(ABILITY_ORDER));
 const abilityCompleter = Autocompleter.create(ABILITY_ORDER);
 
 interface ParseResult {
@@ -139,7 +139,16 @@ async function handleCheckCommand(
   }
   const character = parsed.characters[0];
 
-  const skill = skillCompleter.getOptions(parsed.queryBase);
+  let skill = skillCompleter.getOptions(parsed.queryBase);
+  if (skill.length > 1) {
+    return {
+      header: 'Check' + AMBIGUOUS_HEADER,
+      body: AMBIGUOUS_SKILL + JSON.stringify(skill),
+    };
+  } else if (skill.length === 0) {
+    skill = abilityCompleter.getOptions(parsed.queryBase);
+  }
+
   if (skill.length !== 1) {
     return {
       header: 'Check' + AMBIGUOUS_HEADER,
@@ -149,6 +158,7 @@ async function handleCheckCommand(
 
   const rolls = rollDice(20, parsed.advantage === 0 ? 1 : 2);
   const modifier = getIgnoringCase(character.checkBonuses, skill[0]);
+
   if (modifier === undefined) {
     return {
       header: 'Could not resolve request',
@@ -218,6 +228,62 @@ async function handleAttackCommand(
   };
 }
 
+async function handleInitiativeCommand(
+  query: string,
+  resolver: CharacterResolver
+): Promise<ChatMessage> {
+  let characters: CharacterSheetData[] = [];
+
+  if (query !== '') {
+    const parsed = parseQuery(query, resolver);
+
+    if (parsed.error) {
+      return parsed.error;
+    }
+
+    if (parsed.characters.length !== 0) {
+      const characterError = checkAmbiguousCharacter('Initiative', parsed);
+      if (characterError) {
+        return characterError;
+      }
+    }
+
+    characters = [parsed.characters[0]];
+  } else {
+    characters = resolver.complete('');
+  }
+
+  let results: string = '';
+
+  for (const character of characters) {
+    const dexterity = abilityCompleter.getOptions('dexterity');
+
+    if (dexterity.length !== 1) {
+      return {
+        header: 'Initiative roll failed',
+        body: 'Could not get dexterity',
+      };
+    }
+
+    const rolls = rollDice(20, 1);
+    const modifier = getIgnoringCase(character.abilityBonuses, dexterity[0]);
+
+    if (modifier === undefined) {
+      return {
+        header: 'Could not resolve request',
+        body: query,
+      };
+    }
+    const result = modifier + Math.max(...rolls);
+    results += `${character.name}: ${result} <br />`;
+  }
+
+  return {
+    body: results,
+    header: 'Initiative Check',
+  };
+}
+
 export function saveCommandHandler(
   resolver: CharacterResolver
 ): CommandHandler {
@@ -234,4 +300,10 @@ export function attackCommandHandler(
   resolver: CharacterResolver
 ): CommandHandler {
   return (query) => handleAttackCommand(query, resolver);
+}
+
+export function initiativeCommandHandler(
+  resolver: CharacterResolver
+): CommandHandler {
+  return (query) => handleInitiativeCommand(query, resolver);
 }
