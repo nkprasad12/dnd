@@ -157,10 +157,7 @@ async function handleCheckCommand(
   }
 
   const rolls = rollDice(20, parsed.advantage === 0 ? 1 : 2);
-  const modifier = getIgnoringCase(
-    new Map([...character.abilityBonuses, ...character.checkBonuses]),
-    skill[0]
-  );
+  const modifier = getIgnoringCase(character.checkBonuses, skill[0]);
 
   if (modifier === undefined) {
     return {

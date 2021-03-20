@@ -47,6 +47,8 @@ const BRUTUS_DATA: CharacterSheetData = {
   checkBonuses: new Map([
     ['Perception', 3],
     ['Arcana', 1],
+    ['Dexterity', 3],
+    ['Wisdom', -1],
   ]),
 };
 
