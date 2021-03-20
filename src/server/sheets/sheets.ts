@@ -78,7 +78,7 @@ function processSaveBonuses(
   return result;
 }
 
-function processCheckBonuses(
+function processSkillBonuses(
   skillData: sheetsV4.Schema$ValueRange
 ): Map<string, number> {
   if (skillData.range !== RANGES[4]) {
@@ -163,13 +163,13 @@ export async function extractSheetData(
   sheetId: string
 ): Promise<CharacterSheetData> {
   const data = await requestFromAxios(sheetId);
-  const skillBonuses = processCheckBonuses(data[4]);
+  const skillBonuses = processSkillBonuses(data[4]);
   const abilityBonuses = processAbilityBonuses(data[2]);
 
   return {
     name: processName(data[0]),
     proficiencyBonus: processProficiency(data[1]),
-    abilityBonuses: processAbilityBonuses(data[2]),
+    abilityBonuses: abilityBonuses,
     saveBonuses: processSaveBonuses(data[3]),
     checkBonuses: new Map([...skillBonuses, ...abilityBonuses]),
     attackBonuses: processAttackBonuses(data[5]),
