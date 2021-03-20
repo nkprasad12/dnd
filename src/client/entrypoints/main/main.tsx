@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import {Hideable} from '_client/common/ui_components/hideable';
 
-import {setupEditorPanel} from '_client/entrypoints/main/board_tools';
+import {setupEditorPanel} from '_client/entrypoints/main/editor';
 import {
   setupActiveBoard,
   setupChatPanel,
@@ -23,7 +23,6 @@ const optionBoxMap: Map<NavbarOption, Promise<Hideable>> = new Map([
   [NavbarOption.MAIN, setupChatPanel()],
   [NavbarOption.EDITOR, Promise.resolve(setupEditorPanel())],
 ]);
-ReactDOM.render(<Navbar />, document.querySelector('#navbarStub'));
 showBoxFor(NavbarOption.MAIN);
 
 async function showBoxFor(option: NavbarOption): Promise<void> {
@@ -38,7 +37,7 @@ async function showBoxFor(option: NavbarOption): Promise<void> {
   (await checkDefined(optionBoxMap.get(option))).show();
 }
 
-export function Navbar(): JSX.Element {
+function Navbar(): JSX.Element {
   const [selected, setSelected] = useState(NavbarOption.MAIN);
 
   useEffect(() => {
@@ -80,7 +79,7 @@ export function Panels(): JSX.Element {
       </div>
       <div id="panel2" className="split right">
         <div style={{backgroundColor: 'rgb(69, 69, 69)'}}>
-          <div id="navbarStub"></div>
+          <Navbar />
           <div id="sidePanelContent"></div>
         </div>
       </div>
