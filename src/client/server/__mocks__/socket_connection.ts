@@ -71,6 +71,10 @@ export class FakeSocket extends Socket {
     this.onMap.set(eventName, eventCallback);
   }
 
+  removeAllListeners(): void {
+    throw new Error('Method not implemented.');
+  }
+
   reset(): void {
     clearMap(this.emitMap);
     clearMap(this.onMap);

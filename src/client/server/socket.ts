@@ -6,4 +6,7 @@ export abstract class Socket {
 
   /** Represents socket.emit */
   abstract emit(eventName: string, message: any): void;
+
+  /** Represents socket.removeAllListeners */
+  abstract removeAllListeners(): void;
 }

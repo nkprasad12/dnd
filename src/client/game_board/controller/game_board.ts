@@ -5,22 +5,39 @@ import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
-import {getElementById} from '_client/common/ui_util';
+import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 
+export const RIGHT_CLICK_MENU_STUB = 'rightClickMenuStub';
+
 export class GameBoard {
+  static existingBoard: GameBoard | null = null;
+  static create(parentId: string, model: BoardModel, server: BoardClient) {
+    if (GameBoard.existingBoard !== null) {
+      removeChildrenOf(parentId);
+      removeChildrenOf(RIGHT_CLICK_MENU_STUB);
+      server.removeAllListeners();
+    }
+    GameBoard.existingBoard = new GameBoard(parentId, model, server);
+    return GameBoard.existingBoard;
+  }
+
   private readonly view: BoardView;
   readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   private readonly inputHandler: InteractionStateMachine;
 
-  constructor(parentId: string, model: BoardModel, server: BoardClient) {
+  private constructor(
+    parentId: string,
+    model: BoardModel,
+    server: BoardClient
+  ) {
     this.view = new BoardView(getElementById(parentId));
     const menu = ContextMenu.create(
-      getElementById('rightClickMenuStub'),
+      getElementById(RIGHT_CLICK_MENU_STUB),
       (item) => this.onContextMenuClick(item)
     );
     this.modelHandler = new ModelHandler(model, this.view);

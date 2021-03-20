@@ -24,6 +24,10 @@ export class BoardClient {
 
   private constructor(private readonly socket: Socket) {}
 
+  removeAllListeners(): void {
+    this.socket.removeAllListeners();
+  }
+
   updateBoard(diff: RemoteBoardDiff): void {
     this.socket.emit(Events.BOARD_UPDATE, diff);
   }

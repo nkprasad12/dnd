@@ -91,7 +91,7 @@ export function setupEditorPanel(): Hideable {
 
   async function setupEditing(model: BoardModel): Promise<void> {
     UiUtil.removeChildrenOf(MAIN_BOARD_STUB);
-    const board = new GameBoard(
+    const board = GameBoard.create(
       MAIN_BOARD_STUB,
       model,
       await BoardClient.get()

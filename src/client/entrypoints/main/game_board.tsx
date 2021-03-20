@@ -25,7 +25,7 @@ export async function loadBoard(boardId: string): Promise<BoardModel> {
 async function setupBoard(boardId: string): Promise<GameBoard> {
   const model = await loadBoard(boardId);
   removeChildrenOf(MAIN_BOARD_STUB);
-  return new GameBoard(MAIN_BOARD_STUB, model, await BoardClient.get());
+  return GameBoard.create(MAIN_BOARD_STUB, model, await BoardClient.get());
 }
 
 export async function setupActiveBoard(): Promise<void> {
