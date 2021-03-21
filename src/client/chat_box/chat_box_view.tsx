@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useReducer, useState} from 'react';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {ChatMessage} from '_common/chat/chat_model';
 
@@ -15,17 +15,20 @@ export interface ChatBoxViewProps {
 }
 
 export function ChatBoxView(props: ChatBoxViewProps): JSX.Element | null {
-  const [messages, setMessages] = useState<Array<ChatMessage>>([]);
+  const [messages, dispatch] = useReducer(
+    (currentMessages: ChatMessage[], newMessage: ChatMessage) =>
+      [newMessage].concat(currentMessages),
+    []
+  );
   const [inputText, setInputText] = useState('');
 
   useEffect(() => {
-    const subscription = (message: ChatMessage) =>
-      setMessages([message].concat(messages));
+    const subscription = (message: ChatMessage) => dispatch(message);
     props.chatClient.then((client) => client.getMessageUpdates(subscription));
     return () => {
       props.chatClient.then((client) => client.removeListeners());
     };
-  }, [props.chatClient, messages]);
+  }, [props.chatClient]);
 
   if (!props.visible) {
     return null;
@@ -35,7 +38,7 @@ export function ChatBoxView(props: ChatBoxViewProps): JSX.Element | null {
       const entered = inputText.trim();
       if (entered !== null && entered !== '') {
         const newMessage = {body: entered};
-        setMessages([newMessage].concat(messages));
+        dispatch(newMessage);
         props.chatClient.then((client) => client.sendMessage(newMessage));
       }
       setInputText('');
@@ -70,7 +73,7 @@ function ChatMessageView(props: ChatMessageViewProps): JSX.Element {
   return (
     <div className="chat-text" style={{wordWrap: 'break-word'}}>
       {props.message.header && (
-        <p dangerouslySetInnerHTML={{__html: props.message.body}}></p>
+        <p dangerouslySetInnerHTML={{__html: props.message.header}}></p>
       )}
       <p dangerouslySetInnerHTML={{__html: props.message.body}}></p>
     </div>

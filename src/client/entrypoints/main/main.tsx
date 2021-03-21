@@ -11,6 +11,7 @@ import {connectTo} from '_client/server/socket_connection';
 
 export const MAIN_BOARD_STUB = 'mainBoard';
 
+const chatClient = connectTo('chat').then((socket) => new ChatClient(socket));
 ReactDOM.render(<Panels />, document.querySelector('#contentStub'));
 
 export function Panels(): JSX.Element {
@@ -39,9 +40,7 @@ export function Panels(): JSX.Element {
             <EditingArea visible={selected === NavbarOption.EDITOR} />
             <ChatBoxView
               visible={selected === NavbarOption.MAIN}
-              chatClient={connectTo('chat').then(
-                (socket) => new ChatClient(socket)
-              )}
+              chatClient={chatClient}
             />
           </div>
         </div>
