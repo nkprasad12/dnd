@@ -1,13 +1,9 @@
 import {BoardModel} from '_client/game_board/model/board_model';
-import {connectTo} from '_client/server/socket_connection';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
-import {ChatClient} from '_client/chat_box/chat_client';
-import {ChatBox} from '_client/chat_box/chat_box';
 import {MAIN_BOARD_STUB} from '_client/entrypoints/main/main';
-import {Hideable} from '_client/common/ui_components/hideable';
 
 function setLabel(message: string) {
   removeChildrenOf(MAIN_BOARD_STUB);
@@ -37,10 +33,4 @@ export async function setupActiveBoard(): Promise<void> {
   }
   await setupBoard(boardId);
   return;
-}
-
-export async function setupChatPanel(): Promise<Hideable> {
-  const chatClient = connectTo('chat').then((socket) => new ChatClient(socket));
-  const client = await chatClient;
-  return ChatBox.initialize(client).getHideable();
 }

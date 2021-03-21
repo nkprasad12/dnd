@@ -1,20 +1,17 @@
 import React from 'react';
 import {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
+import {ChatBoxView} from '_client/chat_box/chat_box_view';
+import {ChatClient} from '_client/chat_box/chat_client';
 import {EditingArea} from '_client/entrypoints/main/board_tools';
 import {setupEditorPanel} from '_client/entrypoints/main/editor';
-import {
-  setupActiveBoard,
-  setupChatPanel,
-} from '_client/entrypoints/main/game_board';
+import {setupActiveBoard} from '_client/entrypoints/main/game_board';
 import {NavbarOption, Navbar} from '_client/entrypoints/main/navbar';
+import {connectTo} from '_client/server/socket_connection';
 
 export const MAIN_BOARD_STUB = 'mainBoard';
 
 ReactDOM.render(<Panels />, document.querySelector('#contentStub'));
-// TODO: Remove this once the chat box is set up as a proper React component
-// and toggle the visibility like we're doing for the EditingArea.
-const chatPanel = setupChatPanel();
 
 export function Panels(): JSX.Element {
   const [selected, setSelected] = useState(NavbarOption.MAIN);
@@ -22,16 +19,9 @@ export function Panels(): JSX.Element {
   useEffect(() => {
     document.title = `DnD ${selected}`;
     if (selected === NavbarOption.MAIN) {
-      chatPanel.then((chat) => chat.show());
       setupActiveBoard();
     } else {
-      chatPanel.then((chat) => {
-        chat.hide();
-        // TODO: Remove this once we've set up the editing internals as a proper
-        // React component. This method assumes that the elements we're adding
-        // are in the actual Document.
-        setupEditorPanel();
-      });
+      setupEditorPanel();
     }
   });
 
@@ -47,6 +37,12 @@ export function Panels(): JSX.Element {
           <Navbar selected={selected} setSelected={setSelected} />
           <div id="sidePanelContent">
             <EditingArea visible={selected === NavbarOption.EDITOR} />
+            <ChatBoxView
+              visible={selected === NavbarOption.MAIN}
+              chatClient={connectTo('chat').then(
+                (socket) => new ChatClient(socket)
+              )}
+            />
           </div>
         </div>
       </div>
