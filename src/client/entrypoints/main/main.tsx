@@ -1,75 +1,40 @@
 import React from 'react';
 import {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
-import {Hideable} from '_client/common/ui_components/hideable';
-
+import {EditingArea} from '_client/entrypoints/main/board_tools';
 import {setupEditorPanel} from '_client/entrypoints/main/editor';
 import {
   setupActiveBoard,
   setupChatPanel,
 } from '_client/entrypoints/main/game_board';
-import {checkDefined} from '_common/preconditions';
+import {NavbarOption, Navbar} from '_client/entrypoints/main/navbar';
 
 export const MAIN_BOARD_STUB = 'mainBoard';
 
-export enum NavbarOption {
-  MAIN = 'Game Board',
-  EDITOR = 'Board Tools',
-}
-
 ReactDOM.render(<Panels />, document.querySelector('#contentStub'));
-setupActiveBoard();
-const optionBoxMap: Map<NavbarOption, Promise<Hideable>> = new Map([
-  [NavbarOption.MAIN, setupChatPanel()],
-  [NavbarOption.EDITOR, Promise.resolve(setupEditorPanel())],
-]);
-showBoxFor(NavbarOption.MAIN);
+// TODO: Remove this once the chat box is set up as a proper React component
+// and toggle the visibility like we're doing for the EditingArea.
+const chatPanel = setupChatPanel();
 
-async function showBoxFor(option: NavbarOption): Promise<void> {
-  const boxes = Array(...optionBoxMap.values());
-  for (const box of boxes) {
-    try {
-      (await box).hide();
-    } catch {
-      // No-op - usually this just means the box was already hidden.
-    }
-  }
-  (await checkDefined(optionBoxMap.get(option))).show();
-}
-
-function Navbar(): JSX.Element {
+export function Panels(): JSX.Element {
   const [selected, setSelected] = useState(NavbarOption.MAIN);
 
   useEffect(() => {
     document.title = `DnD ${selected}`;
+    if (selected === NavbarOption.MAIN) {
+      chatPanel.then((chat) => chat.show());
+      setupActiveBoard();
+    } else {
+      chatPanel.then((chat) => {
+        chat.hide();
+        // TODO: Remove this once we've set up the editing internals as a proper
+        // React component. This method assumes that the elements we're adding
+        // are in the actual Document.
+        setupEditorPanel();
+      });
+    }
   });
 
-  return (
-    <div className="topnav">
-      <div
-        className={selected === NavbarOption.MAIN ? 'active' : 'inactive'}
-        onClick={() => {
-          setSelected(NavbarOption.MAIN);
-          showBoxFor(NavbarOption.MAIN);
-          setupActiveBoard();
-        }}
-      >
-        Game Board
-      </div>
-      <div
-        className={selected === NavbarOption.EDITOR ? 'active' : 'inactive'}
-        onClick={() => {
-          setSelected(NavbarOption.EDITOR);
-          showBoxFor(NavbarOption.EDITOR);
-        }}
-      >
-        Board Tools
-      </div>
-    </div>
-  );
-}
-
-export function Panels(): JSX.Element {
   return (
     <div>
       <div id="panel1" className="split left">
@@ -79,8 +44,10 @@ export function Panels(): JSX.Element {
       </div>
       <div id="panel2" className="split right">
         <div style={{backgroundColor: 'rgb(69, 69, 69)'}}>
-          <Navbar />
-          <div id="sidePanelContent"></div>
+          <Navbar selected={selected} setSelected={setSelected} />
+          <div id="sidePanelContent">
+            <EditingArea visible={selected === NavbarOption.EDITOR} />
+          </div>
         </div>
       </div>
     </div>

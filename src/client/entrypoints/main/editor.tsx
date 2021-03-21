@@ -1,14 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import {BoardUpdateForm, NewBoardForm} from '_client/board_tools/board_form';
 import {BoardSelector, idSelector} from '_client/board_tools/board_selector';
 import {DropdownSelector} from '_client/common/ui_components/dropdown';
-import {Hideable} from '_client/common/ui_components/hideable';
 import * as UiUtil from '_client/common/ui_util';
 import {
   ACTIVE_SELECTOR_STUB,
   BOARD_FORM_STUB,
-  EditingArea,
   EDITING_AREA_STUB,
   EDIT_SELECTOR_STUB,
   NEW_BOARD_BUTTON,
@@ -18,8 +14,6 @@ import {MAIN_BOARD_STUB} from '_client/entrypoints/main/main';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
-
-const SIDE_PANEL = 'sidePanelContent';
 
 class BoardSelectors {
   constructor(
@@ -33,20 +27,17 @@ class BoardSelectors {
   }
 }
 
-export function setupEditorPanel(): Hideable {
-  const root = document.createElement('div');
-  ReactDOM.render(<EditingArea />, root);
-
+export function setupEditorPanel(): void {
   async function setupSelectors(): Promise<BoardSelectors> {
     const server = await BoardClient.get();
     const boards = server.requestBoardOptions();
     const activeSelector = BoardSelector.createActiveBoardSelector(
-      UiUtil.getElementById(ACTIVE_SELECTOR_STUB, root),
+      UiUtil.getElementById(ACTIVE_SELECTOR_STUB),
       server,
       boards
     );
     const editSelector = BoardSelector.createEditBoardSelector(
-      UiUtil.getElementById(EDIT_SELECTOR_STUB, root),
+      UiUtil.getElementById(EDIT_SELECTOR_STUB),
       (selectedId) => {
         loadBoard(selectedId).then((board) => setupEditing(board));
       },
@@ -64,9 +55,9 @@ export function setupEditorPanel(): Hideable {
     );
     (await BoardClient.get()).createBoard(model.inner);
     selectors.then((selectors) => selectors.add(model.inner.id));
-    UiUtil.removeChildrenOf(EDITING_AREA_STUB, root);
+    UiUtil.removeChildrenOf(EDITING_AREA_STUB);
     BoardUpdateForm.create(
-      UiUtil.getElementById(EDITING_AREA_STUB, root),
+      UiUtil.getElementById(EDITING_AREA_STUB),
       board.modelHandler,
       (data) => {
         board.updateGridParameters(data);
@@ -76,16 +67,10 @@ export function setupEditorPanel(): Hideable {
 
   const selectors = setupSelectors();
   NewBoardForm.createOnClick(
-    UiUtil.getElementById(NEW_BOARD_BUTTON, root),
-    UiUtil.getElementById(BOARD_FORM_STUB, root),
+    UiUtil.getElementById(NEW_BOARD_BUTTON),
+    UiUtil.getElementById(BOARD_FORM_STUB),
     (model) => {
       setupEditing(model);
     }
   );
-
-  const parent = UiUtil.getElementById(SIDE_PANEL);
-  return {
-    show: () => parent.appendChild(root),
-    hide: () => parent.removeChild(root),
-  };
 }

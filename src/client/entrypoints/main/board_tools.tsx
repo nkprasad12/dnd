@@ -12,7 +12,14 @@ const boardEditRow: React.CSSProperties = {
   flexDirection: 'row',
 };
 
-export function EditingArea(): JSX.Element {
+export interface EditingAreaProps {
+  visible: boolean;
+}
+
+export function EditingArea(props: EditingAreaProps): JSX.Element | null {
+  if (!props.visible) {
+    return null;
+  }
   return (
     <div>
       <div style={boardEditRow}>
