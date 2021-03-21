@@ -1,5 +1,6 @@
 import React, {useEffect, useReducer, useState} from 'react';
 import {ChatClient} from '_client/chat_box/chat_client';
+import {ChatMessageView} from '_client/chat_box/chat_message_view';
 import {ChatMessage} from '_common/chat/chat_model';
 
 const INPUT_HINT = 'Type !help for commands';
@@ -61,21 +62,6 @@ export function ChatBoxView(props: ChatBoxViewProps): JSX.Element | null {
         }}
       />
       <div style={messageContainerStyle}>{chatMessages}</div>
-    </div>
-  );
-}
-
-interface ChatMessageViewProps {
-  message: ChatMessage;
-}
-
-function ChatMessageView(props: ChatMessageViewProps): JSX.Element {
-  return (
-    <div className="chat-text" style={{wordWrap: 'break-word'}}>
-      {props.message.header && (
-        <p dangerouslySetInnerHTML={{__html: props.message.header}}></p>
-      )}
-      <p dangerouslySetInnerHTML={{__html: props.message.body}}></p>
     </div>
   );
 }
