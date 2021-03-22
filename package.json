@@ -25,6 +25,7 @@
     "bracketSpacing": false
   },
   "devDependencies": {
+    "@testing-library/react": "^11.2.5",
     "@types/body-parser": "^1.19.0",
     "@types/connect-ensure-login": "^0.1.5",
     "@types/deep-equal": "^1.0.1",

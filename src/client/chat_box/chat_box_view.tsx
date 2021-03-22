@@ -46,12 +46,13 @@ export function ChatBoxView(props: ChatBoxViewProps): JSX.Element | null {
       event.preventDefault();
     }
   };
-  const chatMessages = messages.map((message) => (
-    <ChatMessageView message={message} />
+  const chatMessages = messages.map((message, i) => (
+    <ChatMessageView message={message} key={messages.length - i} />
   ));
   return (
-    <div>
+    <div data-testid="chatMessageView">
       <textarea
+        data-testid="chatInput"
         className="chat-input"
         placeholder={INPUT_HINT}
         rows={1}
@@ -61,7 +62,9 @@ export function ChatBoxView(props: ChatBoxViewProps): JSX.Element | null {
           setInputText(event.target.value);
         }}
       />
-      <div style={messageContainerStyle}>{chatMessages}</div>
+      <div style={messageContainerStyle} data-testid="messageHolder">
+        {chatMessages}
+      </div>
     </div>
   );
 }
