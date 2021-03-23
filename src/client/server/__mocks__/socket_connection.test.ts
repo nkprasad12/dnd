@@ -39,14 +39,52 @@ describe('FakeSocket', () => {
     expect(socket.emitMap.get(EMIT_EVENT)).toBe(EMIT_MESSAGE);
   });
 
-  it('resets maps on reset', () => {
+  it('resolves pending emit promises on emitted event', async () => {
     const socket = new FakeConnection.FakeSocket(socketNamespace);
+    const eventPromise = socket.getEmitMessagePromise(EMIT_EVENT);
+
     socket.emit(EMIT_EVENT, EMIT_MESSAGE);
-    socket.on(ON_EVENT, ON_CALLBACK);
+    return expect(eventPromise).resolves.toBe(EMIT_MESSAGE);
+  });
+
+  it('updates count on removeAllListeners', () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.removeAllListeners();
+    expect(socket.removeAllListenerCalls).toBe(1);
+  });
+
+  it('resolves removeAllListeners promise on invocation', async () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    const removePromise = socket.getRemoveListenersPromise();
+    socket.removeAllListeners();
+    return expect(removePromise).resolves.toBe(1);
+  });
+
+  it('resets emit state on reset', () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.getEmitMessagePromise(EMIT_EVENT);
+    socket.emit(EMIT_EVENT, EMIT_MESSAGE);
 
     socket.reset();
     expect(socket.emitMap.size).toBe(0);
+    expect(socket.emitResolvers.size).toBe(0);
+  });
+
+  it('resets on state on reset', () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.on(ON_EVENT, ON_CALLBACK);
+    socket.reset();
     expect(socket.onMap.size).toBe(0);
+  });
+
+  it('resets removeListeners state on reset', () => {
+    const socket = new FakeConnection.FakeSocket(socketNamespace);
+    socket.getRemoveListenersPromise();
+    socket.removeAllListeners();
+    socket.reset();
+
+    expect(socket.removeListenersResolvers.length).toBe(0);
+    expect(socket.removeAllListenerCalls).toBe(0);
   });
 });
 

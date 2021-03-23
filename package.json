@@ -25,6 +25,7 @@
     "bracketSpacing": false
   },
   "devDependencies": {
+    "@testing-library/react": "^11.2.5",
     "@types/body-parser": "^1.19.0",
     "@types/connect-ensure-login": "^0.1.5",
     "@types/deep-equal": "^1.0.1",
@@ -49,6 +50,7 @@
     "eslint": "^7.21.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "html-webpack-plugin": "^5.2.0",
     "husky": "^4.3.8",
     "jest": "^26.6.3",

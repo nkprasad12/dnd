@@ -9,8 +9,7 @@ const shouldMinimize = true;
 module.exports = {
   mode: 'production',
   entry: {
-    GameBoard: './src/client/entrypoints/game_board/game_board.tsx',
-    BoardTools: './src/client/entrypoints/board_tools/board_tools.tsx',
+    Main: './src/client/entrypoints/main/main.tsx',
     Sandbox: './src/client/entrypoints/sandbox/sandbox.tsx',
   },
   watchOptions: {
@@ -44,15 +43,9 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      chunks: ['GameBoard'],
+      chunks: ['Main'],
       filename: 'game_board.html',
-      template: 'src/client/entrypoints/game_board/game_board.html',
-      minify: shouldMinimize,
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['BoardTools'],
-      filename: 'board_tools.html',
-      template: 'src/client/entrypoints/game_board/game_board.html',
+      template: 'src/client/entrypoints/main/main.html',
       minify: shouldMinimize,
     }),
     new HtmlWebpackPlugin({

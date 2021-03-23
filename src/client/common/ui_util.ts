@@ -1,5 +1,8 @@
-export function getElementById(id: string): HTMLElement {
-  const element = document.getElementById(id);
+export function getElementById(id: string, root?: HTMLElement): HTMLElement {
+  const element =
+    root === undefined
+      ? document.getElementById(id)
+      : (root.querySelector(`#${id}`) as HTMLElement);
   if (element == null) {
     throw new Error('getElementById on invalid id: ' + id);
   }
@@ -64,8 +67,8 @@ export function addTextArea(
   return element;
 }
 
-export function removeChildrenOf(id: string) {
-  const item = getElementById(id);
+export function removeChildrenOf(id: string, root?: HTMLElement) {
+  const item = getElementById(id, root);
   while (item.firstChild) {
     item.removeChild(item.firstChild);
   }

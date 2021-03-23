@@ -2,7 +2,6 @@ import {
   DropdownSelector,
   SelectorItem,
 } from '_client/common/ui_components/dropdown';
-import {getElementById} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
 
 export function idSelector(
@@ -14,11 +13,10 @@ export function idSelector(
 
 export class BoardSelectorModel {
   static async createForActiveSetting(
-    server: BoardClient,
     boards: Promise<string[]>
   ): Promise<BoardSelectorModel> {
     const allBoards = await boards;
-    const activeBoard = await server.requestActiveBoardId();
+    const activeBoard = await (await BoardClient.get()).requestActiveBoardId();
     const items: SelectorItem<string>[] = allBoards.map((id) =>
       idSelector(id, id === activeBoard)
     );
@@ -30,33 +28,32 @@ export class BoardSelectorModel {
 
 export namespace BoardSelector {
   export function createActiveBoardSelector(
-    parentId: string,
+    parent: HTMLElement,
     server: BoardClient,
     boards: Promise<string[]>
   ): DropdownSelector<string> {
     return new DropdownSelector(
-      getElementById(parentId),
+      parent,
       'Set Active',
       (id) => server.setActiveBoard(id),
-      BoardSelectorModel.createForActiveSetting(server, boards).then(
+      BoardSelectorModel.createForActiveSetting(boards).then(
         (model) => model.items
       )
     );
   }
 
   export function createEditBoardSelector(
-    parentId: string,
+    parent: HTMLElement,
     onSelection: (id: string) => any,
     boards: Promise<string[]>
   ): DropdownSelector<string> {
-    const initialModel = boards.then(
-      (ids) => new BoardSelectorModel(ids.map((id) => idSelector(id, false)))
-    );
     return new DropdownSelector(
-      getElementById(parentId),
+      parent,
       'Edit Existing',
       onSelection,
-      initialModel.then((model) => model.items)
+      BoardSelectorModel.createForActiveSetting(boards).then(
+        (model) => model.items
+      )
     );
   }
 }

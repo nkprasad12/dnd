@@ -8,6 +8,10 @@ export type MessageListener = (message: ChatMessage) => any;
 export class ChatClient {
   constructor(private readonly socket: Socket) {}
 
+  removeListeners(): void {
+    this.socket.removeAllListeners();
+  }
+
   sendMessage(message: ChatMessage): void {
     this.socket.emit(Events.NEW_MESSAGE, message);
   }

@@ -54,7 +54,10 @@ export function connectTo(namespace: string): Promise<Socket> {
 
 export class FakeSocket extends Socket {
   readonly emitMap: Map<string, any> = new Map();
+  readonly emitResolvers: Map<string, any> = new Map();
   readonly onMap: Map<string, any> = new Map();
+  removeAllListenerCalls = 0;
+  readonly removeListenersResolvers: any[] = [];
 
   constructor(namespace: string) {
     super(namespace);
@@ -62,7 +65,17 @@ export class FakeSocket extends Socket {
 
   emit(eventName: string, message: any): void {
     this.emitMap.set(eventName, message);
+    if (this.emitResolvers.has(eventName)) {
+      this.emitResolvers.get(eventName)!(message);
+    }
   }
+
+  getEmitMessagePromise(eventName: string): Promise<any> {
+    return new Promise((resolve) => {
+      this.emitResolvers.set(eventName, resolve);
+    });
+  }
+
   on(eventName: string, eventCallback: (message: any) => any) {
     if (eventName === 'connect') {
       eventCallback('connected');
@@ -71,8 +84,26 @@ export class FakeSocket extends Socket {
     this.onMap.set(eventName, eventCallback);
   }
 
+  removeAllListeners(): void {
+    this.removeAllListenerCalls += 1;
+    this.removeListenersResolvers.forEach((resolve) =>
+      resolve(this.removeAllListenerCalls)
+    );
+  }
+
+  getRemoveListenersPromise(): Promise<void> {
+    return new Promise((resolve) => {
+      this.removeListenersResolvers.push(resolve);
+    });
+  }
+
   reset(): void {
     clearMap(this.emitMap);
     clearMap(this.onMap);
+    clearMap(this.emitResolvers);
+    this.removeAllListenerCalls = 0;
+    while (this.removeListenersResolvers.length > 0) {
+      this.removeListenersResolvers.pop();
+    }
   }
 }

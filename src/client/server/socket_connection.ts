@@ -13,19 +13,21 @@ class SocketConnection extends Socket {
   on(event: string, listener: (message: any) => any): void {
     const namespaceStr = '[' + this.nsp + '] ';
     this.socket.on(event, (message) => {
-      const eventStr = 'Received Event: ' + event + ', ';
-      const messageStr = 'message: ' + JSON.stringify(message);
-      console.log(namespaceStr + eventStr + messageStr);
+      const eventStr = 'Received Event: ' + event;
+      console.log(namespaceStr + eventStr);
       listener(message);
     });
   }
 
   emit(event: string, message: any): void {
     const namespaceStr = '[' + this.nsp + '] ';
-    const eventStr = 'Sending Event: ' + event + ', ';
-    const messageStr = 'message: ' + JSON.stringify(message);
-    console.log(namespaceStr + eventStr + messageStr);
+    const eventStr = 'Sending Event: ' + event;
+    console.log(namespaceStr + eventStr);
     this.socket.emit(event, message);
+  }
+
+  removeAllListeners(): void {
+    this.socket.removeAllListeners();
   }
 }
 
