@@ -6,27 +6,40 @@ export enum NavbarOption {
 }
 
 export interface NavbarProps {
+  // Which Navbar option should be displayed as selected.
   selected: NavbarOption;
+  // A callback to invoke when a new option is selected.
   setSelected: React.Dispatch<React.SetStateAction<NavbarOption>>;
 }
 
 export function Navbar(props: NavbarProps): JSX.Element {
   return (
     <div className="topnav">
-      <div
-        className={props.selected === NavbarOption.MAIN ? 'active' : 'inactive'}
-        onClick={() => props.setSelected(NavbarOption.MAIN)}
-      >
-        Game Board
-      </div>
-      <div
-        className={
-          props.selected === NavbarOption.EDITOR ? 'active' : 'inactive'
-        }
-        onClick={() => props.setSelected(NavbarOption.EDITOR)}
-      >
-        Board Tools
-      </div>
+      <NavbarOptionView
+        selected={props.selected}
+        setSelected={props.setSelected}
+        optionName={NavbarOption.MAIN}
+      />
+      <NavbarOptionView
+        selected={props.selected}
+        setSelected={props.setSelected}
+        optionName={NavbarOption.EDITOR}
+      />
+    </div>
+  );
+}
+
+interface NavbarOptionViewProps extends NavbarProps {
+  optionName: NavbarOption;
+}
+
+function NavbarOptionView(props: NavbarOptionViewProps) {
+  return (
+    <div
+      className={props.selected === props.optionName ? 'active' : 'inactive'}
+      onClick={() => props.setSelected(props.optionName)}
+    >
+      {props.optionName}
     </div>
   );
 }
