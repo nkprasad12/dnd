@@ -1,5 +1,6 @@
 import {BoardUpdateForm, NewBoardForm} from '_client/board_tools/board_form';
 import {BoardSelector, idSelector} from '_client/board_tools/board_selector';
+import {ChatClient} from '_client/chat_box/chat_client';
 import {DropdownSelector} from '_client/common/ui_components/dropdown';
 import * as UiUtil from '_client/common/ui_util';
 import {
@@ -27,7 +28,7 @@ class BoardSelectors {
   }
 }
 
-export function setupEditorPanel(): void {
+export function setupEditorPanel(chatClient: Promise<ChatClient>): void {
   async function setupSelectors(): Promise<BoardSelectors> {
     const server = await BoardClient.get();
     const boards = server.requestBoardOptions();
@@ -51,7 +52,8 @@ export function setupEditorPanel(): void {
     const board = GameBoard.create(
       MAIN_BOARD_STUB,
       model,
-      await BoardClient.get()
+      await BoardClient.get(),
+      await chatClient
     );
     (await BoardClient.get()).createBoard(model.inner);
     selectors.then((selectors) => selectors.add(model.inner.id));

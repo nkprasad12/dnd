@@ -20,9 +20,9 @@ export function Panels(): JSX.Element {
   useEffect(() => {
     document.title = `DnD ${selected}`;
     if (selected === NavbarOption.MAIN) {
-      setupActiveBoard();
+      setupActiveBoard(chatClient);
     } else {
-      setupEditorPanel();
+      setupEditorPanel(chatClient);
     }
   });
 

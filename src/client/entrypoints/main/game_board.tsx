@@ -4,6 +4,7 @@ import {BoardClient} from '_client/game_board/remote/board_client';
 import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
 import {MAIN_BOARD_STUB} from '_client/entrypoints/main/main';
+import {ChatClient} from '_client/chat_box/chat_client';
 
 function setLabel(message: string) {
   removeChildrenOf(MAIN_BOARD_STUB);
@@ -18,19 +19,29 @@ export async function loadBoard(boardId: string): Promise<BoardModel> {
   return BoardModel.createFromRemote(remoteModel);
 }
 
-async function setupBoard(boardId: string): Promise<GameBoard> {
+async function setupBoard(
+  boardId: string,
+  chatClient: ChatClient
+): Promise<GameBoard> {
   const model = await loadBoard(boardId);
   removeChildrenOf(MAIN_BOARD_STUB);
-  return GameBoard.create(MAIN_BOARD_STUB, model, await BoardClient.get());
+  return GameBoard.create(
+    MAIN_BOARD_STUB,
+    model,
+    await BoardClient.get(),
+    chatClient
+  );
 }
 
-export async function setupActiveBoard(): Promise<void> {
+export async function setupActiveBoard(
+  chatClient: Promise<ChatClient>
+): Promise<void> {
   setLabel('Connecting to game server');
   const boardId = await (await BoardClient.get()).requestActiveBoardId();
   if (boardId === undefined) {
     setLabel('Either there is no active board, or an error occurred.');
     return;
   }
-  await setupBoard(boardId);
+  await setupBoard(boardId, await chatClient);
   return;
 }

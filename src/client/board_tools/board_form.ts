@@ -650,6 +650,7 @@ export class NewTokenForm extends BaseDialogForm {
                 size: size,
                 location: tile,
                 speed: speed,
+                sheetData: null,
               },
               icon.image,
               false
