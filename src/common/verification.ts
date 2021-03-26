@@ -35,7 +35,13 @@ export function isGrid(
   return true;
 }
 
-/** Returns the first if it is defined, and otherwise the backup. */
+/**
+ * @deprecated in favor of the `??` operator.
+ *
+ * `prefer(foo, bar)` is exactly equivalent to `foo ?? bar`.
+ *
+ * Returns the first if it is defined, and otherwise the backup.
+ */
 export function prefer<T>(preferred: T | undefined | null, backup: T): T {
   if (preferred === undefined || preferred === null) {
     return backup;
