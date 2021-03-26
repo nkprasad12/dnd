@@ -48,13 +48,14 @@ test('RemoteTokenModel fillDefaults adds speed', () => {
 });
 
 test('RemoteTokenModel isValid with valid returns true', () => {
-  const validModel = {
+  const validModel: RemoteTokenModel = {
     id: TEST_TOKEN_ID,
     location: DEFAULT_LOCATION,
     name: TEST_TOKEN_NAME,
     imageSource: TEST_TOKEN_SOURCE,
     size: DEFAULT_SIZE,
     speed: DEFAULT_SPEED,
+    sheetData: null,
   };
   expect(RemoteTokenModel.isValid(validModel)).toBe(true);
   expect(RemoteTokenModel.isValid(remoteTokenModel())).toBe(true);

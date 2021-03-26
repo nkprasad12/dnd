@@ -117,7 +117,10 @@ async function setupObjects(
   ]);
   mockListener.mockClear();
   return {
-    machine: new InteractionStateMachine(handler),
+    machine: new InteractionStateMachine({
+      modelHandler: handler,
+      chatClient: {} as any,
+    }),
     handler: handler,
     diffListener: mockListener,
   };

@@ -5,8 +5,9 @@ import {
   RemoteTokenModel,
 } from '_common/board/remote_board_model';
 import {LoadedImage, loadImage} from '_client/utils/image_utils';
+import {maybeMerge} from '_common/verification';
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 import {checkDefined} from '_common/preconditions';
-import {maybeMerge, prefer} from '_common/verification';
 
 /** Data model for a token on the game board. */
 export class TokenModel {
@@ -16,7 +17,8 @@ export class TokenModel {
     size: number,
     location: Location,
     isActive: boolean,
-    speed: number
+    speed: number,
+    sheetData: CharacterSheetData | null = null
   ): TokenModel {
     console.log('Warning - creating new TokenModel!');
     const inner: RemoteTokenModel = {
@@ -26,6 +28,7 @@ export class TokenModel {
       imageSource: image.source,
       size: size,
       speed: speed,
+      sheetData: sheetData,
     };
     return new TokenModel(inner, image.image, isActive);
   }
@@ -55,8 +58,8 @@ export class TokenModel {
     // TODO: If the imageSource is different, load a new image here.
     return new TokenModel(
       inner,
-      prefer(diff.image, model.image),
-      prefer(diff.isActive, model.isActive)
+      diff.image ?? model.image,
+      diff.isActive ?? model.isActive
     );
   }
 

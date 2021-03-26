@@ -10,6 +10,7 @@
     "target": "es2015",
     "moduleResolution": "node",
     "jsx": "react",
+    "outDir": "genfiles_static",
 
     /* Strict Type-Checking Options */
     "strict": true,                           /* Enable all strict type-checking options. */

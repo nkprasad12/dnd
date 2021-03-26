@@ -13,6 +13,7 @@ function defaultTokenData(): TokenData {
     name: TEST_TOKEN_NAME,
     imageSource: TEST_TOKEN_SOURCE,
     speed: DEFAULT_SPEED,
+    sheetData: null,
   };
 }
 
