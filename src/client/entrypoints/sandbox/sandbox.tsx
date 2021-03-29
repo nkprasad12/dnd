@@ -2,7 +2,6 @@
 
 import {connectTo} from '_client/server/socket_connection';
 import {Socket} from '_client/server/socket';
-import {saveImageToServer} from '_client/board_tools/board_form';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -37,12 +36,7 @@ const handleImageUpload = (event: HTMLInputEvent) => {
     console.log('File upload event was null');
     return;
   }
-  const files = event.target.files;
-  if (files === null) {
-    console.log('Files object was null');
-    return;
-  }
-  saveImageToServer(files[0]);
+  handleImageUpload(event);
 };
 
 listenForFileUpload();

@@ -1,11 +1,12 @@
 import {Location, Point} from '_common/coordinates';
-import {getOrigin} from '_client/common/get_origin';
 import {getElementById} from '_client/common/ui_util';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {
   getBackgroundData,
+  handleImageUpload,
+  HTMLInputEvent,
   LoadedImage,
   loadImage,
 } from '_client/utils/image_utils';
@@ -17,13 +18,7 @@ import {
   SelectorItem,
 } from '_client/common/ui_components/dropdown';
 
-const IMAGE_TYPES: string[] = ['image/jpg', 'image/jpeg', 'image/png'];
-
 export const TEXT_COLOR = 'rgb(143, 77, 23)';
-
-interface HTMLInputEvent extends Event {
-  target: HTMLInputElement & EventTarget;
-}
 
 // eslint-disable-next-line no-unused-vars
 enum InputType {
@@ -33,58 +28,6 @@ enum InputType {
   NUMBER_INPUT = 'number',
   // eslint-disable-next-line no-unused-vars
   TEXT_INPUT = 'text',
-}
-
-function handleImageUpload(event: HTMLInputEvent): Promise<LoadedImage> {
-  if (event?.target?.files == null || event.target.files.length == 0) {
-    return Promise.reject(new Error('File upload event was null'));
-  }
-  const file: File = event.target.files[0];
-  if (!IMAGE_TYPES.includes(file.type)) {
-    return Promise.reject(new Error('Invalid file upload type'));
-  }
-
-  const loadImagePromise = loadImageFromFile(file);
-  const saveImagePromise = saveImageToServer(file);
-  return Promise.all([loadImagePromise, saveImagePromise]).then(
-    (promises) => new LoadedImage(promises[0], promises[1])
-  );
-}
-
-function loadImageFromFile(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const image = document.createElement('img');
-      const result = event.target?.result;
-      if (result === null || result === undefined) {
-        reject(new Error('File result was null or undefined!'));
-        return;
-      }
-      if (typeof result != 'string') {
-        reject(new Error('File result was not string!'));
-        return;
-      }
-      image.src = result;
-      resolve(image);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-const SERVER_PREFIX = 'server@';
-
-export async function saveImageToServer(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(getOrigin() + '/uploadImage', {
-    method: 'POST',
-    body: formData,
-  });
-  const data = await response.json();
-  const path = SERVER_PREFIX + '/retrieve_image/' + data.path;
-  return path;
 }
 
 function addDiv(parent: HTMLElement): HTMLElement {

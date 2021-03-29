@@ -1,22 +1,40 @@
 import {getOrigin} from '_client/common/get_origin';
 import {
   getBackgroundData,
+  handleImageUpload,
   LoadedImage,
   loadImage,
   loadImages,
 } from '_client/utils/image_utils';
 import {FakeImage} from '_client/utils/fake_image';
+import {FakeFileReader} from '_client/utils/fake_file_reader';
+
+const realFetch = global.fetch;
+const savePath = 'whatever.png';
 
 beforeAll(() => {
+  // @ts-ignore
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      json: () => Promise.resolve({path: savePath}),
+    })
+  );
   FakeImage.invokeBeforeAll(false);
+  FakeFileReader.invokeBeforeAll();
 });
 
 beforeEach(() => {
   FakeImage.invokeBeforeEach();
 });
 
+afterEach(() => {
+  FakeFileReader.invokeAfterEach();
+});
+
 afterAll(() => {
+  global.fetch = realFetch;
   FakeImage.invokeAfterAll();
+  FakeFileReader.invokeAfterAll();
 });
 
 test('loadImage produces expected result on success', () => {
@@ -98,5 +116,49 @@ describe('getBackgroundData', () => {
     const data = getBackgroundData(loadedImage, 10, {x: 2, y: 0});
     expect(data.cols).toBe(7);
     expect(data.rows).toBe(42);
+  });
+});
+
+describe('handleImageUpload', () => {
+  it('rejects on null files', async () => {
+    const event: any = {target: {files: null}};
+    return expect(handleImageUpload(event)).rejects.toThrowError('was null');
+  });
+
+  it('rejects on empty files', async () => {
+    const event: any = {target: {files: []}};
+    return expect(handleImageUpload(event)).rejects.toThrowError('was null');
+  });
+
+  it('rejects on disallowed type', async () => {
+    const event: any = {target: {files: [{type: 'image/gif'}]}};
+    return expect(handleImageUpload(event)).rejects.toThrowError(
+      'Invalid file type'
+    );
+  });
+
+  it('rejects on failed load', async () => {
+    const uploadEvent: any = {target: {files: [{type: 'image/png'}]}};
+    FakeFileReader.setOnLoadEvent({target: {result: null}} as any);
+    return expect(handleImageUpload(uploadEvent)).rejects.toThrowError(
+      'File result was null or undefined'
+    );
+  });
+
+  it('rejects on incorrect load type', async () => {
+    const uploadEvent: any = {target: {files: [{type: 'image/png'}]}};
+    FakeFileReader.setOnLoadEvent({target: {result: 5}} as any);
+    return expect(handleImageUpload(uploadEvent)).rejects.toThrowError(
+      'result was not string'
+    );
+  });
+
+  it('resolves to expected on success', async (done) => {
+    const uploadEvent: any = {target: {files: [{type: 'image/png'}]}};
+    FakeFileReader.setOnLoadEvent({target: {result: 'imagebytes'}} as any);
+    const result = await handleImageUpload(uploadEvent);
+
+    expect(result.source).toBe('server@/retrieve_image/' + savePath);
+    done();
   });
 });
