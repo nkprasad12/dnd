@@ -5,6 +5,7 @@ import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {addLabel, TEXT_COLOR} from '_client/board_tools/board_form';
 import {MAIN_BOARD_STUB} from '_client/entrypoints/main/main';
 import {ChatClient} from '_client/chat_box/chat_client';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 
 function setLabel(message: string) {
   removeChildrenOf(MAIN_BOARD_STUB);
@@ -21,7 +22,8 @@ export async function loadBoard(boardId: string): Promise<BoardModel> {
 
 async function setupBoard(
   boardId: string,
-  chatClient: ChatClient
+  chatClient: ChatClient,
+  controller: UiController
 ): Promise<GameBoard> {
   const model = await loadBoard(boardId);
   removeChildrenOf(MAIN_BOARD_STUB);
@@ -29,12 +31,14 @@ async function setupBoard(
     MAIN_BOARD_STUB,
     model,
     await BoardClient.get(),
-    chatClient
+    chatClient,
+    controller
   );
 }
 
 export async function setupActiveBoard(
-  chatClient: Promise<ChatClient>
+  chatClient: Promise<ChatClient>,
+  controller: UiController
 ): Promise<void> {
   setLabel('Connecting to game server');
   const boardId = await (await BoardClient.get()).requestActiveBoardId();
@@ -42,6 +46,6 @@ export async function setupActiveBoard(
     setLabel('Either there is no active board, or an error occurred.');
     return;
   }
-  await setupBoard(boardId, await chatClient);
+  await setupBoard(boardId, await chatClient, controller);
   return;
 }

@@ -13,7 +13,6 @@ export interface TextInputFieldProps {
 }
 
 export function TextInputField(props: TextInputFieldProps) {
-  props.inputCallback(props.defaultValue);
   return (
     <div>
       <label color={props.labelColor}>{props.label}</label>
@@ -42,7 +41,6 @@ export interface NumberInputFieldProps {
 }
 
 export function NumberInputField(props: NumberInputFieldProps) {
-  props.inputCallback(props.defaultValue);
   return (
     <div>
       <label color={props.labelColor}>{props.label}</label>

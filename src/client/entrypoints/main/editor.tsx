@@ -12,6 +12,7 @@ import {
 } from '_client/entrypoints/main/board_tools';
 import {loadBoard} from '_client/entrypoints/main/game_board';
 import {MAIN_BOARD_STUB} from '_client/entrypoints/main/main';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {BoardClient} from '_client/game_board/remote/board_client';
@@ -28,7 +29,10 @@ class BoardSelectors {
   }
 }
 
-export function setupEditorPanel(chatClient: Promise<ChatClient>): void {
+export function setupEditorPanel(
+  chatClient: Promise<ChatClient>,
+  controller: UiController
+): void {
   async function setupSelectors(): Promise<BoardSelectors> {
     const server = await BoardClient.get();
     const boards = server.requestBoardOptions();
@@ -53,7 +57,8 @@ export function setupEditorPanel(chatClient: Promise<ChatClient>): void {
       MAIN_BOARD_STUB,
       model,
       await BoardClient.get(),
-      await chatClient
+      await chatClient,
+      controller
     );
     (await BoardClient.get()).createBoard(model.inner);
     selectors.then((selectors) => selectors.add(model.inner.id));

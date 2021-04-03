@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ImageInputField,
   NumberInputField,
@@ -17,47 +17,22 @@ export interface NewTokenFormProps {
 }
 
 export function NewTokenForm(props: NewTokenFormProps) {
-  const [formComplete, setFormComplete] = useState(false);
+  const [pendingToken, setPendingToken] = useState<TokenModel | null>(null);
+  const onFormChange = useCallback((token: TokenModel | undefined) => {
+    setPendingToken(token ?? null);
+  }, []);
   if (!props.visible) {
     return null;
   }
 
-  function onInputChange(token: TokenModel | undefined): void {
-    const tokenDefined = token !== undefined;
-    setFormComplete(tokenDefined);
-    if (tokenDefined) {
-      onSubmit(token!);
-    }
-  }
-
-  // TODO: Move this from the UI.
-  // We should have modelHandler register callbacks for new tokens
-  // that will get unregistered on unmount.
   function onSubmit(token: TokenModel) {
     props.setVisibility(false);
-    console.log('NewTokenForm onNewToken: ' + token.inner.id);
-    const model = props.modelHandler.getModel();
-    let addedToken = false;
-    for (let i = 0; i < model.tokens.length; i++) {
-      if (model.tokens[i].inner.id !== token.inner.id) {
-        continue;
-      }
-      props.modelHandler.applyLocalDiff({tokenDiffs: [model.tokens[i]]});
-      addedToken = true;
-      break;
-    }
-    if (!addedToken) {
-      props.modelHandler.applyLocalDiff({
-        inner: {
-          newTokens: [token.inner],
-          id: model.inner.id,
-        },
-      });
-    }
+    props.modelHandler.addNewToken(token);
+    setPendingToken(null);
   }
 
   return (
-    <div style={{zIndex: 30, display: 'top'}} className="modal">
+    <div style={{zIndex: 30, display: 'block'}} className="modal">
       <div className="modal-content">
         <div
           className="close"
@@ -65,16 +40,13 @@ export function NewTokenForm(props: NewTokenFormProps) {
           onClick={() => props.setVisibility(false)}
         />
         <div>Enter token attributes</div>
-        <InputFields
-          tile={props.tile}
-          onAllInputs={(token) => onInputChange(token)}
-        />
+        <InputFields tile={props.tile} onAllInputs={onFormChange} />
         <button
           className="btn-success"
-          style={{display: formComplete ? 'block' : 'none'}}
+          style={{display: pendingToken ? 'block' : 'none'}}
           onClick={() => {
             props.setVisibility(false);
-            console.log('TODO: add submit logic');
+            onSubmit(pendingToken!);
           }}
         >
           Create
@@ -86,7 +58,6 @@ export function NewTokenForm(props: NewTokenFormProps) {
 
 interface InputFieldProps {
   tile: Location;
-  tokenId?: string;
   image?: LoadedImage;
   onAllInputs: (token: TokenModel | undefined) => any;
 }
@@ -97,32 +68,33 @@ function InputFields(props: InputFieldProps) {
   const [speed, setSpeed] = useState<number | undefined>(undefined);
   const [icon, setIcon] = useState<LoadedImage | undefined>(props.image);
 
-  if (
-    name !== undefined &&
-    size !== undefined &&
-    speed !== undefined &&
-    icon !== undefined
-  ) {
+  const onAllInputs = props.onAllInputs;
+  const tile = props.tile;
+
+  useEffect(() => {
     const token =
-      props.tokenId === undefined
-        ? TokenModel.create(name, icon, size, props.tile, false, speed)
-        : new TokenModel(
-            {
-              id: props.tokenId,
-              name: name,
-              imageSource: icon.source,
-              size: size,
-              location: props.tile,
-              speed: speed,
-              sheetData: null,
-            },
-            icon.image,
-            false
-          );
-    props.onAllInputs(token);
-  } else {
-    props.onAllInputs(undefined);
-  }
+      name !== undefined &&
+      size !== undefined &&
+      speed !== undefined &&
+      icon !== undefined
+        ? TokenModel.create(name, icon, size, tile, false, speed)
+        : undefined;
+    // Need to do this for the case where we pre-fill from an existing token.
+    // : new TokenModel(
+    //     {
+    //       id: tokenId,
+    //       name: name,
+    //       imageSource: icon.source,
+    //       size: size,
+    //       location: tile,
+    //       speed: speed,
+    //       sheetData: null,
+    //     },
+    //     icon.image,
+    //     false
+    //   );
+    onAllInputs(token);
+  }, [icon, name, onAllInputs, size, speed, tile]);
 
   return (
     <div>

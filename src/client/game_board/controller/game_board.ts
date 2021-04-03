@@ -11,6 +11,7 @@ import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ChatClient} from '_client/chat_box/chat_client';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 
 export const RIGHT_CLICK_MENU_STUB = 'rightClickMenuStub';
 
@@ -20,7 +21,8 @@ export class GameBoard {
     parentId: string,
     model: BoardModel,
     server: BoardClient,
-    chatClient: ChatClient
+    chatClient: ChatClient,
+    controller: UiController
   ) {
     if (GameBoard.existingBoard !== null) {
       removeChildrenOf(parentId);
@@ -31,7 +33,8 @@ export class GameBoard {
       parentId,
       model,
       server,
-      chatClient
+      chatClient,
+      controller
     );
     return GameBoard.existingBoard;
   }
@@ -45,7 +48,8 @@ export class GameBoard {
     parentId: string,
     model: BoardModel,
     server: BoardClient,
-    chatClient: ChatClient
+    chatClient: ChatClient,
+    controller: UiController
   ) {
     this.view = new BoardView(getElementById(parentId));
     const menu = ContextMenu.create(
@@ -64,6 +68,7 @@ export class GameBoard {
     this.inputHandler = new InteractionStateMachine({
       modelHandler: this.modelHandler,
       chatClient: chatClient,
+      controller: controller,
     });
     this.canvasListener = new InputListener(
       this.view.topCanvas,

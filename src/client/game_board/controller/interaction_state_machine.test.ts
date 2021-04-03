@@ -120,6 +120,7 @@ async function setupObjects(
     machine: new InteractionStateMachine({
       modelHandler: handler,
       chatClient: {} as any,
+      controller: {} as any,
     }),
     handler: handler,
     diffListener: mockListener,

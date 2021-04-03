@@ -2,6 +2,7 @@ import {RemoteBoardDiff} from '_common/board/remote_board_model';
 import {Location, Point} from '_common/coordinates';
 import {BoardDiff, BoardModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
+import {TokenModel} from '_client/game_board/model/token_model';
 
 export const INVALID_INDEX: number = -1;
 
@@ -78,6 +79,29 @@ export class ModelHandler {
     this.listeners
       .filter((listener) => listener.updateOnRemote === true)
       .forEach((listener) => listener.listener(this.model, diff));
+  }
+
+  // TODO: find a better home for this?
+  addNewToken(token: TokenModel): void {
+    console.log('addNewToken: ' + token.inner.id);
+    const model = this.getModel();
+    let addedToken = false;
+    for (let i = 0; i < model.tokens.length; i++) {
+      if (model.tokens[i].inner.id !== token.inner.id) {
+        continue;
+      }
+      this.applyLocalDiff({tokenDiffs: [model.tokens[i]]});
+      addedToken = true;
+      break;
+    }
+    if (!addedToken) {
+      this.applyLocalDiff({
+        inner: {
+          newTokens: [token.inner],
+          id: model.inner.id,
+        },
+      });
+    }
   }
 
   /** Returns the tile for the input client point, relative to the canvas. */

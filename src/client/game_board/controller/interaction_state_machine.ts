@@ -8,6 +8,7 @@ import {ContextActionHandler} from '_client/game_board/controller/context_action
 import {checkDefined} from '_common/preconditions';
 import {Grid} from '_common/util/grid';
 import {ChatClient} from '_client/chat_box/chat_client';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -251,7 +252,8 @@ class ContextMenuOpenState extends InteractionState {
 
   onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
     const actionDiff = new ContextActionHandler(
-      this.params.modelHandler
+      this.params.modelHandler,
+      this.params.controller
     ).handleContextMenuAction(action);
     actionDiff.contextMenuState = {isVisible: false, clickPoint: {x: 0, y: 0}};
     actionDiff.localSelection = {};
@@ -265,6 +267,7 @@ class ContextMenuOpenState extends InteractionState {
 export interface InteractionParamaters {
   modelHandler: ModelHandler;
   chatClient: ChatClient;
+  controller: UiController;
 }
 
 export class InteractionStateMachine {
