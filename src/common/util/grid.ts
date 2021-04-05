@@ -71,7 +71,7 @@ export function gridDimensions(
   height: number,
   tileSize: number,
   gridOffset: Point
-): {cols: number; rows: number} {
+): {cols: number; rows: number; offset: Point} {
   const offset = {
     x: modulo(gridOffset.x, tileSize),
     y: modulo(gridOffset.y, tileSize),
@@ -80,6 +80,7 @@ export function gridDimensions(
     return {
       cols: Math.ceil(width / tileSize),
       rows: Math.ceil(height / tileSize),
+      offset: offset,
     };
   }
   const extraCols = offset.x === 0 ? 0 : 1;
@@ -93,5 +94,6 @@ export function gridDimensions(
   return {
     cols: baseCaseResult.cols + extraCols,
     rows: baseCaseResult.rows + extraRows,
+    offset: offset,
   };
 }

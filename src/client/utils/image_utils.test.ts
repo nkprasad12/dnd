@@ -116,6 +116,7 @@ describe('getBackgroundData', () => {
     const data = getBackgroundData(loadedImage, 10, {x: 2, y: 0});
     expect(data.cols).toBe(7);
     expect(data.rows).toBe(42);
+    expect(data.offset).toStrictEqual({x: 2, y: 0});
   });
 });
 

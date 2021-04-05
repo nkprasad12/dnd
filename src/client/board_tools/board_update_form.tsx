@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {TEXT_COLOR} from '_client/common/styles';
 import {NumberInputField} from '_client/common/ui_components/input_fields';
 import {GameBoard} from '_client/game_board/controller/game_board';
-import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {getBackgroundData} from '_client/utils/image_utils';
 import {RemoteBoardModel} from '_common/board/remote_board_model';
 import {Point} from '_common/coordinates';
@@ -39,7 +38,7 @@ export function BoardUpdateFormView(props: BoardUpdateFormProps) {
     offsetX: offsetX,
     offsetY: offsetY,
   };
-  const updateData = InputValues.toUpdateData(values, props.board.modelHandler);
+  const updateData = InputValues.toUpdateData(values, props);
 
   return (
     <div>
@@ -68,7 +67,7 @@ export function BoardUpdateFormView(props: BoardUpdateFormProps) {
           props.board.updateGridParameters(checkDefined(updateData));
         }}
       >
-        Create
+        Update
       </button>
     </div>
   );
@@ -83,22 +82,17 @@ interface InputValues {
 namespace InputValues {
   export function toUpdateData(
     values: InputValues,
-    modelHandler: ModelHandler
+    props: BoardUpdateFormProps
   ): BoardUpdateData | undefined {
-    const tileSize = checkDefined(values.tileSize);
-    const offsetX = checkDefined(values.offsetX);
-    const offsetY = checkDefined(values.offsetY);
-    if (
-      tileSize < 1 ||
-      offsetX < 0 ||
-      offsetX >= tileSize ||
-      offsetY < 0 ||
-      offsetY >= tileSize
-    ) {
+    const model = getModel(props);
+    const tileSize = values.tileSize ?? model.tileSize;
+    const offsetX = values.offsetX ?? model.gridOffset.x;
+    const offsetY = values.offsetY ?? model.gridOffset.y;
+    if (tileSize < 1) {
       return undefined;
     }
     const backgroundData = getBackgroundData(
-      modelHandler.getModel().backgroundImage,
+      props.board.modelHandler.getModel().backgroundImage,
       tileSize,
       {x: offsetX, y: offsetY}
     );
@@ -106,7 +100,7 @@ namespace InputValues {
       tileSize: tileSize,
       rows: backgroundData.rows,
       cols: backgroundData.cols,
-      offset: {x: offsetX, y: offsetY},
+      offset: backgroundData.offset,
     };
   }
 }

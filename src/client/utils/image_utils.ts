@@ -53,6 +53,7 @@ export interface BackgroundData {
   height: number;
   cols: number;
   rows: number;
+  offset: Point;
 }
 
 export function getBackgroundData(
@@ -69,6 +70,7 @@ export function getBackgroundData(
     height: height,
     cols: dimensions.cols,
     rows: dimensions.rows,
+    offset: dimensions.offset,
   };
 }
 
