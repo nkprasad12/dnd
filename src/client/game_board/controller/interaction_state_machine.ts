@@ -7,6 +7,8 @@ import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_mode
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {checkDefined} from '_common/preconditions';
 import {Grid} from '_common/util/grid';
+import {ChatClient} from '_client/chat_box/chat_client';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -35,7 +37,7 @@ function tilesInDrag(fromData: ClickData, toData: ClickData): Grid.SimpleArea {
 }
 
 abstract class InteractionState {
-  constructor(protected readonly modelHandler: ModelHandler) {}
+  constructor(protected readonly params: InteractionParamaters) {}
 
   protected abstract onLeftDrag(
     fromData: ClickData,
@@ -81,7 +83,7 @@ abstract class InteractionState {
     }
     return {
       newState: result.newState,
-      updatePromise: this.modelHandler.applyLocalDiff(result.diff),
+      updatePromise: this.params.modelHandler.applyLocalDiff(result.diff),
     };
   }
 
@@ -95,7 +97,7 @@ abstract class InteractionState {
     const result = this.onContextMenuClickInternal(action);
     return {
       newState: result.newState,
-      updatePromise: this.modelHandler.applyLocalDiff(result.diff),
+      updatePromise: this.params.modelHandler.applyLocalDiff(result.diff),
     };
   }
 
@@ -103,14 +105,14 @@ abstract class InteractionState {
     return {
       clientPoint: point.clientPoint,
       pagePoint: point.pagePoint,
-      tile: this.modelHandler.tileForPoint(point.clientPoint),
+      tile: this.params.modelHandler.tileForPoint(point.clientPoint),
     };
   }
 }
 
 class DefaultState extends InteractionState {
-  constructor(modelHandler: ModelHandler) {
-    super(modelHandler);
+  constructor(params: InteractionParamaters) {
+    super(params);
   }
 
   onLeftDrag(fromData: ClickData, toData: ClickData): ClickResult {
@@ -123,13 +125,13 @@ class DefaultState extends InteractionState {
         contextMenuState: {clickPoint: toData.pagePoint, isVisible: true},
         localSelection: {area: tilesInDrag(fromData, toData)},
       },
-      newState: new ContextMenuOpenState(this.modelHandler),
+      newState: new ContextMenuOpenState(this.params),
     };
   }
 
   onLeftClick(clickData: ClickData): ClickResult {
-    const collisions = this.modelHandler.wouldCollide(clickData.tile, 1);
-    const model = this.modelHandler.getModel();
+    const collisions = this.params.modelHandler.wouldCollide(clickData.tile, 1);
+    const model = this.params.modelHandler.getModel();
     /* istanbul ignore next */
     // This shouldn't happen in practice.
     if (collisions.length > 1) {
@@ -145,7 +147,7 @@ class DefaultState extends InteractionState {
     };
     return {
       diff: {tokenDiffs: [tokenDiff]},
-      newState: new PickedUpTokenState(this.modelHandler),
+      newState: new PickedUpTokenState(this.params),
     };
   }
 
@@ -155,14 +157,14 @@ class DefaultState extends InteractionState {
         contextMenuState: {clickPoint: clickData.pagePoint, isVisible: true},
         localSelection: {area: {start: clickData.tile, end: clickData.tile}},
       },
-      newState: new ContextMenuOpenState(this.modelHandler),
+      newState: new ContextMenuOpenState(this.params),
     };
   }
 }
 
 class PickedUpTokenState extends InteractionState {
-  constructor(modelHandler: ModelHandler) {
-    super(modelHandler);
+  constructor(params: InteractionParamaters) {
+    super(params);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -176,10 +178,12 @@ class PickedUpTokenState extends InteractionState {
   }
 
   onLeftClick(clickData: ClickData): ClickResult {
-    const activeTokenIndex = checkDefined(this.modelHandler.activeTokenIndex());
-    const model = this.modelHandler.getModel();
+    const activeTokenIndex = checkDefined(
+      this.params.modelHandler.activeTokenIndex()
+    );
+    const model = this.params.modelHandler.getModel();
     const activeTokenSize = model.tokens[activeTokenIndex].inner.size;
-    const collisions = this.modelHandler.wouldCollide(
+    const collisions = this.params.modelHandler.wouldCollide(
       clickData.tile,
       activeTokenSize
     );
@@ -198,28 +202,30 @@ class PickedUpTokenState extends InteractionState {
     };
     return {
       diff: {tokenDiffs: [tokenDiff]},
-      newState: new DefaultState(this.modelHandler),
+      newState: new DefaultState(this.params),
     };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRightClick(_clickData: ClickData): ClickResult {
-    const activeTokenIndex = checkDefined(this.modelHandler.activeTokenIndex());
-    const model = this.modelHandler.getModel();
+    const activeTokenIndex = checkDefined(
+      this.params.modelHandler.activeTokenIndex()
+    )!;
+    const model = this.params.modelHandler.getModel();
     const tokenDiff = {
       isActive: false,
       inner: {id: model.tokens[activeTokenIndex].inner.id},
     };
     return {
       diff: {tokenDiffs: [tokenDiff]},
-      newState: new DefaultState(this.modelHandler),
+      newState: new DefaultState(this.params),
     };
   }
 }
 
 class ContextMenuOpenState extends InteractionState {
-  constructor(modelHandler: ModelHandler) {
-    super(modelHandler);
+  constructor(params: InteractionParamaters) {
+    super(params);
   }
 
   onLeftDrag(_fromData: ClickData, toData: ClickData): ClickResult {
@@ -240,28 +246,35 @@ class ContextMenuOpenState extends InteractionState {
         contextMenuState: {isVisible: false, clickPoint: clickData.pagePoint},
         localSelection: {},
       },
-      newState: new DefaultState(this.modelHandler),
+      newState: new DefaultState(this.params),
     };
   }
 
   onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
     const actionDiff = new ContextActionHandler(
-      this.modelHandler
+      this.params.modelHandler,
+      this.params.controller
     ).handleContextMenuAction(action);
     actionDiff.contextMenuState = {isVisible: false, clickPoint: {x: 0, y: 0}};
     actionDiff.localSelection = {};
     return {
       diff: actionDiff,
-      newState: new DefaultState(this.modelHandler),
+      newState: new DefaultState(this.params),
     };
   }
+}
+
+export interface InteractionParamaters {
+  modelHandler: ModelHandler;
+  chatClient: ChatClient;
+  controller: UiController;
 }
 
 export class InteractionStateMachine {
   private currentState: InteractionState;
 
-  constructor(modelHandler: ModelHandler) {
-    this.currentState = new DefaultState(modelHandler);
+  constructor(params: InteractionParamaters) {
+    this.currentState = new DefaultState(params);
   }
 
   onDragEvent(

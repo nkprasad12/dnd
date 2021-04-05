@@ -53,11 +53,12 @@ export namespace RemoteTokenModel {
     }
     return {
       id: model.id,
-      location: prefer(diff.location, model.location),
-      name: prefer(diff.name, model.name),
-      imageSource: prefer(diff.imageSource, model.imageSource),
-      size: prefer(diff.size, model.size),
-      speed: prefer(diff.speed, model.speed),
+      location: diff.location ?? model.location,
+      name: diff.name ?? model.name,
+      imageSource: diff.imageSource ?? model.imageSource,
+      size: diff.size ?? model.size,
+      speed: diff.speed ?? model.speed,
+      sheetData: diff.sheetData ?? model.sheetData,
     };
   }
 }

@@ -1,14 +1,17 @@
 import {areLocationsEqual, Location} from '_common/coordinates';
-import {NewTokenForm, EditTokenForm} from '_client/board_tools/board_form';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, BoardDiff} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
 import {FOG_OFF, FOG_ON} from '_common/board/remote_board_model';
+import {UiController} from '_client/entrypoints/main/ui_controller';
 
 export class ContextActionHandler {
-  constructor(private modelHandler: ModelHandler) {}
+  constructor(
+    private modelHandler: ModelHandler,
+    private controller: UiController
+  ) {}
 
   handleContextMenuAction(action: ContextMenuItem): BoardDiff {
     const model = this.modelHandler.getModel();
@@ -30,9 +33,12 @@ export class ContextActionHandler {
       case ContextMenuItem.GreenHighlight:
         return this.highlightDiff(model, '3');
       case ContextMenuItem.AddToken:
-        NewTokenForm.create(
-          checkDefined(model.localSelection.area).start,
-          this.modelHandler
+        // NewTokenForm.create(
+        //   checkDefined(model.localSelection.area).start,
+        //   this.modelHandler
+        // );
+        this.controller.createNewTokenForm(
+          checkDefined(model.localSelection.area).start
         );
         return {};
       case ContextMenuItem.EditToken:
@@ -106,8 +112,7 @@ export class ContextActionHandler {
       console.log('No token in selection, ignoring');
       return {};
     }
-    const selectedToken = model.tokens[tokenIndex];
-    EditTokenForm.create(selectedToken, this.modelHandler);
+    this.controller.editTokenForm(model.tokens[tokenIndex]);
     return {};
   }
 

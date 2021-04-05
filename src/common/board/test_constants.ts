@@ -27,6 +27,7 @@ export function remoteTokenModel(): RemoteTokenModel {
     imageSource: TEST_TOKEN_SOURCE,
     size: DEFAULT_SIZE,
     speed: DEFAULT_SPEED,
+    sheetData: null,
   };
 }
 

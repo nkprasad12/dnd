@@ -1,3 +1,4 @@
+import {CharacterSheetData} from '_common/chat/command_handlers/types';
 import {Location} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
@@ -8,6 +9,7 @@ export interface TokenData {
   readonly name: string;
   readonly imageSource: string;
   readonly speed: number;
+  readonly sheetData: CharacterSheetData | null;
 }
 
 export namespace TokenData {
@@ -17,7 +19,8 @@ export namespace TokenData {
       maybeToken.id !== undefined &&
       maybeToken.name !== undefined &&
       maybeToken.imageSource !== undefined &&
-      maybeToken.speed !== undefined;
+      maybeToken.speed !== undefined &&
+      maybeToken.sheetData !== undefined;
     return isValid;
   }
 
@@ -25,6 +28,9 @@ export namespace TokenData {
   export function fillDefaults(input: any): any {
     if (input.speed === undefined) {
       input.speed = DEFAULT_SPEED;
+    }
+    if (input.sheetData === undefined) {
+      input.sheetData = null;
     }
     return input;
   }
