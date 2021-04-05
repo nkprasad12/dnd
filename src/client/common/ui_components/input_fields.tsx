@@ -43,7 +43,7 @@ export interface NumberInputFieldProps {
 export function NumberInputField(props: NumberInputFieldProps) {
   return (
     <div>
-      <label color={props.labelColor}>{props.label}</label>
+      <label style={{color: props.labelColor}}>{props.label}</label>
       <br />
       <input
         type="number"

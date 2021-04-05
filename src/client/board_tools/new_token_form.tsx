@@ -1,4 +1,8 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import {
+  DropdownSelectorView,
+  SelectorItem,
+} from '_client/common/ui_components/dropdown';
 import {
   ImageInputField,
   NumberInputField,
@@ -6,8 +10,11 @@ import {
 } from '_client/common/ui_components/input_fields';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenModel} from '_client/game_board/model/token_model';
-import {LoadedImage} from '_client/utils/image_utils';
+import {RemoteCache} from '_client/game_board/remote/remote_cache';
+import {LoadedImage, loadImage} from '_client/utils/image_utils';
+import {TokenData} from '_common/board/token_data';
 import {Location} from '_common/coordinates';
+import {checkDefined} from '_common/preconditions';
 
 export interface NewTokenFormProps {
   visible: boolean;
@@ -17,19 +24,74 @@ export interface NewTokenFormProps {
 }
 
 export function NewTokenForm(props: NewTokenFormProps) {
-  const [pendingToken, setPendingToken] = useState<TokenModel | null>(null);
-  const onFormChange = useCallback((token: TokenModel | undefined) => {
-    setPendingToken(token ?? null);
-  }, []);
+  const [name, setName] = useState<string | undefined>(undefined);
+  const [size, setSize] = useState<number | undefined>(undefined);
+  const [speed, setSpeed] = useState<number | undefined>(undefined);
+  const [icon, setIcon] = useState<LoadedImage | undefined>(undefined);
+  const [tokenDropdownModel, setTokenDropdownModel] = useState<
+    SelectorItem<TokenData>[]
+  >([]);
+  const [tokenTemplate, setTokenTemplate] = useState<TokenData | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    if (props.visible) {
+      RemoteCache.get()
+        .getAllTokens()
+        .then((data) =>
+          setTokenDropdownModel(
+            data.map((token) =>
+              SelectorItem.create<TokenData>(token.id, token.name, false, token)
+            )
+          )
+        );
+    }
+  }, [props.visible]);
+
   if (!props.visible) {
     return null;
   }
 
-  function onSubmit(token: TokenModel) {
-    props.setVisibility(false);
+  async function onSubmit() {
+    const token = tokenTemplate
+      ? new TokenModel(
+          {
+            id: tokenTemplate.id,
+            name: checkDefined(name),
+            speed: checkDefined(speed),
+            imageSource: tokenTemplate.imageSource,
+            size: checkDefined(size),
+            location: props.tile,
+            sheetData: null,
+          },
+          (await loadImage(tokenTemplate.imageSource)).image,
+          false
+        )
+      : TokenModel.create(
+          checkDefined(name),
+          checkDefined(icon),
+          checkDefined(size),
+          props.tile,
+          false,
+          checkDefined(speed)
+        );
+
     props.modelHandler.addNewToken(token);
-    setPendingToken(null);
+
+    props.setVisibility(false);
+    setTokenTemplate(undefined);
+    setName(undefined);
+    setSize(undefined);
+    setSpeed(undefined);
+    setIcon(undefined);
   }
+
+  const allFieldsFilled =
+    name !== undefined &&
+    size !== undefined &&
+    speed !== undefined &&
+    (icon !== undefined || tokenTemplate !== undefined);
 
   return (
     <div style={{zIndex: 30, display: 'block'}} className="modal">
@@ -39,74 +101,48 @@ export function NewTokenForm(props: NewTokenFormProps) {
           dangerouslySetInnerHTML={{__html: '&times;'}}
           onClick={() => props.setVisibility(false)}
         />
-        <div>Enter token attributes</div>
-        <InputFields tile={props.tile} onAllInputs={onFormChange} />
+        <p>Token attributes</p>
+        <DropdownSelectorView<TokenData>
+          label="Existing Tokens"
+          model={tokenDropdownModel}
+          clickListener={(selectedItem, newModel) => {
+            const token = selectedItem.data;
+            setTokenTemplate(token);
+            setName(token.name);
+            setSpeed(token.speed);
+            setSize(1);
+            setTokenDropdownModel(newModel);
+          }}
+        />
+        <TextInputField
+          label="Token Name"
+          inputCallback={setName}
+          defaultValue={tokenTemplate?.name}
+        />
+        <NumberInputField
+          label="Size (in tiles)"
+          inputCallback={setSize}
+          defaultValue={1}
+        />
+        <NumberInputField
+          label="Speed (in tiles per mode)"
+          inputCallback={setSpeed}
+          defaultValue={tokenTemplate?.speed ?? 6}
+        />
+        {tokenTemplate === undefined && (
+          <ImageInputField label="Icon" inputCallback={setIcon} />
+        )}
         <button
           className="btn-success"
-          style={{display: pendingToken ? 'block' : 'none'}}
+          style={{display: allFieldsFilled ? 'block' : 'none'}}
           onClick={() => {
             props.setVisibility(false);
-            onSubmit(pendingToken!);
+            onSubmit();
           }}
         >
           Create
         </button>
       </div>
-    </div>
-  );
-}
-
-interface InputFieldProps {
-  tile: Location;
-  image?: LoadedImage;
-  onAllInputs: (token: TokenModel | undefined) => any;
-}
-
-function InputFields(props: InputFieldProps) {
-  const [name, setName] = useState<string | undefined>(undefined);
-  const [size, setSize] = useState<number | undefined>(undefined);
-  const [speed, setSpeed] = useState<number | undefined>(undefined);
-  const [icon, setIcon] = useState<LoadedImage | undefined>(props.image);
-
-  const onAllInputs = props.onAllInputs;
-  const tile = props.tile;
-
-  useEffect(() => {
-    const token =
-      name !== undefined &&
-      size !== undefined &&
-      speed !== undefined &&
-      icon !== undefined
-        ? TokenModel.create(name, icon, size, tile, false, speed)
-        : undefined;
-    // Need to do this for the case where we pre-fill from an existing token.
-    // : new TokenModel(
-    //     {
-    //       id: tokenId,
-    //       name: name,
-    //       imageSource: icon.source,
-    //       size: size,
-    //       location: tile,
-    //       speed: speed,
-    //       sheetData: null,
-    //     },
-    //     icon.image,
-    //     false
-    //   );
-    onAllInputs(token);
-  }, [icon, name, onAllInputs, size, speed, tile]);
-
-  return (
-    <div>
-      <TextInputField label="Token Name" inputCallback={setName} />
-      <NumberInputField label="Size (in tiles)" inputCallback={setSize} />
-      <NumberInputField
-        label="Speed (in tiles per mode)"
-        inputCallback={setSpeed}
-      />
-      {props.image === undefined && (
-        <ImageInputField label="Icon" inputCallback={setIcon} />
-      )}
     </div>
   );
 }

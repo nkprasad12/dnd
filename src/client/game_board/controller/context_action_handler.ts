@@ -1,5 +1,4 @@
 import {areLocationsEqual, Location} from '_common/coordinates';
-import {EditTokenForm} from '_client/board_tools/board_form';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {BoardModel, BoardDiff} from '_client/game_board/model/board_model';
@@ -113,8 +112,7 @@ export class ContextActionHandler {
       console.log('No token in selection, ignoring');
       return {};
     }
-    const selectedToken = model.tokens[tokenIndex];
-    EditTokenForm.create(selectedToken, this.modelHandler);
+    this.controller.editTokenForm(model.tokens[tokenIndex]);
     return {};
   }
 

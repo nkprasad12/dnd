@@ -7,11 +7,11 @@ import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
-import {BoardUpdateData} from '_client/board_tools/board_form';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {UiController} from '_client/entrypoints/main/ui_controller';
+import {BoardUpdateData} from '_client/board_tools/board_update_form';
 
 export const RIGHT_CLICK_MENU_STUB = 'rightClickMenuStub';
 
