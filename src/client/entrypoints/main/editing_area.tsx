@@ -3,7 +3,7 @@ import {BoardSelector} from '_client/board_tools/board_selector';
 import {BoardUpdateFormView} from '_client/board_tools/board_update_form';
 import {NewBoardForm} from '_client/board_tools/new_board_form';
 import {SelectorItem} from '_client/common/ui_components/dropdown';
-import {loadBoard} from '_client/entrypoints/main/game_board';
+import {loadBoard} from '_client/entrypoints/main/board_setup';
 import {UiController} from '_client/entrypoints/main/ui_controller';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardClient} from '_client/game_board/remote/board_client';

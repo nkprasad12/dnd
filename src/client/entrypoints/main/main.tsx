@@ -4,8 +4,7 @@ import ReactDOM from 'react-dom';
 import {NewTokenForm} from '_client/board_tools/new_token_form';
 import {ChatBoxView} from '_client/chat_box/chat_box_view';
 import {ChatClient} from '_client/chat_box/chat_client';
-import {EditingArea} from '_client/entrypoints/main/board_tools';
-import {setupActiveBoard} from '_client/entrypoints/main/game_board';
+import {setupActiveBoard} from '_client/entrypoints/main/board_setup';
 import {NavbarOption, Navbar} from '_client/entrypoints/main/navbar';
 import {UiController} from '_client/entrypoints/main/ui_controller';
 import {GameBoard} from '_client/game_board/controller/game_board';
@@ -16,6 +15,7 @@ import {Location} from '_common/coordinates';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {EditTokenForm} from '_client/board_tools/edit_token_form';
 import {TEXT_COLOR} from '_client/common/styles';
+import {EditingArea} from '_client/entrypoints/main/editing_area';
 
 const MAIN_BOARD_STUB = 'mainBoard';
 
