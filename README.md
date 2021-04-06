@@ -51,3 +51,7 @@ and to format typescript on save using prettier.
 
 After initial setup, install the [Jest Runner VS Code plugin](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner).
 This will allow you to run and debug unit tests from within the VS Code UI when browsing a test file.
+
+**VS Code - Icons**
+
+This is optional but may make navigation of the source files easier in VS Code. Install the [VSCode Icons plugin](https://marketplace.visualstudio.com/items?itemName=vscode-icons-team.vscode-icons) and follow the onboarding dialog. It may be helpful to turn on the `Official TS Preset` via `F1` and searching `Icons`.

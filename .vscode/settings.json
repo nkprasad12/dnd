@@ -10,4 +10,18 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
+  "vsicons.associations.files": [
+    {
+      "icon": "webpack",
+      "extensions": ["webpack.client.config.js", "webpack.server.config.js"],
+      "filename": true,
+      "format": "svg"
+    },
+    {
+      "icon": "tsconfig",
+      "extensions": ["tsconfig.client.json"],
+      "filename": true,
+      "format": "svg"
+    }
+  ]
 }
