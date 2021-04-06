@@ -56,6 +56,12 @@ export class ModelHandler {
     });
   }
 
+  clearListeners(): void {
+    while (this.listeners.length > 0) {
+      this.listeners.pop();
+    }
+  }
+
   getModel(): BoardModel {
     return this.model;
   }

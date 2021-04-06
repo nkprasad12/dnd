@@ -1,21 +1,33 @@
-import {Location} from '_common/coordinates';
-import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
-import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
+import {
+  ContextMenuItem,
+  ContextMenuModel,
+} from '_client/game_board/context_menu/context_menu_model';
 import {BoardModel} from '_client/game_board/model/board_model';
+import {Location} from '_common/coordinates';
 import {Grid} from '_common/util/grid';
 
-export class ContextMenu {
-  static create(
-    parent: HTMLElement,
-    clickListener: (item: ContextMenuItem) => any
-  ): ContextMenu {
-    const view = new ContextMenuView(parent, clickListener);
-    return new ContextMenu(view);
+// TODO: Merge this duplicated logic with ModelHandler
+function hasTokenAt(model: BoardModel, target: Location): boolean {
+  for (let i = 0; i < model.tokens.length; i++) {
+    const token = model.tokens[i];
+    const minCol = token.inner.location.col;
+    const maxCol = minCol + token.inner.size;
+    const minRow = token.inner.location.row;
+    const maxRow = minRow + token.inner.size;
+
+    const colsDisjoint = target.col >= maxCol || target.col + 1 <= minCol;
+    const rowsDisjoint = target.row >= maxRow || target.row + 1 <= minRow;
+    if (!colsDisjoint && !rowsDisjoint) {
+      return true;
+    }
   }
+  return false;
+}
 
-  constructor(private readonly view: ContextMenuView) {}
-
-  onNewModel(model: BoardModel): void {
+export namespace ContextMenu {
+  export function processModel(
+    model: BoardModel
+  ): [ContextMenuModel, ContextMenuItem[]] {
     const invalidItems: ContextMenuItem[] = [];
     const selectedTiles =
       model.localSelection.area === undefined
@@ -23,7 +35,7 @@ export class ContextMenu {
         : Grid.SimpleArea.toTiles(model.localSelection.area);
     const selection = model.localSelection.area;
     const hasToken =
-      selection !== undefined && this.hasTokenAt(model, selection.start);
+      selection !== undefined && hasTokenAt(model, selection.start);
     const oneTileSelected = selectedTiles.length === 1;
     const multipleTilesSelected = selectedTiles.length > 1;
     if (multipleTilesSelected) {
@@ -69,24 +81,6 @@ export class ContextMenu {
       invalidItems.push(ContextMenuItem.ClearHighlight);
     }
 
-    this.view.bind(model.contextMenuState, invalidItems);
-  }
-
-  // TODO: Merge this duplicated logic with ModelHandler
-  private hasTokenAt(model: BoardModel, target: Location): boolean {
-    for (let i = 0; i < model.tokens.length; i++) {
-      const token = model.tokens[i];
-      const minCol = token.inner.location.col;
-      const maxCol = minCol + token.inner.size;
-      const minRow = token.inner.location.row;
-      const maxRow = minRow + token.inner.size;
-
-      const colsDisjoint = target.col >= maxCol || target.col + 1 <= minCol;
-      const rowsDisjoint = target.row >= maxRow || target.row + 1 <= minRow;
-      if (!colsDisjoint && !rowsDisjoint) {
-        return true;
-      }
-    }
-    return false;
+    return [model.contextMenuState, invalidItems];
   }
 }

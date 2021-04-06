@@ -44,17 +44,15 @@ export class BoardModel implements Readonly<MutableBoardModel> {
     backgroundImage: LoadedImage,
     tileSize: number
   ): BoardModel {
-    const backgroundData = getBackgroundData(backgroundImage, tileSize, {
-      x: 0,
-      y: 0,
-    });
+    const offset = {x: 0, y: 0};
+    const backgroundData = getBackgroundData(backgroundImage, tileSize, offset);
     const inner: RemoteBoardModel = {
       id: getId(),
       tileSize: tileSize,
       name: name,
       imageSource: backgroundImage.source,
       tokens: [],
-      gridOffset: {x: 0, y: 0},
+      gridOffset: backgroundData.offset,
       rows: backgroundData.rows,
       cols: backgroundData.cols,
       width: backgroundData.width,

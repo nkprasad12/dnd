@@ -35,6 +35,22 @@ describe('addListeners', () => {
   });
 });
 
+describe('clearListeners', () => {
+  it('removes listener from callback list', async (done) => {
+    const allListener = new FakeAllListener();
+    const initialModel = new FakeModel('Tacitus');
+    const newName = 'Cassius Dio';
+
+    const handler = new ModelHandler(initialModel as any, {} as any);
+    handler.addListeners([allListener.listener]);
+    handler.clearListeners();
+    await handler.applyLocalDiff({inner: {name: newName}} as any);
+
+    expect(allListener.updatedModel).toBe(initialModel);
+    done();
+  });
+});
+
 test('applyLocalDiff updates all listener on update', async (done) => {
   const allListener = new FakeAllListener();
   const localListener = new FakeLocalListener();

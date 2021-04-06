@@ -7,13 +7,10 @@ import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
 import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
-import {ContextMenu} from '_client/game_board/context_menu/context_menu';
 import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {UiController} from '_client/entrypoints/main/ui_controller';
 import {BoardUpdateData} from '_client/board_tools/board_update_form';
-
-export const RIGHT_CLICK_MENU_STUB = 'rightClickMenuStub';
 
 export class GameBoard {
   static existingBoard: GameBoard | null = null;
@@ -26,7 +23,7 @@ export class GameBoard {
   ) {
     if (GameBoard.existingBoard !== null) {
       removeChildrenOf(parentId);
-      removeChildrenOf(RIGHT_CLICK_MENU_STUB);
+      GameBoard.existingBoard.modelHandler.clearListeners();
       server.removeAllListeners();
     }
     GameBoard.existingBoard = new GameBoard(
@@ -52,15 +49,10 @@ export class GameBoard {
     controller: UiController
   ) {
     this.view = new BoardView(getElementById(parentId));
-    const menu = ContextMenu.create(
-      getElementById(RIGHT_CLICK_MENU_STUB),
-      (item) => this.onContextMenuClick(item)
-    );
     this.modelHandler = new ModelHandler(model, this.view);
     const remoteBoard = new RemoteBoard(server, this.modelHandler);
     this.modelHandler.addListeners([
       UpdateListener.forAll((board) => this.view.bind(board)),
-      UpdateListener.forLocal((board) => menu.onNewModel(board)),
       UpdateListener.forLocal((board, diff) =>
         remoteBoard.onLocalUpdate(board, diff)
       ),
@@ -89,7 +81,7 @@ export class GameBoard {
     });
   }
 
-  private onContextMenuClick(item: ContextMenuItem): void {
+  onContextMenuClick(item: ContextMenuItem): void {
     this.inputHandler.onContextMenuClick(item);
   }
 }
