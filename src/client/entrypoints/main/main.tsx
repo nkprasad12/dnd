@@ -64,7 +64,7 @@ export function Panels(): JSX.Element {
 
   const boardMessageView =
     board === null && boardMessage !== null ? (
-      <label color={TEXT_COLOR}>{boardMessage}</label>
+      <label style={{color: TEXT_COLOR}}>{boardMessage}</label>
     ) : null;
 
   return (
