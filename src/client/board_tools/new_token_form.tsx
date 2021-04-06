@@ -8,6 +8,7 @@ import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
+import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {RemoteCache} from '_client/game_board/remote/remote_cache';
@@ -49,10 +50,6 @@ export function NewTokenForm(props: NewTokenFormProps) {
     }
   }, [props.visible]);
 
-  if (!props.visible) {
-    return null;
-  }
-
   async function onSubmit() {
     const token = tokenTemplate
       ? new TokenModel(
@@ -93,56 +90,49 @@ export function NewTokenForm(props: NewTokenFormProps) {
     speed !== undefined &&
     (icon !== undefined || tokenTemplate !== undefined);
 
+  if (!props.visible) {
+    return null;
+  }
+
   return (
-    <div style={{zIndex: 30, display: 'block'}} className="modal">
-      <div className="modal-content">
-        <div
-          className="close"
-          dangerouslySetInnerHTML={{__html: '&times;'}}
-          onClick={() => props.setVisibility(false)}
-        />
-        <p>Token attributes</p>
-        <DropdownSelectorView<TokenData>
-          label="Existing Tokens"
-          model={tokenDropdownModel}
-          clickListener={(selectedItem, newModel) => {
-            const token = selectedItem.data;
-            setTokenTemplate(token);
-            setName(token.name);
-            setSpeed(token.speed);
-            setSize(1);
-            setTokenDropdownModel(newModel);
-          }}
-        />
-        <TextInputField
-          label="Token Name"
-          inputCallback={setName}
-          defaultValue={tokenTemplate?.name}
-        />
-        <NumberInputField
-          label="Size (in tiles)"
-          inputCallback={setSize}
-          defaultValue={1}
-        />
-        <NumberInputField
-          label="Speed (in tiles per mode)"
-          inputCallback={setSpeed}
-          defaultValue={tokenTemplate?.speed ?? 6}
-        />
-        {tokenTemplate === undefined && (
-          <ImageInputField label="Icon" inputCallback={setIcon} />
-        )}
-        <button
-          className="btn-success"
-          style={{display: allFieldsFilled ? 'block' : 'none'}}
-          onClick={() => {
-            props.setVisibility(false);
-            onSubmit();
-          }}
-        >
-          Create
-        </button>
-      </div>
-    </div>
+    <SubmitDialogView
+      visible={props.visible}
+      setVisibility={props.setVisibility}
+      title="Token attributes"
+      showSubmit={allFieldsFilled}
+      onSubmit={() => onSubmit()}
+      submitText="Create"
+    >
+      <DropdownSelectorView<TokenData>
+        label="Existing Tokens"
+        model={tokenDropdownModel}
+        clickListener={(selectedItem, newModel) => {
+          const token = selectedItem.data;
+          setTokenTemplate(token);
+          setName(token.name);
+          setSpeed(token.speed);
+          setSize(1);
+          setTokenDropdownModel(newModel);
+        }}
+      />
+      <TextInputField
+        label="Token Name"
+        inputCallback={setName}
+        defaultValue={tokenTemplate?.name}
+      />
+      <NumberInputField
+        label="Size (in tiles)"
+        inputCallback={setSize}
+        defaultValue={1}
+      />
+      <NumberInputField
+        label="Speed (in tiles per mode)"
+        inputCallback={setSpeed}
+        defaultValue={tokenTemplate?.speed ?? 6}
+      />
+      {tokenTemplate === undefined && (
+        <ImageInputField label="Icon" inputCallback={setIcon} />
+      )}
+    </SubmitDialogView>
   );
 }
