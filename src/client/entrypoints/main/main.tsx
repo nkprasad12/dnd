@@ -16,6 +16,9 @@ import {TokenModel} from '_client/game_board/model/token_model';
 import {EditTokenForm} from '_client/board_tools/edit_token_form';
 import {TEXT_COLOR} from '_client/common/styles';
 import {EditingArea} from '_client/entrypoints/main/editing_area';
+import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
+import {BoardModel} from '_client/game_board/model/board_model';
+import {UpdateListener} from '_client/game_board/controller/model_handler';
 
 const MAIN_BOARD_STUB = 'mainBoard';
 
@@ -32,6 +35,7 @@ export function Panels(): JSX.Element {
   const [editTokenModel, setEditTokenModel] = useState<TokenModel | null>(null);
   const [board, setBoard] = useState<GameBoard | null>(null);
   const [boardMessage, setBoardMessage] = useState<string | null>(null);
+  const [boardModel, setBoardModel] = useState<BoardModel | null>(null);
 
   useEffect(() => {
     document.title = `DnD ${selected}`;
@@ -49,6 +53,15 @@ export function Panels(): JSX.Element {
     }
   }, [selected]);
 
+  useEffect(() => {
+    if (board === null) {
+      return;
+    }
+    board.modelHandler.addListeners([
+      UpdateListener.forLocal((newBoardModel) => setBoardModel(newBoardModel)),
+    ]);
+  }, [board]);
+
   const boardMessageView =
     board === null && boardMessage !== null ? (
       <label color={TEXT_COLOR}>{boardMessage}</label>
@@ -59,7 +72,12 @@ export function Panels(): JSX.Element {
       <div id="panel1" className="split left">
         <div id={MAIN_BOARD_STUB} style={{position: 'relative'}}></div>
         {boardMessageView}
-        <div id="rightClickMenuStub"></div>
+        {board && boardModel && (
+          <ContextMenuView
+            clickListener={(item) => board.onContextMenuClick(item)}
+            boardModel={boardModel}
+          />
+        )}
         {board && (
           <NewTokenForm
             visible={newTokenFormVisible}

@@ -540,14 +540,6 @@ class Tile {
   }
 }
 
-export function addButton(parent: HTMLElement, label: string): HTMLElement {
-  const item = document.createElement('button');
-  item.type = 'button';
-  item.innerHTML = label;
-  parent.appendChild(item);
-  return item;
-}
-
 function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const context = canvas.getContext('2d');
   if (context == null) {

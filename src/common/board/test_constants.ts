@@ -9,7 +9,7 @@ import {Point} from '_common/coordinates';
 import {createGrid, gridDimensions} from '_common/util/grid';
 import {prefer} from '_common/verification';
 
-export const DEFAULT_LOCATION = {row: 1, col: 7};
+export const DEFAULT_LOCATION = {row: 1, col: 3};
 export const DEFAULT_SIZE = 2;
 export const DEFAULT_SPEED = 6;
 export const TEST_TOKEN_ID = 'AndOnThePedestal';
