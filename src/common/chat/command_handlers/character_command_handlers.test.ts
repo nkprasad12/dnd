@@ -12,6 +12,7 @@ import {CharacterSheetData} from '_common/chat/command_handlers/types';
 const BOBBY_SHEET = 'bobby.sheet';
 const BOBBY_DATA: CharacterSheetData = {
   name: 'Bobby Newport',
+  sheetId: BOBBY_SHEET,
   proficiencyBonus: 3,
   saveBonuses: new Map([
     ['Dexterity', 0],
@@ -31,6 +32,7 @@ const BOBBY_DATA: CharacterSheetData = {
 const BRUTUS_SHEET = 'brutus.sheet';
 const BRUTUS_DATA: CharacterSheetData = {
   name: 'Brutus',
+  sheetId: BRUTUS_SHEET,
   proficiencyBonus: 2,
   saveBonuses: new Map([
     ['Dexterity', 3],
