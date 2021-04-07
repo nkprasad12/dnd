@@ -17,6 +17,9 @@ import {TokenData} from '_common/board/token_data';
 import {Location} from '_common/coordinates';
 import {checkDefined} from '_common/preconditions';
 
+const START_SIZE = 1;
+const START_SPEED = 6;
+
 export interface NewTokenFormProps {
   visible: boolean;
   setVisibility: (show: boolean) => any;
@@ -26,8 +29,8 @@ export interface NewTokenFormProps {
 
 export function NewTokenForm(props: NewTokenFormProps) {
   const [name, setName] = useState<string | undefined>(undefined);
-  const [size, setSize] = useState<number | undefined>(undefined);
-  const [speed, setSpeed] = useState<number | undefined>(undefined);
+  const [size, setSize] = useState<number | undefined>(START_SIZE);
+  const [speed, setSpeed] = useState<number | undefined>(START_SPEED);
   const [icon, setIcon] = useState<LoadedImage | undefined>(undefined);
   const [tokenDropdownModel, setTokenDropdownModel] = useState<
     SelectorItem<TokenData>[]
@@ -75,8 +78,6 @@ export function NewTokenForm(props: NewTokenFormProps) {
         );
 
     props.modelHandler.addNewToken(token);
-
-    props.setVisibility(false);
     setTokenTemplate(undefined);
     setName(undefined);
     setSize(undefined);
@@ -123,12 +124,12 @@ export function NewTokenForm(props: NewTokenFormProps) {
       <NumberInputField
         label="Size (in tiles)"
         inputCallback={setSize}
-        defaultValue={1}
+        defaultValue={START_SIZE}
       />
       <NumberInputField
         label="Speed (in tiles per mode)"
         inputCallback={setSpeed}
-        defaultValue={tokenTemplate?.speed ?? 6}
+        defaultValue={tokenTemplate?.speed ?? START_SPEED}
       />
       {tokenTemplate === undefined && (
         <ImageInputField label="Icon" inputCallback={setIcon} />

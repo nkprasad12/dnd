@@ -2,8 +2,28 @@ import {
   FakeAllListener,
   FakeLocalListener,
 } from '_client/game_board/controller/fake_listeners';
-import {ModelHandler} from '_client/game_board/controller/model_handler';
+import {
+  ModelHandler,
+  UpdateListener,
+} from '_client/game_board/controller/model_handler';
+import {BoardDiff, BoardModel} from '_client/game_board/model/board_model';
+import {createBoardModel} from '_client/game_board/model/test_constants';
+import {TokenModel} from '_client/game_board/model/token_model';
+import {FakeImage} from '_client/utils/fake_image';
 import {RemoteTokenDiff} from '_common/board/remote_board_model';
+import {remoteTokenModel, TEST_TOKEN_ID} from '_common/board/test_constants';
+
+beforeAll(() => {
+  FakeImage.invokeBeforeAll(true);
+});
+
+beforeEach(() => {
+  FakeImage.invokeBeforeEach();
+});
+
+afterAll(() => {
+  FakeImage.invokeAfterAll();
+});
 
 class FakeModel {
   name: string;
@@ -113,4 +133,46 @@ test('getModel returns current model', async (done) => {
 
   expect(handler.getModel()).toBe(initialModel);
   done();
+});
+
+describe('addNewToken', () => {
+  const JUSTINIAN = 'Justinian';
+
+  it('adds a new token if id is not yet in the board', async (done) => {
+    const listener = jest.fn((_model: BoardModel, diff: BoardDiff) => diff);
+    const boardModel = await createBoardModel();
+    const handler = new ModelHandler(boardModel, {} as any);
+    handler.addListeners([UpdateListener.forAll(listener)]);
+    listener.mockClear();
+
+    const tokenModel = await TokenModel.fromRemote(remoteTokenModel());
+    (tokenModel.inner as any).id = JUSTINIAN;
+    await handler.addNewToken(tokenModel);
+
+    const tokens = listener.mock.calls[0][0].tokens;
+    expect(tokens.length).toBe(2);
+    expect(tokens[0].inner.id).toBe(TEST_TOKEN_ID);
+    expect(tokens[1].inner.id).toBe(JUSTINIAN);
+    expect(listener.mock.calls[0][1].inner?.newTokens).toBeDefined();
+    done();
+  });
+
+  it('modifies existing token if id is in the board', async (done) => {
+    const listener = jest.fn((_model: BoardModel, diff: BoardDiff) => diff);
+    const boardModel = await createBoardModel();
+    const handler = new ModelHandler(boardModel, {} as any);
+    handler.addListeners([UpdateListener.forAll(listener)]);
+    listener.mockClear();
+
+    const tokenModel = await TokenModel.fromRemote(remoteTokenModel());
+    (tokenModel.inner as any).name = JUSTINIAN;
+    await handler.addNewToken(tokenModel);
+
+    const tokens = listener.mock.calls[0][0].tokens;
+    expect(tokens.length).toBe(1);
+    expect(tokens[0].inner.id).toBe(TEST_TOKEN_ID);
+    expect(tokens[0].inner.name).toBe(JUSTINIAN);
+    expect(listener.mock.calls[0][1].tokenDiffs).toBeDefined();
+    done();
+  });
 });
