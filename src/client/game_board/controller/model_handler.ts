@@ -88,26 +88,21 @@ export class ModelHandler {
   }
 
   // TODO: find a better home for this?
-  addNewToken(token: TokenModel): void {
+  async addNewToken(token: TokenModel): Promise<void> {
     console.log('addNewToken: ' + token.inner.id);
     const model = this.getModel();
-    let addedToken = false;
     for (let i = 0; i < model.tokens.length; i++) {
       if (model.tokens[i].inner.id !== token.inner.id) {
         continue;
       }
-      this.applyLocalDiff({tokenDiffs: [model.tokens[i]]});
-      addedToken = true;
-      break;
+      return this.applyLocalDiff({tokenDiffs: [token]});
     }
-    if (!addedToken) {
-      this.applyLocalDiff({
-        inner: {
-          newTokens: [token.inner],
-          id: model.inner.id,
-        },
-      });
-    }
+    return this.applyLocalDiff({
+      inner: {
+        newTokens: [token.inner],
+        id: model.inner.id,
+      },
+    });
   }
 
   /** Returns the tile for the input client point, relative to the canvas. */

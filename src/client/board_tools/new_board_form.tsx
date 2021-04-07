@@ -4,6 +4,7 @@ import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
+import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {LoadedImage} from '_client/utils/image_utils';
 import {checkDefined} from '_common/preconditions';
@@ -32,33 +33,20 @@ export function NewBoardForm(props: NewBoardFormProps) {
     setInputValues({});
   }
 
-  const submitDisplay =
-    inputValues.image && inputValues.name && inputValues.tileSize
-      ? 'block'
-      : 'none';
+  const allowSubmit =
+    inputValues.image && inputValues.name && inputValues.tileSize;
 
   return (
-    <div style={{zIndex: 30, display: 'block'}} className="modal">
-      <div className="modal-content">
-        <div
-          className="close"
-          dangerouslySetInnerHTML={{__html: '&times;'}}
-          onClick={() => props.setVisibility(false)}
-        />
-        <p>New board attributes</p>
-        <InputFields onInputChange={setInputValues} />
-        <button
-          className="btn-success"
-          style={{display: submitDisplay}}
-          onClick={() => {
-            props.setVisibility(false);
-            onSubmit();
-          }}
-        >
-          Create
-        </button>
-      </div>
-    </div>
+    <SubmitDialogView
+      visible={props.visible}
+      setVisibility={props.setVisibility}
+      title="New board attributes"
+      showSubmit={allowSubmit === undefined}
+      onSubmit={() => onSubmit()}
+      submitText="Create"
+    >
+      <InputFields onInputChange={setInputValues} />
+    </SubmitDialogView>
   );
 }
 

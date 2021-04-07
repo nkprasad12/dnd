@@ -8,6 +8,7 @@ import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
+import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {RemoteCache} from '_client/game_board/remote/remote_cache';
@@ -15,6 +16,9 @@ import {LoadedImage, loadImage} from '_client/utils/image_utils';
 import {TokenData} from '_common/board/token_data';
 import {Location} from '_common/coordinates';
 import {checkDefined} from '_common/preconditions';
+
+const START_SIZE = 1;
+const START_SPEED = 6;
 
 export interface NewTokenFormProps {
   visible: boolean;
@@ -25,8 +29,8 @@ export interface NewTokenFormProps {
 
 export function NewTokenForm(props: NewTokenFormProps) {
   const [name, setName] = useState<string | undefined>(undefined);
-  const [size, setSize] = useState<number | undefined>(undefined);
-  const [speed, setSpeed] = useState<number | undefined>(undefined);
+  const [size, setSize] = useState<number | undefined>(START_SIZE);
+  const [speed, setSpeed] = useState<number | undefined>(START_SPEED);
   const [icon, setIcon] = useState<LoadedImage | undefined>(undefined);
   const [tokenDropdownModel, setTokenDropdownModel] = useState<
     SelectorItem<TokenData>[]
@@ -48,10 +52,6 @@ export function NewTokenForm(props: NewTokenFormProps) {
         );
     }
   }, [props.visible]);
-
-  if (!props.visible) {
-    return null;
-  }
 
   async function onSubmit() {
     const token = tokenTemplate
@@ -78,8 +78,6 @@ export function NewTokenForm(props: NewTokenFormProps) {
         );
 
     props.modelHandler.addNewToken(token);
-
-    props.setVisibility(false);
     setTokenTemplate(undefined);
     setName(undefined);
     setSize(undefined);
@@ -93,56 +91,49 @@ export function NewTokenForm(props: NewTokenFormProps) {
     speed !== undefined &&
     (icon !== undefined || tokenTemplate !== undefined);
 
+  if (!props.visible) {
+    return null;
+  }
+
   return (
-    <div style={{zIndex: 30, display: 'block'}} className="modal">
-      <div className="modal-content">
-        <div
-          className="close"
-          dangerouslySetInnerHTML={{__html: '&times;'}}
-          onClick={() => props.setVisibility(false)}
-        />
-        <p>Token attributes</p>
-        <DropdownSelectorView<TokenData>
-          label="Existing Tokens"
-          model={tokenDropdownModel}
-          clickListener={(selectedItem, newModel) => {
-            const token = selectedItem.data;
-            setTokenTemplate(token);
-            setName(token.name);
-            setSpeed(token.speed);
-            setSize(1);
-            setTokenDropdownModel(newModel);
-          }}
-        />
-        <TextInputField
-          label="Token Name"
-          inputCallback={setName}
-          defaultValue={tokenTemplate?.name}
-        />
-        <NumberInputField
-          label="Size (in tiles)"
-          inputCallback={setSize}
-          defaultValue={1}
-        />
-        <NumberInputField
-          label="Speed (in tiles per mode)"
-          inputCallback={setSpeed}
-          defaultValue={tokenTemplate?.speed ?? 6}
-        />
-        {tokenTemplate === undefined && (
-          <ImageInputField label="Icon" inputCallback={setIcon} />
-        )}
-        <button
-          className="btn-success"
-          style={{display: allFieldsFilled ? 'block' : 'none'}}
-          onClick={() => {
-            props.setVisibility(false);
-            onSubmit();
-          }}
-        >
-          Create
-        </button>
-      </div>
-    </div>
+    <SubmitDialogView
+      visible={props.visible}
+      setVisibility={props.setVisibility}
+      title="Token attributes"
+      showSubmit={allFieldsFilled}
+      onSubmit={() => onSubmit()}
+      submitText="Create"
+    >
+      <DropdownSelectorView<TokenData>
+        label="Existing Tokens"
+        model={tokenDropdownModel}
+        clickListener={(selectedItem, newModel) => {
+          const token = selectedItem.data;
+          setTokenTemplate(token);
+          setName(token.name);
+          setSpeed(token.speed);
+          setSize(1);
+          setTokenDropdownModel(newModel);
+        }}
+      />
+      <TextInputField
+        label="Token Name"
+        inputCallback={setName}
+        defaultValue={tokenTemplate?.name}
+      />
+      <NumberInputField
+        label="Size (in tiles)"
+        inputCallback={setSize}
+        defaultValue={START_SIZE}
+      />
+      <NumberInputField
+        label="Speed (in tiles per mode)"
+        inputCallback={setSpeed}
+        defaultValue={tokenTemplate?.speed ?? START_SPEED}
+      />
+      {tokenTemplate === undefined && (
+        <ImageInputField label="Icon" inputCallback={setIcon} />
+      )}
+    </SubmitDialogView>
   );
 }

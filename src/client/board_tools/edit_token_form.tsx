@@ -3,6 +3,7 @@ import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
+import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
@@ -21,53 +22,38 @@ export function EditTokenForm(props: EditTokenFormProps) {
     props.token.inner.speed
   );
 
-  if (!props.visible) {
-    return null;
-  }
-
-  const submitDisplay = name && size && speed ? 'block' : 'none';
-
   return (
-    <div style={{zIndex: 30, display: 'block'}} className="modal">
-      <div className="modal-content">
-        <div
-          className="close"
-          dangerouslySetInnerHTML={{__html: '&times;'}}
-          onClick={() => props.setVisibility(false)}
-        />
-        <p>Edit Token</p>
-        <TextInputField
-          label="Token Name"
-          inputCallback={setName}
-          defaultValue={props.token.inner.name}
-        />
-        <NumberInputField
-          label="Size (in tiles)"
-          inputCallback={setSize}
-          defaultValue={props.token.inner.size}
-        />
-        <NumberInputField
-          label="Speed (tiles per move)"
-          inputCallback={setSpeed}
-          defaultValue={props.token.inner.speed}
-        />
-        <button
-          className="btn-success"
-          style={{display: submitDisplay}}
-          onClick={() => {
-            props.setVisibility(false);
-            onSubmit(
-              checkDefined(name),
-              checkDefined(speed),
-              checkDefined(size),
-              props
-            );
-          }}
-        >
-          Create
-        </button>
-      </div>
-    </div>
+    <SubmitDialogView
+      visible={props.visible}
+      setVisibility={props.setVisibility}
+      title="Edit Token"
+      showSubmit={(name && size && speed) === undefined}
+      onSubmit={() =>
+        onSubmit(
+          checkDefined(name),
+          checkDefined(speed),
+          checkDefined(size),
+          props
+        )
+      }
+      submitText="Create"
+    >
+      <TextInputField
+        label="Token Name"
+        inputCallback={setName}
+        defaultValue={props.token.inner.name}
+      />
+      <NumberInputField
+        label="Size (in tiles)"
+        inputCallback={setSize}
+        defaultValue={props.token.inner.size}
+      />
+      <NumberInputField
+        label="Speed (tiles per move)"
+        inputCallback={setSpeed}
+        defaultValue={props.token.inner.speed}
+      />
+    </SubmitDialogView>
   );
 }
 
