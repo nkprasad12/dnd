@@ -6,6 +6,7 @@ import {CharacterSheetData} from '_common/chat/command_handlers/types';
 const CALIGULA_SHEET = 'caligula.sheet';
 const CALIGULA_DATA: CharacterSheetData = {
   name: 'Caligula',
+  sheetId: CALIGULA_SHEET,
   proficiencyBonus: 0,
   saveBonuses: new Map(),
   abilityBonuses: new Map(),

@@ -7,7 +7,7 @@ export class CharacterResolver {
   static create(cache: CharacterSheetCache): CharacterResolver {
     const resolver = new CharacterResolver(cache);
     cache.addListener((result) => {
-      resolver.onNewCharacter(result.loadedName);
+      resolver.onNewCharacter(result.loadedData.name.toLowerCase());
       if (result.removedName) {
         console.log('TODO: handle character removal');
       }

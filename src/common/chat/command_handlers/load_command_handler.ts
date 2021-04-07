@@ -16,7 +16,7 @@ async function handleLoadCommand(
   const id = query.split(SHEET_ID_PREFIX)[1].split('/')[0];
   try {
     const data = await cache.load(id);
-    return {body: 'Successfully loaded ' + data.loadedName};
+    return {body: 'Successfully loaded ' + data.loadedData.name};
   } catch (e) {
     return {
       header: 'Load Error: Invalid content',

@@ -7,6 +7,7 @@ import {CharacterSheetData} from '_common/chat/command_handlers/types';
 const CALIGULA_SHEET = 'caligula.sheet';
 const CALIGULA_DATA: CharacterSheetData = {
   name: 'Caligula',
+  sheetId: CALIGULA_SHEET,
   proficiencyBonus: 0,
   saveBonuses: new Map(),
   abilityBonuses: new Map(),
@@ -15,6 +16,7 @@ const CALIGULA_DATA: CharacterSheetData = {
 };
 const UPDATED_CALIGULA_DATA: CharacterSheetData = {
   name: 'Gaius',
+  sheetId: CALIGULA_SHEET,
   proficiencyBonus: 0,
   saveBonuses: new Map(),
   abilityBonuses: new Map(),
@@ -25,6 +27,7 @@ const UPDATED_CALIGULA_DATA: CharacterSheetData = {
 const BRUTUS_SHEET = 'brutus.sheet';
 const BRUTUS_DATA: CharacterSheetData = {
   name: 'Brutus',
+  sheetId: BRUTUS_SHEET,
   proficiencyBonus: 0,
   saveBonuses: new Map(),
   abilityBonuses: new Map(),
@@ -80,7 +83,7 @@ test('load loads valid sheet', async (done) => {
   const cache = new CharacterSheetCache((id) => loader.load(id));
 
   const result = await cache.load(CALIGULA_SHEET);
-  expect(result.loadedName).toBe(CALIGULA_DATA.name);
+  expect(result.loadedData).toBe(CALIGULA_DATA);
   expect(result.removedName).toBeUndefined();
   done();
 });
@@ -112,7 +115,7 @@ test('load second time returns cached valid sheet', async (done) => {
 
   await cache.load(CALIGULA_SHEET);
   const result = await cache.load(CALIGULA_SHEET);
-  expect(result.loadedName).toBe(CALIGULA_DATA.name.toLowerCase());
+  expect(result.loadedData).toBe(CALIGULA_DATA);
   expect(result.removedName).toBeUndefined();
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(1);
   done();
@@ -124,7 +127,7 @@ test('load different sheet returns expected sheet', async (done) => {
 
   await cache.load(CALIGULA_SHEET);
   const result = await cache.load(BRUTUS_SHEET);
-  expect(result.loadedName).toBe(BRUTUS_DATA.name);
+  expect(result.loadedData).toBe(BRUTUS_DATA);
   expect(result.removedName).toBeUndefined();
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(1);
   expect(loader.invocations.get(BRUTUS_SHEET)).toBe(1);
@@ -153,7 +156,7 @@ test('load second time forces reload cached valid sheet', async (done) => {
   loader.data.set(CALIGULA_SHEET, UPDATED_CALIGULA_DATA);
   const result = await cache.load(CALIGULA_SHEET, true);
   expect(loader.invocations.get(CALIGULA_SHEET)).toBe(2);
-  expect(result.loadedName).toBe(UPDATED_CALIGULA_DATA.name);
+  expect(result.loadedData).toBe(UPDATED_CALIGULA_DATA);
   expect(result.removedName).toBe(CALIGULA_DATA.name.toLowerCase());
   done();
 });
