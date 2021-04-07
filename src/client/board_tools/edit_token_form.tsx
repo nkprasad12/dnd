@@ -30,7 +30,7 @@ export function EditTokenForm(props: EditTokenFormProps) {
       visible={props.visible}
       setVisibility={props.setVisibility}
       title="Edit Token"
-      showSubmit={(name && size && speed) === undefined}
+      showSubmit={(name && size && speed) !== undefined}
       onSubmit={() =>
         onSubmit(
           checkDefined(name),
