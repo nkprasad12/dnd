@@ -7,7 +7,6 @@ import {CommandType} from '_common/chat/command_parser';
 import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
 import {lookupCommandHandler} from '_common/chat/command_handlers/lookup_command_handler';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
-import {extractSheetData} from '_server/sheets/sheets';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {
   attackCommandHandler,
@@ -17,11 +16,12 @@ import {
 } from '_common/chat/command_handlers/character_command_handlers';
 import {storageUtil} from '_server/storage/storage_util';
 import {isStringArray} from '_common/verification';
-import {Spell} from '_common/chat/command_handlers/types';
+import {Spell} from '_common/character_sheets/types';
+import {RemoteSheetCache} from '_server/sheets/remote_sheet_cache';
 
 export async function registerChatRoutes(ioServer: Server): Promise<void> {
   // TODO: Look into express-socket.io-session for security.
-  const cache = CharacterSheetCache.create(extractSheetData);
+  const cache = RemoteSheetCache.get();
   const preloader = new SheetPreloader(cache);
   const resolver = CharacterResolver.create(cache);
 
