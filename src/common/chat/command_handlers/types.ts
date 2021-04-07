@@ -5,6 +5,7 @@ export interface AttackData {
 }
 
 export interface CharacterSheetData {
+  readonly sheetId: string;
   readonly name: string;
   readonly proficiencyBonus: number;
   readonly checkBonuses: Map<string, number>;

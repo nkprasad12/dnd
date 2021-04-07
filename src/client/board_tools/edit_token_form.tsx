@@ -21,6 +21,9 @@ export function EditTokenForm(props: EditTokenFormProps) {
   const [speed, setSpeed] = useState<number | undefined>(
     props.token.inner.speed
   );
+  const [sheetLink, setSheetLink] = useState<string | undefined>(
+    props.token.inner.sheetData?.sheetId
+  );
 
   return (
     <SubmitDialogView
@@ -33,7 +36,8 @@ export function EditTokenForm(props: EditTokenFormProps) {
           checkDefined(name),
           checkDefined(speed),
           checkDefined(size),
-          props
+          props,
+          sheetLink
         )
       }
       submitText="Create"
@@ -53,6 +57,11 @@ export function EditTokenForm(props: EditTokenFormProps) {
         inputCallback={setSpeed}
         defaultValue={props.token.inner.speed}
       />
+      <TextInputField
+        label="Character Sheet Link (Optional)"
+        inputCallback={setSheetLink}
+        defaultValue={props.token.inner.sheetData?.sheetId}
+      />
     </SubmitDialogView>
   );
 }
@@ -61,8 +70,10 @@ function onSubmit(
   name: string,
   speed: number,
   size: number,
-  props: EditTokenFormProps
+  props: EditTokenFormProps,
+  sheetLink?: string
 ) {
+  console.log('TODO: Use sheet link. Got: ' + sheetLink);
   const collisions = props.modelHandler.collisionIds(
     props.token.inner.location,
     size

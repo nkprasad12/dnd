@@ -168,6 +168,7 @@ export async function extractSheetData(
 
   return {
     name: processName(data[0]),
+    sheetId: sheetId,
     proficiencyBonus: processProficiency(data[1]),
     abilityBonuses: abilityBonuses,
     saveBonuses: processSaveBonuses(data[3]),

@@ -32,6 +32,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
   const [size, setSize] = useState<number | undefined>(START_SIZE);
   const [speed, setSpeed] = useState<number | undefined>(START_SPEED);
   const [icon, setIcon] = useState<LoadedImage | undefined>(undefined);
+  const [sheetLink, setSheetLink] = useState<string | undefined>(undefined);
   const [tokenDropdownModel, setTokenDropdownModel] = useState<
     SelectorItem<TokenData>[]
   >([]);
@@ -54,6 +55,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
   }, [props.visible]);
 
   async function onSubmit() {
+    console.log('TODO: Use sheet link. Got: ' + sheetLink);
     const token = tokenTemplate
       ? new TokenModel(
           {
@@ -134,6 +136,10 @@ export function NewTokenForm(props: NewTokenFormProps) {
       {tokenTemplate === undefined && (
         <ImageInputField label="Icon" inputCallback={setIcon} />
       )}
+      <TextInputField
+        label="Character Sheet Link (Optional)"
+        inputCallback={setSheetLink}
+      />
     </SubmitDialogView>
   );
 }
