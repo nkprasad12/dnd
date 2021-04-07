@@ -1,7 +1,7 @@
 export interface AttackData {
-  toHit: number;
-  damageRoll: string;
-  info?: string;
+  readonly toHit: number;
+  readonly damageRoll: string;
+  readonly info?: string;
 }
 
 export interface CharacterSheetData {
@@ -15,23 +15,23 @@ export interface CharacterSheetData {
 }
 
 export interface Spell {
-  name: string;
-  desc: string;
-  page: string;
-  range: string;
-  components: string;
-  material?: string;
-  ritual: string;
-  duration: string;
-  concentration: string;
-  castingTime: string;
-  level: string;
-  school: string;
-  class: string;
-  higherLevel?: string;
-  archetype?: string;
-  domains?: string;
-  patrons?: string;
-  circles?: string;
-  oaths?: string;
+  readonly name: string;
+  readonly desc: string;
+  readonly page: string;
+  readonly range: string;
+  readonly components: string;
+  readonly material?: string;
+  readonly ritual: string;
+  readonly duration: string;
+  readonly concentration: string;
+  readonly castingTime: string;
+  readonly level: string;
+  readonly school: string;
+  readonly class: string;
+  readonly higherLevel?: string;
+  readonly archetype?: string;
+  readonly domains?: string;
+  readonly patrons?: string;
+  readonly circles?: string;
+  readonly oaths?: string;
 }
