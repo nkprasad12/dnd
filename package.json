@@ -16,7 +16,7 @@
     "start:full": "npm run build && npm run start",
     "test": "jest",
     "coverage": "jest --coverage",
-    "count": "find src -name '*.ts' | xargs wc -l"
+    "count": "find src -regextype sed -regex '.*/*\\.tsx\\?' | xargs wc -l"
   },
   "author": "",
   "license": "ISC",
