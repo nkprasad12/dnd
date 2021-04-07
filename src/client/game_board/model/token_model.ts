@@ -6,7 +6,7 @@ import {
 } from '_common/board/remote_board_model';
 import {LoadedImage, loadImage} from '_client/utils/image_utils';
 import {maybeMerge} from '_common/verification';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {checkDefined} from '_common/preconditions';
 
 /** Data model for a token on the game board. */

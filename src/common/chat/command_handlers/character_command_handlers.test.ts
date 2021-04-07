@@ -7,7 +7,7 @@ import {
 } from '_common/chat/command_handlers/character_command_handlers';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 
 const BOBBY_SHEET = 'bobby.sheet';
 const BOBBY_DATA: CharacterSheetData = {

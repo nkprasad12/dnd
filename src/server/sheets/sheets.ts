@@ -1,12 +1,8 @@
 /* istanbul ignore file */
 import axios from 'axios';
 import {checkDefined} from '_common/preconditions';
-import {
-  ABILITY_ORDER,
-  AttackData,
-  CharacterSheetData,
-  SKILL_ORDER,
-} from '_common/chat/command_handlers/types';
+import {AttackData, CharacterSheetData} from '_common/character_sheets/types';
+import {ABILITY_ORDER, SKILL_ORDER} from '_common/character_sheets/constants';
 
 namespace sheetsV4 {
   export interface Schema$ValueRange {

@@ -1,4 +1,4 @@
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 
 export type CharacterLoader = (id: string) => Promise<CharacterSheetData>;
 export type CacheListener = (update: LoadResult) => any;

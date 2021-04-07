@@ -3,15 +3,11 @@ import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {rollForString} from '_common/chat/command_handlers/roll_command_handler';
-import {
-  ABILITY_ORDER,
-  ADVANTAGE,
-  CharacterSheetData,
-  DISADVANTAGE,
-  SKILL_ORDER,
-} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {rollDice} from '_common/chat/dice_roller';
 import {checkDefined} from '_common/preconditions';
+import {ABILITY_ORDER, SKILL_ORDER} from '_common/character_sheets/constants';
+import {ADVANTAGE, DISADVANTAGE} from '_common/chat/command_handlers/constants';
 
 const AMBIGUOUS_CHARACTER = 'Multiple characters could match: ';
 const AMBIGUOUS_WEAPON = 'Multiple weapons could match: ';

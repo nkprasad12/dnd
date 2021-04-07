@@ -35,36 +35,3 @@ export interface Spell {
   circles?: string;
   oaths?: string;
 }
-
-export const SKILL_ORDER = [
-  'Acrobatics',
-  'Animal Handling',
-  'Arcana',
-  'Athletics',
-  'Deception',
-  'History',
-  'Insight',
-  'Intimidation',
-  'Investigation',
-  'Medicine',
-  'Nature',
-  'Perception',
-  'Performance',
-  'Persuasion',
-  'Religion',
-  'Sleight of Hand',
-  'Stealth',
-  'Survival',
-];
-
-export const ABILITY_ORDER = [
-  'Strength',
-  'Dexterity',
-  'Constitution',
-  'Intelligence',
-  'Wisdom',
-  'Charisma',
-];
-
-export const ADVANTAGE = 'advantage';
-export const DISADVANTAGE = 'disadvantage';

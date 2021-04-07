@@ -1,6 +1,6 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {notUndefined} from '_common/verification';
 
 export class CharacterResolver {

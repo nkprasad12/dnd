@@ -1,6 +1,6 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {ChatMessage} from '_common/chat/chat_model';
-import {ADVANTAGE, DISADVANTAGE} from '_common/chat/command_handlers/types';
+import {ADVANTAGE, DISADVANTAGE} from '_common/chat/command_handlers/constants';
 import {rollDice} from '_common/chat/dice_roller';
 import {checkDefined} from '_common/preconditions';
 

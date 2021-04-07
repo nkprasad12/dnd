@@ -1,4 +1,4 @@
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {Location} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
