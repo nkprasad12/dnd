@@ -1,28 +1,12 @@
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/character_sheets/types';
-
-const BOBBY_SHEET = 'bobby.sheet';
-const BOBBY_DATA: CharacterSheetData = {
-  name: 'Bobby Newport',
-  sheetId: BOBBY_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
-
-const BRUTUS_SHEET = 'brutus.sheet';
-const BRUTUS_DATA: CharacterSheetData = {
-  name: 'Brutus',
-  sheetId: BRUTUS_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
+import {
+  BOBBY_DATA,
+  BOBBY_SHEET,
+  BRUTUS_DATA,
+  BRUTUS_SHEET,
+} from '_common/character_sheets/test_data';
 
 class FakeLoader {
   readonly data: Map<string, CharacterSheetData> = new Map();

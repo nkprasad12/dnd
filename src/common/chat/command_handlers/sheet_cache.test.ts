@@ -3,37 +3,13 @@ import {
   LoadResult,
 } from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/character_sheets/types';
-
-const CALIGULA_SHEET = 'caligula.sheet';
-const CALIGULA_DATA: CharacterSheetData = {
-  name: 'Caligula',
-  sheetId: CALIGULA_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
-const UPDATED_CALIGULA_DATA: CharacterSheetData = {
-  name: 'Gaius',
-  sheetId: CALIGULA_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
-
-const BRUTUS_SHEET = 'brutus.sheet';
-const BRUTUS_DATA: CharacterSheetData = {
-  name: 'Brutus',
-  sheetId: BRUTUS_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
+import {
+  BRUTUS_SHEET,
+  BRUTUS_DATA,
+  CALIGULA_SHEET,
+  CALIGULA_DATA,
+  UPDATED_CALIGULA_DATA,
+} from '_common/character_sheets/test_data';
 
 class FakeLoader {
   readonly data: Map<string, CharacterSheetData> = new Map();
