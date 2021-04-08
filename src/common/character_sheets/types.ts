@@ -16,6 +16,22 @@ export interface CharacterSheetData {
   readonly attackBonuses: StringIndexed<AttackData>;
 }
 
+export namespace CharacterSheetData {
+  export function isValid(input: any): input is CharacterSheetData {
+    const data = input as CharacterSheetData;
+    const hasAllFields =
+      data.sheetId !== undefined &&
+      data.name !== undefined &&
+      data.proficiencyBonus !== undefined &&
+      data.checkBonuses !== undefined &&
+      data.saveBonuses !== undefined &&
+      data.abilityBonuses !== undefined &&
+      data.attackBonuses !== undefined;
+    // TODO: We should probably validate some fields...
+    return hasAllFields;
+  }
+}
+
 export interface Spell {
   readonly name: string;
   readonly desc: string;
