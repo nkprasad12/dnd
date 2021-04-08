@@ -2,17 +2,10 @@ import {CommandHandler} from '_common/chat/chat_resolver';
 import {loadCommandHandler} from '_common/chat/command_handlers/load_command_handler';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 import {CharacterSheetData} from '_common/character_sheets/types';
-
-const CALIGULA_SHEET = 'caligula.sheet';
-const CALIGULA_DATA: CharacterSheetData = {
-  name: 'Caligula',
-  sheetId: CALIGULA_SHEET,
-  proficiencyBonus: 0,
-  saveBonuses: new Map(),
-  abilityBonuses: new Map(),
-  attackBonuses: new Map(),
-  checkBonuses: new Map(),
-};
+import {
+  CALIGULA_DATA,
+  CALIGULA_SHEET,
+} from '_common/character_sheets/test_data';
 
 async function load(id: string): Promise<CharacterSheetData> {
   if (id === CALIGULA_SHEET) {

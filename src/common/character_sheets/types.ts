@@ -1,3 +1,5 @@
+export type StringIndexed<T> = {[key: string]: T};
+
 export interface AttackData {
   readonly toHit: number;
   readonly damageRoll: string;
@@ -8,10 +10,10 @@ export interface CharacterSheetData {
   readonly sheetId: string;
   readonly name: string;
   readonly proficiencyBonus: number;
-  readonly checkBonuses: Map<string, number>;
-  readonly saveBonuses: Map<string, number>;
-  readonly abilityBonuses: Map<string, number>;
-  readonly attackBonuses: Map<string, AttackData>;
+  readonly checkBonuses: StringIndexed<number>;
+  readonly saveBonuses: StringIndexed<number>;
+  readonly abilityBonuses: StringIndexed<number>;
+  readonly attackBonuses: StringIndexed<AttackData>;
 }
 
 export interface Spell {

@@ -1,7 +1,11 @@
 /* istanbul ignore file */
 import axios from 'axios';
 import {checkDefined} from '_common/preconditions';
-import {AttackData, CharacterSheetData} from '_common/character_sheets/types';
+import {
+  AttackData,
+  CharacterSheetData,
+  StringIndexed,
+} from '_common/character_sheets/types';
 import {ABILITY_ORDER, SKILL_ORDER} from '_common/character_sheets/constants';
 
 namespace sheetsV4 {
@@ -45,47 +49,46 @@ function processProficiency(data: sheetsV4.Schema$ValueRange): number {
 
 function processAbilityBonuses(
   data: sheetsV4.Schema$ValueRange
-): Map<string, number> {
+): StringIndexed<number> {
   if (data.range !== RANGES[2]) {
     throw new Error('Invalid value range for abilities.');
   }
-  const result: Map<string, number> = new Map();
+  const result: StringIndexed<number> = {};
   const items = Array.from(Array(ABILITY_ORDER.length).keys());
   const values = checkDefined(data.values, 'abilities:data.values')[0];
   for (const i of items) {
     const value = values[i * 5];
-    result.set(ABILITY_ORDER[i], Number.parseInt(value));
+    result[`${ABILITY_ORDER[i]}`] = Number.parseInt(value);
   }
   return result;
 }
 
 function processSaveBonuses(
   data: sheetsV4.Schema$ValueRange
-): Map<string, number> {
+): StringIndexed<number> {
   if (data.range !== RANGES[3]) {
     throw new Error('Invalid value range for saving throws.');
   }
-  const result: Map<string, number> = new Map();
+  const result: StringIndexed<number> = {};
   const items = Array.from(Array(ABILITY_ORDER.length).keys());
   const values = checkDefined(data.values, 'savingThrows:data.values')[0];
   for (const i of items) {
-    result.set(ABILITY_ORDER[i], Number.parseInt(values[i]));
+    result[`${ABILITY_ORDER[i]}`] = Number.parseInt(values[i]);
   }
   return result;
 }
 
 function processSkillBonuses(
   skillData: sheetsV4.Schema$ValueRange
-): Map<string, number> {
+): StringIndexed<number> {
   if (skillData.range !== RANGES[4]) {
     throw new Error('Invalid value range for skill checks.');
   }
-  const result: Map<string, number> = new Map();
-
+  const result: StringIndexed<number> = {};
   const items = Array.from(Array(SKILL_ORDER.length).keys());
   const values = checkDefined(skillData.values, 'skillChecks:data.values')[0];
   for (const i of items) {
-    result.set(SKILL_ORDER[i], Number.parseInt(values[i]));
+    result[`${SKILL_ORDER[i]}`] = Number.parseInt(values[i]);
   }
 
   return result;
@@ -93,22 +96,22 @@ function processSkillBonuses(
 
 function processAttackBonuses(
   data: sheetsV4.Schema$ValueRange
-): Map<string, AttackData> {
+): StringIndexed<AttackData> {
   if (data.range !== RANGES[5]) {
     throw new Error('Invalid value range for attack checks.');
   }
-  const result: Map<string, AttackData> = new Map();
+  const result: StringIndexed<AttackData> = {};
   const values = checkDefined(data.values, 'attackBonuses:data.values');
   for (let i = 0; i < 5; i++) {
     const attackName = values[0][i];
     if (!attackName || !(attackName as string).trim()) {
       break;
     }
-    result.set(attackName, {
+    result[`${attackName}`] = {
       toHit: Number.parseInt(values[7][i]),
       damageRoll: values[11][i].split('[')[0],
       info: values[11][i],
-    });
+    };
   }
   return result;
 }
@@ -168,7 +171,7 @@ export async function extractSheetData(
     proficiencyBonus: processProficiency(data[1]),
     abilityBonuses: abilityBonuses,
     saveBonuses: processSaveBonuses(data[3]),
-    checkBonuses: new Map([...skillBonuses, ...abilityBonuses]),
+    checkBonuses: {...skillBonuses, ...abilityBonuses},
     attackBonuses: processAttackBonuses(data[5]),
   };
 }
