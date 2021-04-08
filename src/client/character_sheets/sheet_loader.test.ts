@@ -45,3 +45,25 @@ describe('SheetLoader.load', () => {
     return expect(sheet).resolves.toStrictEqual(CALIGULA_DATA);
   });
 });
+
+describe('SheetLoader.loadFromUrl', () => {
+  const CALIGULA_URL = 'spreadsheets/d/' + CALIGULA_SHEET;
+
+  it('resolves to null on undefined', async () => {
+    replaceFetchJsonResult(CALIGULA_DATA);
+    const result = SheetLoader.loadFromUrl(undefined);
+    return expect(result).resolves.toBeNull();
+  });
+
+  it('resolves to null on failed load', async () => {
+    replaceFetchJsonResult({name: 'Caligula'});
+    const result = SheetLoader.loadFromUrl(CALIGULA_URL);
+    return expect(result).resolves.toBeNull();
+  });
+
+  it('resolves to sheet data on success', async () => {
+    replaceFetchJsonResult(CALIGULA_DATA);
+    const result = SheetLoader.loadFromUrl(CALIGULA_URL);
+    return expect(result).resolves.toStrictEqual(CALIGULA_DATA);
+  });
+});
