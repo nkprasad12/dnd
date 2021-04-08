@@ -3,7 +3,7 @@ import {BoardDiff} from '_client/game_board/model/board_model';
 
 import {ModelHandler} from './model_handler';
 import {BaseClickData} from '_client/game_board/controller/input_listener';
-import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
+import {ContextMenuAction} from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {checkDefined} from '_common/preconditions';
 import {Grid} from '_common/util/grid';
@@ -87,12 +87,12 @@ abstract class InteractionState {
     };
   }
 
-  protected onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
+  protected onContextMenuClickInternal(action: ContextMenuAction): ClickResult {
     console.log('Got click on action: ' + action);
     throw new Error('Invalid state for onContextMenuClickInternal');
   }
 
-  onContextMenuClick(action: ContextMenuItem): InteractionResult {
+  onContextMenuClick(action: ContextMenuAction): InteractionResult {
     console.log('Handling context menu click');
     const result = this.onContextMenuClickInternal(action);
     return {
@@ -206,8 +206,7 @@ class PickedUpTokenState extends InteractionState {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onRightClick(_clickData: ClickData): ClickResult {
+  onRightClick(clickData: ClickData): ClickResult {
     const activeTokenIndex = checkDefined(
       this.params.modelHandler.activeTokenIndex()
     )!;
@@ -216,6 +215,22 @@ class PickedUpTokenState extends InteractionState {
       isActive: false,
       inner: {id: model.tokens[activeTokenIndex].inner.id},
     };
+    const attackData = model.tokens[activeTokenIndex].inner.sheetData;
+    const attackList =
+      attackData?.attackBonuses && Object.keys(attackData?.attackBonuses);
+    if (attackList && attackList.length > 0) {
+      return {
+        diff: {
+          tokenDiffs: [tokenDiff],
+          contextMenuState: {
+            isVisible: true,
+            clickPoint: clickData.pagePoint,
+            attackerSheet: attackData ?? undefined,
+          },
+        },
+        newState: new ContextMenuOpenState(this.params),
+      };
+    }
     return {
       diff: {tokenDiffs: [tokenDiff]},
       newState: new DefaultState(this.params),
@@ -250,10 +265,9 @@ class ContextMenuOpenState extends InteractionState {
     };
   }
 
-  onContextMenuClickInternal(action: ContextMenuItem): ClickResult {
+  onContextMenuClickInternal(action: ContextMenuAction): ClickResult {
     const actionDiff = new ContextActionHandler(
-      this.params.modelHandler,
-      this.params.controller
+      this.params
     ).handleContextMenuAction(action);
     actionDiff.contextMenuState = {isVisible: false, clickPoint: {x: 0, y: 0}};
     actionDiff.localSelection = {};
@@ -291,7 +305,7 @@ export class InteractionStateMachine {
     return result.updatePromise;
   }
 
-  onContextMenuClick(action: ContextMenuItem): Promise<void> {
+  onContextMenuClick(action: ContextMenuAction): Promise<void> {
     const result = this.currentState.onContextMenuClick(action);
     this.currentState = result.newState;
     return result.updatePromise;

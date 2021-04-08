@@ -1,8 +1,12 @@
-import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
-import React, {useCallback, useEffect, useState} from 'react';
+import {
+  ContextMenuAction,
+  ContextMenuItem,
+} from '_client/game_board/context_menu/context_menu_model';
+import React, {useCallback, useState} from 'react';
 import {Point} from '_common/coordinates';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {ContextMenu} from '_client/game_board/context_menu/context_menu';
+import {checkState} from '_common/preconditions';
 
 const CATEGORY_HIGHLIGHTS = 'Highlights';
 const CATEGORY_FOG = 'Fog';
@@ -86,18 +90,18 @@ function BaseMenuView(props: BaseMenuProps) {
   );
 }
 
-// Submenu
-interface SubmenuProps {
+// ClickableMenu
+interface ClickableMenuProps<T> {
   atPoint?: Point;
-  items: ContextMenuItem[];
-  onClick: (item: ContextMenuItem) => any;
+  items: T[];
+  onClick: (item: T) => any;
 }
 
-function SubmenuView(props: SubmenuProps) {
+function ClickableMenu<T>(props: ClickableMenuProps<T>) {
   const buttons = props.items.map((item) => (
     <button
       type="button"
-      key={item}
+      key={JSON.stringify(item)}
       onClick={(mouseEvent) => {
         if (mouseEvent.button !== 0) {
           return;
@@ -122,8 +126,6 @@ interface CategoryButtonProps {
 function CategoryButton(props: CategoryButtonProps) {
   const [menuStart, setMenuStart] = useState<Point | undefined>(undefined);
   const [rect, setRect] = useState<DOMRect | undefined>(undefined);
-
-  useEffect(() => {});
 
   const ref = useCallback<(e: HTMLButtonElement) => any>((node) => {
     if (node !== null) {
@@ -163,7 +165,7 @@ function CategoryButton(props: CategoryButtonProps) {
       >
         {props.label}
       </button>
-      <SubmenuView
+      <ClickableMenu
         atPoint={menuStart}
         items={props.items}
         onClick={props.onItemClick}
@@ -174,7 +176,7 @@ function CategoryButton(props: CategoryButtonProps) {
 
 export interface ContextMenuProps {
   boardModel: BoardModel;
-  clickListener: (item: ContextMenuItem) => any;
+  clickListener: (action: ContextMenuAction) => any;
 }
 
 export function ContextMenuView(props: ContextMenuProps) {
@@ -185,6 +187,31 @@ export function ContextMenuView(props: ContextMenuProps) {
     return null;
   }
 
+  // TODO: Should this really be the same component? Where should this
+  // branching be handled? Maybe we need a separate "Attack Menu".
+  if (model.attackerSheet) {
+    const sheet = model.attackerSheet;
+    const attacks = Object.keys(sheet.attackBonuses);
+    checkState(
+      attacks.length > 0,
+      'Attacker sheet has no attacks, cannot be used.'
+    );
+    return (
+      <ClickableMenu
+        atPoint={model.clickPoint}
+        items={attacks}
+        onClick={(attack) =>
+          props.clickListener({
+            item: ContextMenuItem.Attack,
+            // TODO: We should probably have a construct that writes commands
+            // for us so this is kept in sync in once place.
+            metadata: `!attack ${attack} @${sheet.name}`,
+          })
+        }
+      />
+    );
+  }
+
   const categories = Array.from(CATEGORY_ITEM_MAP).map(([category, items]) => (
     <CategoryButton
       label={category}
@@ -192,7 +219,7 @@ export function ContextMenuView(props: ContextMenuProps) {
       items={items.filter((item) => !invalidItems.includes(item))}
       parentRect={rect}
       onItemClick={(clickedItem) => {
-        props.clickListener(clickedItem);
+        props.clickListener({item: clickedItem});
       }}
     />
   ));

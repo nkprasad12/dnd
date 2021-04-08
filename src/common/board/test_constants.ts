@@ -5,9 +5,9 @@ import {
   RemoteBoardModel,
   RemoteTokenModel,
 } from '_common/board/remote_board_model';
-import {Point} from '_common/coordinates';
+import {CharacterSheetData} from '_common/character_sheets/types';
+import {Location, Point} from '_common/coordinates';
 import {createGrid, gridDimensions} from '_common/util/grid';
-import {prefer} from '_common/verification';
 
 export const DEFAULT_LOCATION = {row: 1, col: 3};
 export const DEFAULT_SIZE = 2;
@@ -19,15 +19,23 @@ export const TEST_BOARD_SOURCE = 'server@Ozymandias';
 export const TEST_TOKEN_NAME = 'KingOfKings';
 export const TEST_TOKEN_SOURCE = 'server@LookUponMyWorks';
 
-export function remoteTokenModel(): RemoteTokenModel {
+export interface RemoteTokenParameters {
+  id?: string;
+  location?: Location;
+  sheetData?: CharacterSheetData;
+}
+
+export function remoteTokenModel(
+  params?: RemoteTokenParameters
+): RemoteTokenModel {
   return {
-    id: TEST_TOKEN_ID,
-    location: DEFAULT_LOCATION,
+    id: params?.id ?? TEST_TOKEN_ID,
+    location: params?.location ?? DEFAULT_LOCATION,
     name: TEST_TOKEN_NAME,
     imageSource: TEST_TOKEN_SOURCE,
     size: DEFAULT_SIZE,
     speed: DEFAULT_SPEED,
-    sheetData: null,
+    sheetData: params?.sheetData ?? null,
   };
 }
 
@@ -42,17 +50,17 @@ export interface RemoteModelParameters {
 export function remoteBoardModel(
   params?: RemoteModelParameters
 ): RemoteBoardModel {
-  const tileSize = prefer(params?.tileSizeOverride, 57);
-  const width = prefer(params?.widthOverride, 60);
-  const height = prefer(params?.heightOverride, 150);
-  const gridOffset = prefer(params?.gridOffsetOverride, {x: 57, y: 57});
+  const tileSize = params?.tileSizeOverride ?? 57;
+  const width = params?.widthOverride ?? 60;
+  const height = params?.heightOverride ?? 150;
+  const gridOffset = params?.gridOffsetOverride ?? {x: 57, y: 57};
   const dimensions = gridDimensions(width, height, tileSize, gridOffset);
   return new RemoteBoardModel(
     TEST_BOARD_ID,
     TEST_BOARD_NAME,
     TEST_BOARD_SOURCE,
     tileSize,
-    prefer(params?.tokensOverride, [remoteTokenModel()]),
+    params?.tokensOverride ?? [remoteTokenModel()],
     createGrid(dimensions.rows, dimensions.cols, '0'),
     createGrid(dimensions.rows, dimensions.cols, '0'),
     width,

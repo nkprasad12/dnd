@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
+import {SheetLoader} from '_client/character_sheets/sheet_loader';
 import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
 import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
-import {TokenModel} from '_client/game_board/model/token_model';
+import {TokenDiff, TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
 
 export interface EditTokenFormProps {
@@ -21,19 +22,23 @@ export function EditTokenForm(props: EditTokenFormProps) {
   const [speed, setSpeed] = useState<number | undefined>(
     props.token.inner.speed
   );
+  const [sheetLink, setSheetLink] = useState<string | undefined>(
+    props.token.inner.sheetData?.sheetId
+  );
 
   return (
     <SubmitDialogView
       visible={props.visible}
       setVisibility={props.setVisibility}
       title="Edit Token"
-      showSubmit={(name && size && speed) === undefined}
+      showSubmit={(name && size && speed) !== undefined}
       onSubmit={() =>
         onSubmit(
           checkDefined(name),
           checkDefined(speed),
           checkDefined(size),
-          props
+          props,
+          sheetLink
         )
       }
       submitText="Create"
@@ -53,15 +58,21 @@ export function EditTokenForm(props: EditTokenFormProps) {
         inputCallback={setSpeed}
         defaultValue={props.token.inner.speed}
       />
+      <TextInputField
+        label="Character Sheet Link (Optional)"
+        inputCallback={setSheetLink}
+        defaultValue={props.token.inner.sheetData?.sheetId}
+      />
     </SubmitDialogView>
   );
 }
 
-function onSubmit(
+async function onSubmit(
   name: string,
   speed: number,
   size: number,
-  props: EditTokenFormProps
+  props: EditTokenFormProps,
+  sheetLink?: string
 ) {
   const collisions = props.modelHandler.collisionIds(
     props.token.inner.location,
@@ -76,8 +87,15 @@ function onSubmit(
     return;
   }
 
-  const mutation = {
-    inner: {id: props.token.inner.id, name: name, speed: speed, size: size},
+  const sheetData = await SheetLoader.loadFromUrl(sheetLink);
+  const mutation: TokenDiff = {
+    inner: {
+      id: props.token.inner.id,
+      name: name,
+      speed: speed,
+      size: size,
+      sheetData: sheetData,
+    },
   };
   const edited = TokenModel.merge(props.token, mutation);
   console.log('Edited token: ' + JSON.stringify(edited));

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {SheetLoader} from '_client/character_sheets/sheet_loader';
 import {
   DropdownSelectorView,
   SelectorItem,
@@ -32,6 +33,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
   const [size, setSize] = useState<number | undefined>(START_SIZE);
   const [speed, setSpeed] = useState<number | undefined>(START_SPEED);
   const [icon, setIcon] = useState<LoadedImage | undefined>(undefined);
+  const [sheetLink, setSheetLink] = useState<string | undefined>(undefined);
   const [tokenDropdownModel, setTokenDropdownModel] = useState<
     SelectorItem<TokenData>[]
   >([]);
@@ -54,6 +56,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
   }, [props.visible]);
 
   async function onSubmit() {
+    const sheetData = await SheetLoader.loadFromUrl(sheetLink);
     const token = tokenTemplate
       ? new TokenModel(
           {
@@ -63,7 +66,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
             imageSource: tokenTemplate.imageSource,
             size: checkDefined(size),
             location: props.tile,
-            sheetData: null,
+            sheetData: sheetData,
           },
           (await loadImage(tokenTemplate.imageSource)).image,
           false
@@ -74,7 +77,8 @@ export function NewTokenForm(props: NewTokenFormProps) {
           checkDefined(size),
           props.tile,
           false,
-          checkDefined(speed)
+          checkDefined(speed),
+          sheetData
         );
 
     props.modelHandler.addNewToken(token);
@@ -134,6 +138,10 @@ export function NewTokenForm(props: NewTokenFormProps) {
       {tokenTemplate === undefined && (
         <ImageInputField label="Icon" inputCallback={setIcon} />
       )}
+      <TextInputField
+        label="Character Sheet Link (Optional)"
+        inputCallback={setSheetLink}
+      />
     </SubmitDialogView>
   );
 }

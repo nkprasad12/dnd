@@ -1,3 +1,4 @@
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {Point} from '_common/coordinates';
 
 export enum ContextMenuItem {
@@ -14,10 +15,17 @@ export enum ContextMenuItem {
   CopyToken = 'Copy Token',
   ZoomIn = 'Zoom In',
   ZoomOut = 'Zoom Out',
+  Attack = 'Attack',
+}
+
+export interface ContextMenuAction {
+  item: ContextMenuItem;
+  metadata?: string;
 }
 
 /** Data model for a context menu on the game board. */
 export interface ContextMenuModel {
   readonly clickPoint: Point;
   readonly isVisible: boolean;
+  readonly attackerSheet?: CharacterSheetData;
 }

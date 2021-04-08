@@ -33,7 +33,8 @@ function createToken(): TokenModel {
     DEFAULT_SIZE,
     DEFAULT_LOCATION,
     IS_ACTIVE,
-    DEFAULT_SPEED
+    DEFAULT_SPEED,
+    null
   );
 }
 

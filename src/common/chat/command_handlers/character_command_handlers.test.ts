@@ -7,50 +7,13 @@ import {
 } from '_common/chat/command_handlers/character_command_handlers';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
-
-const BOBBY_SHEET = 'bobby.sheet';
-const BOBBY_DATA: CharacterSheetData = {
-  name: 'Bobby Newport',
-  proficiencyBonus: 3,
-  saveBonuses: new Map([
-    ['Dexterity', 0],
-    ['Wisdom', -2],
-  ]),
-  abilityBonuses: new Map([
-    ['Dexterity', 0],
-    ['Wisdom', -2],
-  ]),
-  attackBonuses: new Map([['Words', {toHit: 1, damageRoll: '1d8+2'}]]),
-  checkBonuses: new Map([
-    ['Perception', 0],
-    ['Arcana', 1],
-  ]),
-};
-
-const BRUTUS_SHEET = 'brutus.sheet';
-const BRUTUS_DATA: CharacterSheetData = {
-  name: 'Brutus',
-  proficiencyBonus: 2,
-  saveBonuses: new Map([
-    ['Dexterity', 3],
-    ['Wisdom', -1],
-  ]),
-  abilityBonuses: new Map([
-    ['Dexterity', 3],
-    ['Wisdom', -1],
-  ]),
-  attackBonuses: new Map([
-    ['Longbow', {toHit: 8, damageRoll: '1d8+2'}],
-    ['Dagger', {toHit: 3, damageRoll: 'malformed'}],
-  ]),
-  checkBonuses: new Map([
-    ['Perception', 3],
-    ['Arcana', 1],
-    ['Dexterity', 3],
-    ['Wisdom', -1],
-  ]),
-};
+import {CharacterSheetData} from '_common/character_sheets/types';
+import {
+  BOBBY_DATA,
+  BOBBY_SHEET,
+  BRUTUS_DATA,
+  BRUTUS_SHEET,
+} from '_common/character_sheets/test_data';
 
 class FakeLoader {
   readonly data: Map<string, CharacterSheetData> = new Map();

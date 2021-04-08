@@ -1,11 +1,18 @@
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 
 export type CharacterLoader = (id: string) => Promise<CharacterSheetData>;
 export type CacheListener = (update: LoadResult) => any;
 
 export interface LoadResult {
-  loadedName: string;
+  /** The character sheet data for the request. */
+  loadedData: CharacterSheetData;
+  /** The character removed from the cache due to this load, if any. */
   removedName?: string;
+}
+
+interface LoadData {
+  loadNumber: number;
+  data: CharacterSheetData;
 }
 
 export class CharacterSheetCache {
@@ -14,9 +21,9 @@ export class CharacterSheetCache {
     return new CharacterSheetCache(loader);
   }
 
-  private nameDataMap: Map<string, CharacterSheetData> = new Map();
-  private sheetNameMap: Map<string, string> = new Map();
+  private sheetDataMap: Map<string, LoadData> = new Map();
   private listeners: CacheListener[] = [];
+  private loadNumber = 0;
 
   constructor(private readonly loader: CharacterLoader) {}
 
@@ -25,14 +32,29 @@ export class CharacterSheetCache {
     this.listeners.push(listener);
   }
 
-  /** Returns all the names in the cache. */
+  /** Returns all the names in the cache, in lower case. */
   getNames(): string[] {
-    return Array.from(this.nameDataMap.keys());
+    const allSheets = Array.from(this.sheetDataMap.values());
+    const allNames = allSheets.map((data) => data.data.name.toLowerCase());
+    return [...new Set(allNames)];
   }
 
-  /** Returns the data for the character with the given name. */
+  /**
+   * Returns the data for the character with the given name.
+   *
+   * Returns the sheet data for the sheet that was most recently loaded
+   * that matches the input name, ignoring case.
+   */
   getDataForName(name: string): CharacterSheetData | undefined {
-    return this.nameDataMap.get(name.toLowerCase());
+    const matchingSheets = Array.from<LoadData>(
+      this.sheetDataMap.values()
+    ).filter((data) => data.data.name.toLowerCase() === name.toLowerCase());
+    if (matchingSheets.length === 0) {
+      return undefined;
+    }
+    return matchingSheets.reduce((result, current) =>
+      result.loadNumber > current.loadNumber ? result : current
+    ).data;
   }
 
   /**
@@ -42,17 +64,18 @@ export class CharacterSheetCache {
    * @returns the name of the character contained in the loaded sheet.
    */
   async load(sheetId: string, force: boolean = false): Promise<LoadResult> {
-    const existingName = this.sheetNameMap.get(sheetId);
-    if (existingName !== undefined && !force) {
-      return {loadedName: existingName};
+    const existingData = this.sheetDataMap.get(sheetId);
+    if (existingData !== undefined && !force) {
+      return {loadedData: existingData.data};
     }
-    if (existingName !== undefined) {
-      this.nameDataMap.delete(existingName);
-    }
+    this.loadNumber += 1;
     const sheet = await this.loader(sheetId);
-    this.nameDataMap.set(sheet.name.toLowerCase(), sheet);
-    this.sheetNameMap.set(sheetId, sheet.name.toLowerCase());
-    const result = {loadedName: sheet.name, removedName: existingName};
+    this.sheetDataMap.set(sheetId, {loadNumber: this.loadNumber, data: sheet});
+
+    const existingName = existingData?.data.name.toLowerCase();
+    const removedName =
+      existingName === sheet.name.toLowerCase() ? undefined : existingName;
+    const result = {loadedData: sheet, removedName: removedName};
     this.listeners.forEach((listener) => listener(result));
     return result;
   }

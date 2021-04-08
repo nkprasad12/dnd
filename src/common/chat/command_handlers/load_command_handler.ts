@@ -1,8 +1,8 @@
+import {Sheets} from '_common/character_sheets/utils';
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
 
-const SHEET_ID_PREFIX = 'spreadsheets/d/';
 const BAD_SHEET = ' was either not public, or was not in the expected format';
 
 /** Loads a character sheet from URL. */
@@ -10,13 +10,13 @@ async function handleLoadCommand(
   query: string,
   cache: CharacterSheetCache
 ): Promise<ChatMessage> {
-  if (query.indexOf(SHEET_ID_PREFIX) === -1) {
+  const id = Sheets.idFromUrl(query);
+  if (id === null) {
     return loadErrorMessage(query);
   }
-  const id = query.split(SHEET_ID_PREFIX)[1].split('/')[0];
   try {
     const data = await cache.load(id);
-    return {body: 'Successfully loaded ' + data.loadedName};
+    return {body: 'Successfully loaded ' + data.loadedData.name};
   } catch (e) {
     return {
       header: 'Load Error: Invalid content',

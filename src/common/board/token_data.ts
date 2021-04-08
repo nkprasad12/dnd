@@ -1,4 +1,4 @@
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {Location} from '_common/coordinates';
 
 const DEFAULT_SPEED = 6;
@@ -9,6 +9,8 @@ export interface TokenData {
   readonly name: string;
   readonly imageSource: string;
   readonly speed: number;
+  // TODO: Rethink whether this is the correct place for this.
+  // For example, how do we handle stale character sheets?
   readonly sheetData: CharacterSheetData | null;
 }
 

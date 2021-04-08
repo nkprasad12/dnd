@@ -1,13 +1,13 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {CharacterSheetCache} from '_common/chat/command_handlers/sheet_cache';
-import {CharacterSheetData} from '_common/chat/command_handlers/types';
+import {CharacterSheetData} from '_common/character_sheets/types';
 import {notUndefined} from '_common/verification';
 
 export class CharacterResolver {
   static create(cache: CharacterSheetCache): CharacterResolver {
     const resolver = new CharacterResolver(cache);
     cache.addListener((result) => {
-      resolver.onNewCharacter(result.loadedName);
+      resolver.onNewCharacter(result.loadedData.name.toLowerCase());
       if (result.removedName) {
         console.log('TODO: handle character removal');
       }

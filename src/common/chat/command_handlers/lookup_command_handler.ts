@@ -1,7 +1,7 @@
 import {Autocompleter} from '_common/chat/autocompleter';
 import {ChatMessage} from '_common/chat/chat_model';
 import {CommandHandler} from '_common/chat/chat_resolver';
-import {Spell} from '_common/chat/command_handlers/types';
+import {Spell} from '_common/character_sheets/types';
 import {checkDefined} from '_common/preconditions';
 
 let spellCompleter: Autocompleter | undefined = undefined;

@@ -4,14 +4,13 @@ import {CommandHandler} from '_common/chat/chat_resolver';
 import {CharacterResolver} from '_common/chat/command_handlers/character_resolver';
 import {rollForString} from '_common/chat/command_handlers/roll_command_handler';
 import {
-  ABILITY_ORDER,
-  ADVANTAGE,
   CharacterSheetData,
-  DISADVANTAGE,
-  SKILL_ORDER,
-} from '_common/chat/command_handlers/types';
+  StringIndexed,
+} from '_common/character_sheets/types';
 import {rollDice} from '_common/chat/dice_roller';
 import {checkDefined} from '_common/preconditions';
+import {ABILITY_ORDER, SKILL_ORDER} from '_common/character_sheets/constants';
+import {ADVANTAGE, DISADVANTAGE} from '_common/chat/command_handlers/constants';
 
 const AMBIGUOUS_CHARACTER = 'Multiple characters could match: ';
 const AMBIGUOUS_WEAPON = 'Multiple weapons could match: ';
@@ -31,12 +30,12 @@ interface ParseResult {
 }
 
 function getIgnoringCase<T>(
-  map: Map<string, T>,
+  map: StringIndexed<T>,
   target: string
 ): T | undefined {
-  for (const [key, value] of map) {
+  for (const key of Array.from(Object.keys(map))) {
     if (key.toLowerCase() === target.toLowerCase()) {
-      return value;
+      return map[key];
     }
   }
   return undefined;
@@ -190,7 +189,7 @@ async function handleAttackCommand(
   const character = parsed.characters[0];
 
   const weaponCompleter = Autocompleter.create(
-    Array.from(character.attackBonuses.keys())
+    Array.from(Object.keys(character.attackBonuses))
   );
   const weapon = weaponCompleter.getOptions(parsed.queryBase);
   if (weapon.length !== 1) {

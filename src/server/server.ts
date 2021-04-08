@@ -9,6 +9,7 @@ import {imageRouter} from '_server/routes/images';
 import {contentRouter} from '_server/routes/content';
 import {registerBoardRoutes} from '_server/routes/socket/board_socket';
 import {registerChatRoutes} from '_server/chat/chat_socket';
+import {sheetRouter} from '_server/sheets/routes';
 
 export function prepareServer(): http.Server {
   const app = express();
@@ -34,6 +35,7 @@ export function prepareServer(): http.Server {
 
   app.use('/', imageRouter);
   app.use('/', contentRouter);
+  app.use('/', sheetRouter);
 
   return server;
 }
