@@ -18,7 +18,7 @@ export class TokenModel {
     location: Location,
     isActive: boolean,
     speed: number,
-    sheetData: CharacterSheetData | null = null
+    sheetData: CharacterSheetData | null
   ): TokenModel {
     console.log('Warning - creating new TokenModel!');
     const inner: RemoteTokenModel = {
@@ -41,7 +41,8 @@ export class TokenModel {
       model.inner.size,
       model.inner.location,
       model.isActive,
-      model.inner.speed
+      model.inner.speed,
+      model.inner.sheetData
     );
   }
 

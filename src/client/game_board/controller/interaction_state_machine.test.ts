@@ -1,4 +1,7 @@
-import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
+import {
+  ContextMenuAction,
+  ContextMenuItem,
+} from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {BaseClickData} from '_client/game_board/controller/input_listener';
 import {InteractionStateMachine} from '_client/game_board/controller/interaction_state_machine';
@@ -14,8 +17,8 @@ import {
   remoteTokenModel,
   TEST_TOKEN_ID,
 } from '_common/board/test_constants';
+import {BRUTUS_DATA} from '_common/character_sheets/test_data';
 import {Location, Point} from '_common/coordinates';
-import {prefer} from '_common/verification';
 
 const handleContextAction = jest.fn(() => {
   return {
@@ -62,10 +65,13 @@ function tileToPoint(tileSize: number, tile: Location) {
   };
 }
 
+const FOG_ACTION: ContextMenuAction = {item: ContextMenuItem.AddFog};
+
 const DEFAULT_TILE_SIZE = 10;
 const FIRST_TOKEN_TILE = {col: 7, row: 1};
 const FIRST_TOKEN_POINT = tileToPoint(DEFAULT_TILE_SIZE, FIRST_TOKEN_TILE);
 const FIRST_TOKEN_ID = TEST_TOKEN_ID;
+const FIRST_TOKEN_SHEET = BRUTUS_DATA;
 const SECOND_TOKEN_TILE = {col: 8, row: 9};
 const SECOND_TOKEN_POINT = tileToPoint(DEFAULT_TILE_SIZE, SECOND_TOKEN_TILE);
 const SECOND_TOKEN_ID = 'AlbertPercival';
@@ -74,18 +80,21 @@ async function modelHandler(
   modelParams?: RemoteModelParameters,
   scrollOffset?: {left: number; top: number}
 ): Promise<ModelHandler> {
-  const firstToken = remoteTokenModel();
-  (firstToken as any).location = FIRST_TOKEN_TILE;
-  const secondToken = remoteTokenModel();
-  (secondToken as any).id = SECOND_TOKEN_ID;
-  (secondToken as any).location = SECOND_TOKEN_TILE;
+  const firstToken = remoteTokenModel({
+    location: FIRST_TOKEN_TILE,
+    sheetData: FIRST_TOKEN_SHEET,
+  });
+  const secondToken = remoteTokenModel({
+    id: SECOND_TOKEN_ID,
+    location: SECOND_TOKEN_TILE,
+  });
   const base = remoteBoardModel(
-    prefer(modelParams, {
+    modelParams ?? {
       tileSizeOverride: DEFAULT_TILE_SIZE,
       gridOffsetOverride: {x: 0, y: 0},
       widthOverride: 100,
       tokensOverride: [firstToken, secondToken],
-    })
+    }
   );
   const model = await BoardModel.createFromRemote(base);
   const modelTokens = model.inner.tokens;
@@ -95,7 +104,7 @@ async function modelHandler(
 
   const view: any = {
     topCanvas: {
-      getBoundingClientRect: () => prefer(scrollOffset, {left: 0, top: 0}),
+      getBoundingClientRect: () => scrollOffset ?? {left: 0, top: 0},
     },
   };
   return new ModelHandler(model, view);
@@ -132,8 +141,8 @@ function clickData(
   clientPageOffset?: Point
 ): BaseClickData {
   const pagePoint = {
-    x: clientPoint.x + prefer(clientPageOffset?.x, 0),
-    y: clientPoint.y + prefer(clientPageOffset?.y, 0),
+    x: clientPoint.x + (clientPageOffset?.x ?? 0),
+    y: clientPoint.y + (clientPageOffset?.y ?? 0),
   };
   return {
     clientPoint: clientPoint,
@@ -237,41 +246,35 @@ describe('InteractionStateMachine from default state', () => {
   it('throws on context menu click', async (done) => {
     const objects = await setupObjects();
 
-    expect(() =>
-      objects.machine.onContextMenuClick(ContextMenuItem.AddFog)
-    ).toThrow();
+    expect(() => objects.machine.onContextMenuClick(FOG_ACTION)).toThrow();
     expect(objects.diffListener).toHaveBeenCalledTimes(0);
     done();
   });
 });
 
 describe('InteractionStateMachine from picked up state', () => {
-  async function pickUpToken(): Promise<TestObjects> {
-    const objects = await click(FIRST_TOKEN_POINT, 0);
+  async function pickUpToken(
+    tokenPoint: Point = FIRST_TOKEN_POINT
+  ): Promise<TestObjects> {
+    const objects = await click(tokenPoint, 0);
     objects.diffListener.mockClear();
-    expect(objects.handler.activeTokenIndex()).toBe(0);
+    expect(objects.handler.activeTokenIndex()).toBeDefined();
     return objects;
   }
 
-  function expectTokenDeselected(objects: TestObjects): void {
-    const expectedDiff: BoardDiff = {
-      tokenDiffs: [
-        {
-          isActive: false,
-          inner: {id: FIRST_TOKEN_ID},
-        },
-      ],
-    };
+  function expectTokenDeselected(objects: TestObjects, tokenId: string): void {
     expect(objects.diffListener).toHaveBeenCalledTimes(1);
-    expect(objects.diffListener).toHaveBeenCalledWith(expectedDiff);
+    const diff = objects.diffListener.mock.calls[0][0];
+    expect(diff.tokenDiffs?.length).toBe(1);
+    expect(diff.tokenDiffs![0].isActive).toBe(false);
+    expect(diff.tokenDiffs![0].inner?.id).toBe(tokenId);
+    expect(diff.tokenDiffs![0].inner?.location).toBe(undefined);
   }
 
   it('throws on context menu click', async (done) => {
     const objects = await pickUpToken();
 
-    expect(() =>
-      objects.machine.onContextMenuClick(ContextMenuItem.AddFog)
-    ).toThrow();
+    expect(() => objects.machine.onContextMenuClick(FOG_ACTION)).toThrow();
     expect(objects.diffListener).toHaveBeenCalledTimes(0);
     done();
   });
@@ -293,10 +296,29 @@ describe('InteractionStateMachine from picked up state', () => {
     done();
   });
 
-  it('deselects token when clicking on another token', async (done) => {
+  it('deselects token with sheet when clicking on another', async (done) => {
     const objects = await pickUpToken();
     await click(SECOND_TOKEN_POINT, 0, objects);
-    expectTokenDeselected(objects);
+    expectTokenDeselected(objects, FIRST_TOKEN_ID);
+    done();
+  });
+
+  it('opens attack menu if token with sheet clicks another', async (done) => {
+    const objects = await pickUpToken();
+    await click(SECOND_TOKEN_POINT, 0, objects);
+
+    expect(objects.diffListener).toHaveBeenCalledTimes(1);
+    const diff = objects.diffListener.mock.calls[0][0];
+    expect(diff.contextMenuState?.isVisible).toBe(true);
+    expect(diff.contextMenuState?.clickPoint).toStrictEqual(SECOND_TOKEN_POINT);
+    expect(diff.contextMenuState?.attackerSheet).toBe(FIRST_TOKEN_SHEET);
+    done();
+  });
+
+  it('deselects token without sheet when clicking on another', async (done) => {
+    const objects = await pickUpToken(SECOND_TOKEN_POINT);
+    await click(FIRST_TOKEN_POINT, 0, objects);
+    expectTokenDeselected(objects, SECOND_TOKEN_ID);
     done();
   });
 
@@ -305,7 +327,7 @@ describe('InteractionStateMachine from picked up state', () => {
     const clickPoint = {x: 35, y: 25};
     await click(clickPoint, 2, objects);
 
-    expectTokenDeselected(objects);
+    expectTokenDeselected(objects, FIRST_TOKEN_ID);
     done();
   });
 
@@ -314,7 +336,7 @@ describe('InteractionStateMachine from picked up state', () => {
     const clickPoint = {x: 35, y: 25};
     await drag({x: 45, y: 45}, clickPoint, 0, objects);
 
-    expectTokenDeselected(objects);
+    expectTokenDeselected(objects, FIRST_TOKEN_ID);
     done();
   });
 
@@ -323,7 +345,7 @@ describe('InteractionStateMachine from picked up state', () => {
     const clickPoint = {x: 35, y: 25};
     await drag({x: 45, y: 45}, clickPoint, 2, objects);
 
-    expectTokenDeselected(objects);
+    expectTokenDeselected(objects, FIRST_TOKEN_ID);
     done();
   });
 });
@@ -378,15 +400,15 @@ describe('InteractionStateMachine from context menu state', () => {
 
   it('invokes context action handler on context menu action', async (done) => {
     const objects = await openContextMenu();
-    await objects.machine.onContextMenuClick(ContextMenuItem.AddFog);
+    await objects.machine.onContextMenuClick(FOG_ACTION);
     expect(handleContextAction).toHaveBeenCalledTimes(1);
-    expect(handleContextAction).toHaveBeenCalledWith(ContextMenuItem.AddFog);
+    expect(handleContextAction).toHaveBeenCalledWith(FOG_ACTION);
     done();
   });
 
   it('has expected diff on context menu action', async (done) => {
     const objects = await openContextMenu();
-    await objects.machine.onContextMenuClick(ContextMenuItem.AddFog);
+    await objects.machine.onContextMenuClick(FOG_ACTION);
 
     const expectedDiff: BoardDiff = {
       // These are expected from closing the menu

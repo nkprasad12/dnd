@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
+import {SheetLoader} from '_client/character_sheets/sheet_loader';
 import {
   NumberInputField,
   TextInputField,
 } from '_client/common/ui_components/input_fields';
 import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
-import {TokenModel} from '_client/game_board/model/token_model';
+import {TokenDiff, TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
 
 export interface EditTokenFormProps {
@@ -66,14 +67,13 @@ export function EditTokenForm(props: EditTokenFormProps) {
   );
 }
 
-function onSubmit(
+async function onSubmit(
   name: string,
   speed: number,
   size: number,
   props: EditTokenFormProps,
   sheetLink?: string
 ) {
-  console.log('TODO: Use sheet link. Got: ' + sheetLink);
   const collisions = props.modelHandler.collisionIds(
     props.token.inner.location,
     size
@@ -87,8 +87,15 @@ function onSubmit(
     return;
   }
 
-  const mutation = {
-    inner: {id: props.token.inner.id, name: name, speed: speed, size: size},
+  const sheetData = await SheetLoader.loadFromUrl(sheetLink);
+  const mutation: TokenDiff = {
+    inner: {
+      id: props.token.inner.id,
+      name: name,
+      speed: speed,
+      size: size,
+      sheetData: sheetData,
+    },
   };
   const edited = TokenModel.merge(props.token, mutation);
   console.log('Edited token: ' + JSON.stringify(edited));

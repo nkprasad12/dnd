@@ -9,6 +9,8 @@ export interface TokenData {
   readonly name: string;
   readonly imageSource: string;
   readonly speed: number;
+  // TODO: Rethink whether this is the correct place for this.
+  // For example, how do we handle stale character sheets?
   readonly sheetData: CharacterSheetData | null;
 }
 

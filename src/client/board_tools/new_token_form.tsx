@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {SheetLoader} from '_client/character_sheets/sheet_loader';
 import {
   DropdownSelectorView,
   SelectorItem,
@@ -55,7 +56,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
   }, [props.visible]);
 
   async function onSubmit() {
-    console.log('TODO: Use sheet link. Got: ' + sheetLink);
+    const sheetData = await SheetLoader.loadFromUrl(sheetLink);
     const token = tokenTemplate
       ? new TokenModel(
           {
@@ -65,7 +66,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
             imageSource: tokenTemplate.imageSource,
             size: checkDefined(size),
             location: props.tile,
-            sheetData: null,
+            sheetData: sheetData,
           },
           (await loadImage(tokenTemplate.imageSource)).image,
           false
@@ -76,7 +77,8 @@ export function NewTokenForm(props: NewTokenFormProps) {
           checkDefined(size),
           props.tile,
           false,
-          checkDefined(speed)
+          checkDefined(speed),
+          sheetData
         );
 
     props.modelHandler.addNewToken(token);

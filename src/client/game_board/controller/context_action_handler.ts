@@ -1,21 +1,20 @@
 import {areLocationsEqual, Location} from '_common/coordinates';
-import {ContextMenuItem} from '_client/game_board/context_menu/context_menu_model';
-import {ModelHandler} from '_client/game_board/controller/model_handler';
+import {
+  ContextMenuAction,
+  ContextMenuItem,
+} from '_client/game_board/context_menu/context_menu_model';
 import {BoardModel, BoardDiff} from '_client/game_board/model/board_model';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {checkDefined} from '_common/preconditions';
 import {FOG_OFF, FOG_ON} from '_common/board/remote_board_model';
-import {UiController} from '_client/entrypoints/main/ui_controller';
+import {InteractionParamaters} from '_client/game_board/controller/interaction_state_machine';
 
 export class ContextActionHandler {
-  constructor(
-    private modelHandler: ModelHandler,
-    private controller: UiController
-  ) {}
+  constructor(private params: InteractionParamaters) {}
 
-  handleContextMenuAction(action: ContextMenuItem): BoardDiff {
-    const model = this.modelHandler.getModel();
-    switch (action) {
+  handleContextMenuAction(action: ContextMenuAction): BoardDiff {
+    const model = this.params.modelHandler.getModel();
+    switch (action.item) {
       case ContextMenuItem.AddFog:
         return this.fogDiff(model, true);
       case ContextMenuItem.ClearFog:
@@ -33,11 +32,7 @@ export class ContextActionHandler {
       case ContextMenuItem.GreenHighlight:
         return this.highlightDiff(model, '3');
       case ContextMenuItem.AddToken:
-        // NewTokenForm.create(
-        //   checkDefined(model.localSelection.area).start,
-        //   this.modelHandler
-        // );
-        this.controller.createNewTokenForm(
+        this.params.controller.createNewTokenForm(
           checkDefined(model.localSelection.area).start
         );
         return {};
@@ -49,6 +44,11 @@ export class ContextActionHandler {
         return {scale: model.scale * 2};
       case ContextMenuItem.ZoomOut:
         return {scale: model.scale / 2};
+      case ContextMenuItem.Attack:
+        if (action.metadata) {
+          this.params.chatClient.sendMessage({body: action.metadata});
+        }
+        return {};
       default:
         throw new Error('Unsupported context menu action: ' + action);
     }
@@ -90,7 +90,7 @@ export class ContextActionHandler {
   }
 
   private findTokenOnTile(tile: Location): number | undefined {
-    const collisions = this.modelHandler.wouldCollide(tile, 1);
+    const collisions = this.params.modelHandler.wouldCollide(tile, 1);
     if (collisions.length === 0) {
       return undefined;
     }
@@ -112,7 +112,7 @@ export class ContextActionHandler {
       console.log('No token in selection, ignoring');
       return {};
     }
-    this.controller.editTokenForm(model.tokens[tokenIndex]);
+    this.params.controller.editTokenForm(model.tokens[tokenIndex]);
     return {};
   }
 
@@ -153,7 +153,7 @@ export class ContextActionHandler {
         candidates.push(target);
       }
       for (const target of candidates) {
-        const collisions = this.modelHandler.wouldCollide(
+        const collisions = this.params.modelHandler.wouldCollide(
           target,
           selectedToken.inner.size
         );
