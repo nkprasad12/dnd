@@ -1,5 +1,5 @@
 import {BoardModel} from '_client/game_board/model/board_model';
-import {BoardView} from '_client/game_board/view/board_view';
+import {BoardCanvases, BoardView} from '_client/game_board/view/board_view';
 
 import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
@@ -48,7 +48,7 @@ export class GameBoard {
     chatClient: ChatClient,
     controller: UiController
   ) {
-    this.view = new BoardView(getElementById(parentId));
+    this.view = new BoardView(BoardCanvases.create(getElementById(parentId)));
     this.modelHandler = new ModelHandler(model, this.view);
     const remoteBoard = new RemoteBoard(server, this.modelHandler);
     this.modelHandler.addListeners([

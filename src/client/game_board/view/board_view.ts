@@ -43,6 +43,30 @@ function createBoardCanvas(
   return canvas;
 }
 
+export interface BoardCanvases {
+  readonly backgroundCanvas: HTMLCanvasElement;
+  readonly fogOfWarCanvas: HTMLCanvasElement;
+  readonly tokenCanvas: HTMLCanvasElement;
+  readonly localSelectionCanvas: HTMLCanvasElement;
+  readonly publicSelectionCanvas: HTMLCanvasElement;
+  readonly gridCanvas: HTMLCanvasElement;
+  readonly topCanvas: HTMLCanvasElement;
+}
+
+export namespace BoardCanvases {
+  export function create(parent: HTMLElement): BoardCanvases {
+    return {
+      backgroundCanvas: createBoardCanvas('1', parent),
+      tokenCanvas: createBoardCanvas('2', parent),
+      fogOfWarCanvas: createBoardCanvas('3', parent),
+      publicSelectionCanvas: createBoardCanvas('4', parent),
+      localSelectionCanvas: createBoardCanvas('5', parent),
+      gridCanvas: createBoardCanvas('6', parent),
+      topCanvas: createBoardCanvas('7', parent),
+    };
+  }
+}
+
 /** View for a game board. */
 export class BoardView {
   private readonly backgroundCanvas: HTMLCanvasElement;
@@ -57,14 +81,14 @@ export class BoardView {
   private tiles: Tile[][] = [];
   private model?: BoardModel = undefined;
 
-  constructor(parent: HTMLElement) {
-    this.backgroundCanvas = createBoardCanvas('1', parent);
-    this.tokenCanvas = createBoardCanvas('2', parent);
-    this.fogOfWarCanvas = createBoardCanvas('3', parent);
-    this.publicSelectionCanvas = createBoardCanvas('4', parent);
-    this.localSelectionCanvas = createBoardCanvas('5', parent);
-    this.gridCanvas = createBoardCanvas('6', parent);
-    this.topCanvas = createBoardCanvas('7', parent);
+  constructor(canvases: BoardCanvases) {
+    this.backgroundCanvas = canvases.backgroundCanvas;
+    this.tokenCanvas = canvases.tokenCanvas;
+    this.fogOfWarCanvas = canvases.fogOfWarCanvas;
+    this.publicSelectionCanvas = canvases.publicSelectionCanvas;
+    this.localSelectionCanvas = canvases.localSelectionCanvas;
+    this.gridCanvas = canvases.gridCanvas;
+    this.topCanvas = canvases.topCanvas;
     this.allCanvases = [
       this.backgroundCanvas,
       this.fogOfWarCanvas,
