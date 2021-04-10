@@ -12,4 +12,15 @@ export namespace Sheets {
     }
     return url.split(SHEET_ID_PREFIX)[1].split('/')[0];
   }
+
+  /**
+   * Returns the sheet URL corresponding to the input sheet ID.
+   *
+   * Returns `undefined` if the input is `undefined`.
+   */
+  export function urlFromId(sheetId: string | undefined): string | undefined {
+    return sheetId
+      ? `https://docs.google.com/spreadsheets/d/${sheetId}`
+      : undefined;
+  }
 }

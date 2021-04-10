@@ -7,6 +7,7 @@ import {
 import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenDiff, TokenModel} from '_client/game_board/model/token_model';
+import {Sheets} from '_common/character_sheets/utils';
 import {checkDefined} from '_common/preconditions';
 
 export interface EditTokenFormProps {
@@ -23,7 +24,7 @@ export function EditTokenForm(props: EditTokenFormProps) {
     props.token.inner.speed
   );
   const [sheetLink, setSheetLink] = useState<string | undefined>(
-    props.token.inner.sheetData?.sheetId
+    Sheets.urlFromId(props.token.inner.sheetData?.sheetId)
   );
 
   return (
@@ -61,7 +62,7 @@ export function EditTokenForm(props: EditTokenFormProps) {
       <TextInputField
         label="Character Sheet Link (Optional)"
         inputCallback={setSheetLink}
-        defaultValue={props.token.inner.sheetData?.sheetId}
+        defaultValue={Sheets.urlFromId(props.token.inner.sheetData?.sheetId)}
       />
     </SubmitDialogView>
   );

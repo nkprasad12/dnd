@@ -16,3 +16,14 @@ describe('idFromUrl', () => {
     expect(sheetId).toBe(null);
   });
 });
+
+describe('urlFromid', () => {
+  it('returns the correct url on defined sheetId', () => {
+    const expected = 'https://docs.google.com/spreadsheets/d/BelisariusWasHere';
+    expect(Sheets.urlFromId('BelisariusWasHere')).toBe(expected);
+  });
+
+  it('returns undefined on undefined', () => {
+    expect(Sheets.urlFromId(undefined)).toBe(undefined);
+  });
+});
