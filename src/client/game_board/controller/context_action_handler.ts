@@ -90,7 +90,7 @@ export class ContextActionHandler {
   }
 
   private findTokenOnTile(tile: Location): number | undefined {
-    const collisions = this.params.modelHandler.wouldCollide(tile, 1);
+    const collisions = this.params.entityController.wouldCollide(tile, 1);
     if (collisions.length === 0) {
       return undefined;
     }
@@ -153,7 +153,7 @@ export class ContextActionHandler {
         candidates.push(target);
       }
       for (const target of candidates) {
-        const collisions = this.params.modelHandler.wouldCollide(
+        const collisions = this.params.entityController.wouldCollide(
           target,
           selectedToken.inner.size
         );

@@ -10,6 +10,7 @@ import {
   TextInputField,
 } from '_client/common/ui_components/input_fields';
 import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
+import {EntityController} from '_client/game_board/controller/entity_controller';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {RemoteCache} from '_client/game_board/remote/remote_cache';
@@ -25,6 +26,7 @@ export interface NewTokenFormProps {
   visible: boolean;
   setVisibility: (show: boolean) => any;
   modelHandler: ModelHandler;
+  entityController: EntityController;
   tile: Location;
 }
 
@@ -81,7 +83,7 @@ export function NewTokenForm(props: NewTokenFormProps) {
           sheetData
         );
 
-    props.modelHandler.addNewToken(token);
+    props.entityController.addNewToken(token);
     setTokenTemplate(undefined);
     setName(undefined);
     setSize(undefined);

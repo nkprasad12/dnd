@@ -19,6 +19,7 @@ import {EditingArea} from '_client/entrypoints/main/editing_area';
 import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
 import {BoardModel} from '_client/game_board/model/board_model';
 import {UpdateListener} from '_client/game_board/controller/model_handler';
+import {ReactBoardView} from '_client/game_board/view/react_board_view';
 
 const MAIN_BOARD_STUB = 'mainBoard';
 
@@ -83,6 +84,7 @@ export function Panels(): JSX.Element {
             visible={newTokenFormVisible}
             setVisibility={setNewTokenFormVisible}
             modelHandler={board.modelHandler}
+            entityController={board.entityController}
             tile={newTokenTile}
           />
         )}
@@ -91,6 +93,7 @@ export function Panels(): JSX.Element {
             visible={editTokenFormVisible}
             setVisibility={setEditTokenFormVisible}
             modelHandler={board.modelHandler}
+            entityController={board.entityController}
             token={editTokenModel}
           />
         )}
@@ -115,6 +118,7 @@ export function Panels(): JSX.Element {
               visible={selected === NavbarOption.MAIN}
               chatClient={chatClient}
             />
+            {boardModel && <ReactBoardView boardModel={boardModel} />}
           </div>
         </div>
       </div>

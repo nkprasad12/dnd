@@ -9,6 +9,7 @@ import {checkDefined} from '_common/preconditions';
 import {Grid} from '_common/util/grid';
 import {ChatClient} from '_client/chat_box/chat_client';
 import {UiController} from '_client/entrypoints/main/ui_controller';
+import {EntityController} from '_client/game_board/controller/entity_controller';
 
 interface ClickData extends BaseClickData {
   tile: Location;
@@ -105,7 +106,7 @@ abstract class InteractionState {
     return {
       clientPoint: point.clientPoint,
       pagePoint: point.pagePoint,
-      tile: this.params.modelHandler.tileForPoint(point.clientPoint),
+      tile: this.params.entityController.tileForPoint(point.clientPoint),
     };
   }
 }
@@ -130,7 +131,10 @@ class DefaultState extends InteractionState {
   }
 
   onLeftClick(clickData: ClickData): ClickResult {
-    const collisions = this.params.modelHandler.wouldCollide(clickData.tile, 1);
+    const collisions = this.params.entityController.wouldCollide(
+      clickData.tile,
+      1
+    );
     const model = this.params.modelHandler.getModel();
     /* istanbul ignore next */
     // This shouldn't happen in practice.
@@ -179,11 +183,11 @@ class PickedUpTokenState extends InteractionState {
 
   onLeftClick(clickData: ClickData): ClickResult {
     const activeTokenIndex = checkDefined(
-      this.params.modelHandler.activeTokenIndex()
+      this.params.entityController.activeTokenIndex()
     );
     const model = this.params.modelHandler.getModel();
     const activeTokenSize = model.tokens[activeTokenIndex].inner.size;
-    const collisions = this.params.modelHandler.wouldCollide(
+    const collisions = this.params.entityController.wouldCollide(
       clickData.tile,
       activeTokenSize
     );
@@ -208,7 +212,7 @@ class PickedUpTokenState extends InteractionState {
 
   onRightClick(clickData: ClickData): ClickResult {
     const activeTokenIndex = checkDefined(
-      this.params.modelHandler.activeTokenIndex()
+      this.params.entityController.activeTokenIndex()
     )!;
     const model = this.params.modelHandler.getModel();
     const tokenDiff = {
@@ -280,6 +284,7 @@ class ContextMenuOpenState extends InteractionState {
 
 export interface InteractionParamaters {
   modelHandler: ModelHandler;
+  entityController: EntityController;
   chatClient: ChatClient;
   controller: UiController;
 }

@@ -5,6 +5,7 @@ import {
   TextInputField,
 } from '_client/common/ui_components/input_fields';
 import {SubmitDialogView} from '_client/common/ui_components/submit_dialog';
+import {EntityController} from '_client/game_board/controller/entity_controller';
 import {ModelHandler} from '_client/game_board/controller/model_handler';
 import {TokenDiff, TokenModel} from '_client/game_board/model/token_model';
 import {Sheets} from '_common/character_sheets/utils';
@@ -15,6 +16,7 @@ export interface EditTokenFormProps {
   setVisibility: (show: boolean) => any;
   token: TokenModel;
   modelHandler: ModelHandler;
+  entityController: EntityController;
 }
 
 export function EditTokenForm(props: EditTokenFormProps) {
@@ -75,7 +77,7 @@ async function onSubmit(
   props: EditTokenFormProps,
   sheetLink?: string
 ) {
-  const collisions = props.modelHandler.collisionIds(
+  const collisions = props.entityController.collisionIds(
     props.token.inner.location,
     size
   );

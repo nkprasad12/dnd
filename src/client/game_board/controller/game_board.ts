@@ -11,6 +11,7 @@ import {ContextMenuAction} from '_client/game_board/context_menu/context_menu_mo
 import {ChatClient} from '_client/chat_box/chat_client';
 import {UiController} from '_client/entrypoints/main/ui_controller';
 import {BoardUpdateData} from '_client/board_tools/board_update_form';
+import {EntityController} from '_client/game_board/controller/entity_controller';
 
 export class GameBoard {
   static existingBoard: GameBoard | null = null;
@@ -39,6 +40,7 @@ export class GameBoard {
   private readonly view: BoardView;
   readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
+  readonly entityController: EntityController;
   private readonly inputHandler: InteractionStateMachine;
 
   private constructor(
@@ -49,7 +51,11 @@ export class GameBoard {
     controller: UiController
   ) {
     this.view = new BoardView(BoardCanvases.create(getElementById(parentId)));
-    this.modelHandler = new ModelHandler(model, this.view);
+    this.modelHandler = new ModelHandler(model);
+    this.entityController = EntityController.create(
+      this.modelHandler,
+      this.view
+    );
     const remoteBoard = new RemoteBoard(server, this.modelHandler);
     this.modelHandler.addListeners([
       UpdateListener.forAll((board) => this.view.bind(board)),
@@ -60,6 +66,7 @@ export class GameBoard {
     this.inputHandler = new InteractionStateMachine({
       modelHandler: this.modelHandler,
       chatClient: chatClient,
+      entityController: this.entityController,
       controller: controller,
     });
     this.canvasListener = new InputListener(
