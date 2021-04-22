@@ -25,11 +25,13 @@ export namespace RemoteTokenModel {
     if (baseData.id !== boardData.id) {
       throw new Error('Trying to create from data with different ids!');
     }
-    const result: any = baseData;
+    const result: any = Object.assign(baseData);
     result.location = boardData.location;
+    result.size = boardData.size;
     if (!isValid(result)) {
       throw new Error('Invalid token result created');
     }
+
     return result;
   }
 

@@ -3,6 +3,7 @@ import {
   ContextMenuItem,
 } from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
+import {EntityController} from '_client/game_board/controller/entity_controller';
 import {BaseClickData} from '_client/game_board/controller/input_listener';
 import {InteractionStateMachine} from '_client/game_board/controller/interaction_state_machine';
 import {
@@ -77,8 +78,7 @@ const SECOND_TOKEN_POINT = tileToPoint(DEFAULT_TILE_SIZE, SECOND_TOKEN_TILE);
 const SECOND_TOKEN_ID = 'AlbertPercival';
 
 async function modelHandler(
-  modelParams?: RemoteModelParameters,
-  scrollOffset?: {left: number; top: number}
+  modelParams?: RemoteModelParameters
 ): Promise<ModelHandler> {
   const firstToken = remoteTokenModel({
     location: FIRST_TOKEN_TILE,
@@ -102,22 +102,19 @@ async function modelHandler(
   expect(modelTokens).toContain(firstToken);
   expect(modelTokens).toContain(secondToken);
 
-  const view: any = {
-    topCanvas: {
-      getBoundingClientRect: () => scrollOffset ?? {left: 0, top: 0},
-    },
-  };
-  return new ModelHandler(model, view);
+  return new ModelHandler(model);
 }
 
 interface TestObjects {
   machine: InteractionStateMachine;
   handler: ModelHandler;
+  entityController: EntityController;
   diffListener: jest.Mock<BoardDiff, BoardDiff[]>;
 }
 
 async function setupObjects(
-  modelParams?: RemoteModelParameters
+  modelParams?: RemoteModelParameters,
+  scrollOffset?: {left: number; top: number}
 ): Promise<TestObjects> {
   const handler = await modelHandler(modelParams);
   const mockListener = jest.fn((diff) => diff);
@@ -125,13 +122,23 @@ async function setupObjects(
     UpdateListener.forAll((_model, diff) => mockListener(diff)),
   ]);
   mockListener.mockClear();
+
+  const view: any = {
+    topCanvas: {
+      getBoundingClientRect: () => scrollOffset ?? {left: 0, top: 0},
+    },
+  };
+  const entityController = EntityController.create(handler, view);
+
   return {
     machine: new InteractionStateMachine({
       modelHandler: handler,
       chatClient: {} as any,
       controller: {} as any,
+      entityController: entityController,
     }),
     handler: handler,
+    entityController: entityController,
     diffListener: mockListener,
   };
 }
@@ -258,7 +265,7 @@ describe('InteractionStateMachine from picked up state', () => {
   ): Promise<TestObjects> {
     const objects = await click(tokenPoint, 0);
     objects.diffListener.mockClear();
-    expect(objects.handler.activeTokenIndex()).toBeDefined();
+    expect(objects.entityController.activeTokenIndex()).toBeDefined();
     return objects;
   }
 
