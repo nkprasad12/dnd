@@ -10,7 +10,6 @@ import {UiController} from '_client/entrypoints/main/ui_controller';
 import {GameBoard} from '_client/game_board/controller/game_board';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {connectTo} from '_client/server/socket_connection';
-import * as UiUtil from '_client/common/ui_util';
 import {Location} from '_common/coordinates';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {EditTokenForm} from '_client/board_tools/edit_token_form';
@@ -20,8 +19,7 @@ import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view
 import {BoardModel} from '_client/game_board/model/board_model';
 import {UpdateListener} from '_client/game_board/controller/model_handler';
 import {ReactBoardView} from '_client/game_board/view/react_board_view';
-
-const MAIN_BOARD_STUB = 'mainBoard';
+import {BoardView} from '_client/game_board/view/board_view';
 
 const INITIAL_LOCATION = {col: 0, row: 0};
 
@@ -36,23 +34,25 @@ export function Panels(): JSX.Element {
   const [editTokenModel, setEditTokenModel] = useState<TokenModel | null>(null);
   const [board, setBoard] = useState<GameBoard | null>(null);
   const [boardMessage, setBoardMessage] = useState<string | null>(null);
+  const [boardView, setBoardView] = useState<BoardView | null>(null);
   const [boardModel, setBoardModel] = useState<BoardModel | null>(null);
 
   useEffect(() => {
     document.title = `DnD ${selected}`;
-    if (selected === NavbarOption.MAIN) {
+    if (selected === NavbarOption.MAIN && boardView) {
       setupActiveBoard(
         uiController(
           setNewTokenTile,
           setNewTokenFormVisible,
           setBoard,
+          boardView,
           setBoardMessage,
           setEditTokenFormVisible,
           setEditTokenModel
         )
       ).then(() => setBoard(GameBoard.existingBoard));
     }
-  }, [selected]);
+  }, [selected, boardView]);
 
   useEffect(() => {
     if (board === null) {
@@ -71,7 +71,7 @@ export function Panels(): JSX.Element {
   return (
     <div>
       <div id="panel1" className="split left">
-        <div id={MAIN_BOARD_STUB} style={{position: 'relative'}}></div>
+        <ReactBoardView onBoardView={setBoardView} />
         {boardMessageView}
         {board && boardModel && (
           <ContextMenuView
@@ -102,23 +102,25 @@ export function Panels(): JSX.Element {
         <div style={{backgroundColor: 'rgb(69, 69, 69)'}}>
           <Navbar selected={selected} setSelected={setSelected} />
           <div id="sidePanelContent">
-            <EditingArea
-              visible={selected === NavbarOption.EDITOR}
-              board={board}
-              controller={uiController(
-                setNewTokenTile,
-                setNewTokenFormVisible,
-                setBoard,
-                setBoardMessage,
-                setEditTokenFormVisible,
-                setEditTokenModel
-              )}
-            />
+            {boardView && (
+              <EditingArea
+                visible={selected === NavbarOption.EDITOR}
+                board={board}
+                controller={uiController(
+                  setNewTokenTile,
+                  setNewTokenFormVisible,
+                  setBoard,
+                  boardView,
+                  setBoardMessage,
+                  setEditTokenFormVisible,
+                  setEditTokenModel
+                )}
+              />
+            )}
             <ChatBoxView
               visible={selected === NavbarOption.MAIN}
               chatClient={chatClient}
             />
-            {boardModel && <ReactBoardView boardModel={boardModel} />}
           </div>
         </div>
       </div>
@@ -130,6 +132,7 @@ function uiController(
   setNewTokenTile: (tile: Location) => any,
   setNewTokenFormVisible: (visible: boolean) => any,
   setBoard: (board: GameBoard) => any,
+  boardView: BoardView,
   setBoardMessage: (message: string) => any,
   setEditTokenVisibility: (visible: boolean) => any,
   setEditTokenFormModel: (token: TokenModel) => any
@@ -138,9 +141,8 @@ function uiController(
     setNewTokenTile,
     setNewTokenFormVisible,
     async (model) => {
-      UiUtil.removeChildrenOf(MAIN_BOARD_STUB);
       const board = GameBoard.create(
-        MAIN_BOARD_STUB,
+        boardView,
         model,
         await BoardClient.get(),
         await chatClient,

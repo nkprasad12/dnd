@@ -1,11 +1,10 @@
 import {BoardModel} from '_client/game_board/model/board_model';
-import {BoardCanvases, BoardView} from '_client/game_board/view/board_view';
+import {BoardView} from '_client/game_board/view/board_view';
 
 import {InputListener} from './input_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
-import {getElementById, removeChildrenOf} from '_client/common/ui_util';
 import {BoardClient} from '_client/game_board/remote/board_client';
 import {ContextMenuAction} from '_client/game_board/context_menu/context_menu_model';
 import {ChatClient} from '_client/chat_box/chat_client';
@@ -16,19 +15,18 @@ import {EntityController} from '_client/game_board/controller/entity_controller'
 export class GameBoard {
   static existingBoard: GameBoard | null = null;
   static create(
-    parentId: string,
+    view: BoardView,
     model: BoardModel,
     server: BoardClient,
     chatClient: ChatClient,
     controller: UiController
   ) {
     if (GameBoard.existingBoard !== null) {
-      removeChildrenOf(parentId);
       GameBoard.existingBoard.modelHandler.clearListeners();
       server.removeAllListeners();
     }
     GameBoard.existingBoard = new GameBoard(
-      parentId,
+      view,
       model,
       server,
       chatClient,
@@ -37,20 +35,18 @@ export class GameBoard {
     return GameBoard.existingBoard;
   }
 
-  private readonly view: BoardView;
   readonly modelHandler: ModelHandler;
   readonly canvasListener: InputListener;
   readonly entityController: EntityController;
   private readonly inputHandler: InteractionStateMachine;
 
   private constructor(
-    parentId: string,
+    private readonly view: BoardView,
     model: BoardModel,
     server: BoardClient,
     chatClient: ChatClient,
     controller: UiController
   ) {
-    this.view = new BoardView(BoardCanvases.create(getElementById(parentId)));
     this.modelHandler = new ModelHandler(model);
     this.entityController = EntityController.create(
       this.modelHandler,

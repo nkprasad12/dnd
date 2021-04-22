@@ -28,21 +28,6 @@ const colorMap: Map<string, string> = new Map([
   ['3', publicSelectionGreen],
 ]);
 
-function createBoardCanvas(
-  zIndex: string,
-  parent: HTMLElement
-): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-
-  canvas.style.zIndex = zIndex;
-  canvas.style.position = 'absolute';
-  canvas.style.left = '0px';
-  canvas.style.top = '0px';
-  parent.appendChild(canvas);
-
-  return canvas;
-}
-
 export interface BoardCanvases {
   readonly backgroundCanvas: HTMLCanvasElement;
   readonly fogOfWarCanvas: HTMLCanvasElement;
@@ -51,20 +36,6 @@ export interface BoardCanvases {
   readonly publicSelectionCanvas: HTMLCanvasElement;
   readonly gridCanvas: HTMLCanvasElement;
   readonly topCanvas: HTMLCanvasElement;
-}
-
-export namespace BoardCanvases {
-  export function create(parent: HTMLElement): BoardCanvases {
-    return {
-      backgroundCanvas: createBoardCanvas('1', parent),
-      tokenCanvas: createBoardCanvas('2', parent),
-      fogOfWarCanvas: createBoardCanvas('3', parent),
-      publicSelectionCanvas: createBoardCanvas('4', parent),
-      localSelectionCanvas: createBoardCanvas('5', parent),
-      gridCanvas: createBoardCanvas('6', parent),
-      topCanvas: createBoardCanvas('7', parent),
-    };
-  }
 }
 
 /** View for a game board. */
@@ -101,24 +72,25 @@ export class BoardView {
   }
 
   bind(newModel: BoardModel): void {
-    const backgroundChange = this.bindBackgroundImage(newModel);
-    this.handleGridParameterChange(newModel, backgroundChange);
-    this.bindGrid(newModel, backgroundChange);
-    this.bindTokens(newModel, backgroundChange);
-    this.bindFogOfWarState(newModel, backgroundChange);
-    this.bindLocalSelection(newModel, backgroundChange);
-    this.bindPublicSelection(newModel, backgroundChange);
+    const newBoard = this.model?.inner.id !== newModel.inner.id;
+    const forceRedraw = this.bindBackgroundImage(newModel) || newBoard;
+    this.handleGridParameterChange(newModel, forceRedraw);
+    this.bindGrid(newModel, forceRedraw);
+    this.bindTokens(newModel, forceRedraw);
+    this.bindFogOfWarState(newModel, forceRedraw);
+    this.bindLocalSelection(newModel, forceRedraw);
+    this.bindPublicSelection(newModel, forceRedraw);
 
     this.model = newModel;
   }
 
   private handleGridParameterChange(
     newModel: BoardModel,
-    backgroundChange: boolean
+    forceRedraw: boolean
   ): void {
     if (
       this.model !== undefined &&
-      !backgroundChange &&
+      !forceRedraw &&
       newModel.inner.tileSize === this.model.inner.tileSize &&
       arePointsEqual(newModel.inner.gridOffset, this.model.inner.gridOffset)
     ) {
@@ -137,10 +109,9 @@ export class BoardView {
 
   private bindBackgroundImage(newModel: BoardModel): boolean {
     const scaleChange = this.model?.scale !== newModel.scale;
-    const backgroundChange =
+    const forceRedraw =
       this.model?.backgroundImage !== newModel.backgroundImage;
-    const needsUpdate =
-      this.model === undefined || scaleChange || backgroundChange;
+    const needsUpdate = this.model === undefined || scaleChange || forceRedraw;
 
     if (!needsUpdate) {
       return false;
@@ -167,8 +138,8 @@ export class BoardView {
     return true;
   }
 
-  private bindGrid(newModel: BoardModel, backgroundChange: boolean): void {
-    let needsUpdate = backgroundChange;
+  private bindGrid(newModel: BoardModel, forceRedraw: boolean): void {
+    let needsUpdate = forceRedraw;
     if (this.model != undefined) {
       const model = this.model;
       needsUpdate = needsUpdate || model.inner.cols != newModel.inner.cols;
@@ -191,7 +162,7 @@ export class BoardView {
     }
   }
 
-  private bindTokens(newModel: BoardModel, backgroundChange: boolean): void {
+  private bindTokens(newModel: BoardModel, forceRedraw: boolean): void {
     let oldTokens: readonly TokenModel[] = [];
     if (this.model != undefined) {
       oldTokens = this.model.tokens;
@@ -205,7 +176,7 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch || backgroundChange) {
+      if (!hasMatch || forceRedraw) {
         this.clearToken(oldToken, newModel);
       }
     }
@@ -218,32 +189,26 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch || backgroundChange) {
+      if (!hasMatch || forceRedraw) {
         this.drawToken(newToken, newModel);
       }
     }
   }
 
-  private bindFogOfWarState(
-    newModel: BoardModel,
-    backgroundChange: boolean
-  ): void {
+  private bindFogOfWarState(newModel: BoardModel, forceRedraw: boolean): void {
     for (let i = 0; i < newModel.inner.cols; i++) {
       for (let j = 0; j < newModel.inner.rows; j++) {
         const tile = this.tiles[i][j];
         tile.bindFogOfWar(
           newModel.inner.fogOfWar[i][j],
           newModel.peekedTiles[i][j],
-          backgroundChange
+          forceRedraw
         );
       }
     }
   }
 
-  private bindLocalSelection(
-    newModel: BoardModel,
-    backgroundChange: boolean
-  ): void {
+  private bindLocalSelection(newModel: BoardModel, forceRedraw: boolean): void {
     const oldSelection: readonly Location[] =
       this.model?.localSelection.area !== undefined
         ? Grid.SimpleArea.toTiles(this.model.localSelection.area)
@@ -275,7 +240,7 @@ export class BoardView {
           break;
         }
       }
-      if (!hasMatch || backgroundChange) {
+      if (!hasMatch || forceRedraw) {
         this.tiles[newTile.col][newTile.row].selectedGrid();
         this.tiles[newTile.col][newTile.row].localSelectionOn();
       }
@@ -284,14 +249,14 @@ export class BoardView {
 
   private bindPublicSelection(
     newModel: BoardModel,
-    backgroundChange: boolean
+    forceRedraw: boolean
   ): void {
     for (let i = 0; i < newModel.inner.cols; i++) {
       for (let j = 0; j < newModel.inner.rows; j++) {
         const tile = this.tiles[i][j];
         tile.bindPublicSelection(
           newModel.inner.publicSelection[i][j],
-          backgroundChange
+          forceRedraw
         );
       }
     }
@@ -504,8 +469,8 @@ class Tile {
     );
   }
 
-  bindPublicSelection(selection: string, backgroundChange: boolean): void {
-    if (selection === this.publicSelectionState && !backgroundChange) {
+  bindPublicSelection(selection: string, forceRedraw: boolean): void {
+    if (selection === this.publicSelectionState && !forceRedraw) {
       return;
     }
     this.publicSelectionState = selection;
@@ -532,12 +497,12 @@ class Tile {
   bindFogOfWar(
     fogState: string,
     peekState: boolean,
-    backgroundChange: boolean
+    forceRedraw: boolean
   ): void {
     if (
       fogState === this.fogState &&
       this.peekState === peekState &&
-      !backgroundChange
+      !forceRedraw
     ) {
       return;
     }
