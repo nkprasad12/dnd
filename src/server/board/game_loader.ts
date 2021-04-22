@@ -132,10 +132,12 @@ class GameLoader {
       const tokenData = await this.tokenCache.get(getTokenKey(token.id));
       tokenDiffs.push(RemoteTokenModel.createFrom(tokenData, token));
     }
-    return RemoteBoardModel.mergedWith(baseBoard, {
+    const result = RemoteBoardModel.mergedWith(baseBoard, {
       id: boardId,
       tokenDiffs: tokenDiffs,
     });
+    await this.gameCache.update(getBoardKey(result.id), result);
+    return result;
   }
 
   async getAllTokens(): Promise<TokenData[]> {
