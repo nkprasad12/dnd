@@ -322,6 +322,27 @@ describe('InteractionStateMachine from picked up state', () => {
     done();
   });
 
+  it('opens attack menu if token with sheet clicks another', async (done) => {
+    const objects = await pickUpToken();
+    document.body.style.cursor = 'none';
+
+    objects.machine.onMouseMove(SECOND_TOKEN_POINT);
+
+    expect(document.body.style.cursor).toBe('crosshair');
+    done();
+  });
+
+  it('opens attack menu if token with sheet clicks another', async (done) => {
+    const objects = await pickUpToken();
+    document.body.style.cursor = 'none';
+
+    objects.machine.onMouseMove(SECOND_TOKEN_POINT);
+    objects.machine.onMouseMove(FIRST_TOKEN_POINT);
+
+    expect(document.body.style.cursor).toBe('default');
+    done();
+  });
+
   it('deselects token without sheet when clicking on another', async (done) => {
     const objects = await pickUpToken(SECOND_TOKEN_POINT);
     await click(FIRST_TOKEN_POINT, 0, objects);

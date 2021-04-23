@@ -67,7 +67,8 @@ export class GameBoard {
     });
     this.canvasListener = new InputListener(
       this.view.topCanvas,
-      (from, to, button) => this.inputHandler.onDragEvent(from, to, button)
+      (from, to, button) => this.inputHandler.onDragEvent(from, to, button),
+      (hoverPoint) => this.inputHandler.onMouseMove(hoverPoint)
     );
   }
 
