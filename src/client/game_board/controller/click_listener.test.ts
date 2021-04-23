@@ -2,7 +2,7 @@ import {
   BaseClickData,
   DragCallback,
   InputListener,
-} from '_client/game_board/controller/input_listener';
+} from '_client/game_board/controller/click_listener';
 import {Point} from '_common/coordinates';
 
 class FakeCallback {

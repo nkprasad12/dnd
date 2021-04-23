@@ -4,7 +4,7 @@ import {
 } from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {EntityController} from '_client/game_board/controller/entity_controller';
-import {BaseClickData} from '_client/game_board/controller/input_listener';
+import {BaseClickData} from '_client/game_board/controller/click_listener';
 import {InteractionStateMachine} from '_client/game_board/controller/interaction_state_machine';
 import {
   ModelHandler,

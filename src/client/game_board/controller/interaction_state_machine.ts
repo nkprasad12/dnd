@@ -2,7 +2,7 @@ import {Location, areLocationsEqual} from '_common/coordinates';
 import {BoardDiff} from '_client/game_board/model/board_model';
 
 import {ModelHandler} from './model_handler';
-import {BaseClickData} from '_client/game_board/controller/input_listener';
+import {BaseClickData} from '_client/game_board/controller/click_listener';
 import {ContextMenuAction} from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {checkDefined} from '_common/preconditions';

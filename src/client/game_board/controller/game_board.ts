@@ -1,7 +1,7 @@
 import {BoardModel} from '_client/game_board/model/board_model';
 import {BoardView} from '_client/game_board/view/board_view';
 
-import {InputListener} from './input_listener';
+import {InputListener} from './click_listener';
 import {InteractionStateMachine} from './interaction_state_machine';
 import {ModelHandler, UpdateListener} from './model_handler';
 import {RemoteBoard} from '_client/game_board/remote/remote_board';
