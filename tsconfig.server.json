@@ -10,7 +10,7 @@
     "target": "es2015",
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "genfiles_server",
 
     /* Strict Type-Checking Options */
     "strict": true,                           /* Enable all strict type-checking options. */
@@ -36,13 +36,13 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,  
 
-    "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
+    "baseUrl": ".",                       /* Base directory to resolve non-absolute module names. */
     "paths": {
       "_server/*": [
-        "./src/server/*"
+        "src/server/*",
       ],
       "_common/*": [
-        "./src/common/*"
+        "src/common/*",
       ],
     },       
   },
