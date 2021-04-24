@@ -8,15 +8,19 @@
   "main": "dist/main.js",
   "scripts": {
     "build-client": "npx webpack --config webpack.client.config.js",
-    "build-server": "npx webpack --config webpack.server.config.js",
-    "setup-env": "node -r dotenv/config build/prestart.bundle.js",
+    "build-server": "tsc -p tsconfig.server.json",
+    "setup-env": "node -r dotenv/config genfiles_server/server/prestart.js",
     "build": "npm run build-client && npm run build-server && npm run setup-env",
-    "start": "node -r dotenv/config build/server.bundle.js",
+    "start": "node -r dotenv/config genfiles_server/server/main.js",
     "start:client-inc": "npm run build-client && npm run start",
     "start:full": "npm run build && npm run start",
     "test": "jest",
     "coverage": "jest --coverage",
     "count": "find src -regextype sed -regex '.*/*\\.tsx\\?' | xargs wc -l"
+  },
+  "_moduleAliases": {
+    "_server": "genfiles_server/server",
+    "_common": "genfiles_server/common"
   },
   "author": "",
   "license": "ISC",

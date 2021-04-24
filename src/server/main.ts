@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+require('module-alias/register');
 import {prepareServer} from '_server/server';
 
 const PORT = process.env.PORT;

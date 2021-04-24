@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+require('module-alias/register');
 import {
   createDataDirectories,
   writeGoogleCredentials,

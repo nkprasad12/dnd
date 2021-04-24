@@ -1,4 +1,3 @@
-import fs from 'fs';
 import mockfs from 'mock-fs';
 import path from 'path';
 import supertest from 'supertest';
@@ -41,8 +40,6 @@ beforeAll(() => {
 
 afterAll(() => {
   process.env = ORIGINAL_ENV;
-  fs.rmdirSync(path.join(ROOT, 'data/images'));
-  fs.rmdirSync(path.join(ROOT, 'data'));
 });
 
 const TEMPLATE_ROOT = path.join(ROOT, 'public', 'templates');

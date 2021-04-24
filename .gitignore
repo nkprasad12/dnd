@@ -2,6 +2,7 @@ node_modules/
 build/
 google-credentials.json
 .env
+genfiles_server/
 genfiles_static/
 data/
 coverage/
