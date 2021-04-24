@@ -2,7 +2,7 @@ import {
   BaseClickData,
   DragCallback,
   InputListener,
-} from '_client/game_board/controller/input_listener';
+} from '_client/game_board/controller/click_listener';
 import {Point} from '_common/coordinates';
 
 class FakeCallback {
@@ -37,7 +37,7 @@ const SECOND_OFFSET_POINT: Point = {x: 142, y: 4342};
 test('InputListener on mousedown only does not fire callback', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
 
   element.onmousedown(event);
@@ -50,7 +50,7 @@ test('InputListener on mousedown only does not fire callback', () => {
 test('InputListener on mousedown suppresses default', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
 
   expect(element.onmousedown(event)).toBe(false);
@@ -59,7 +59,7 @@ test('InputListener on mousedown suppresses default', () => {
 test('InputListener on mouseup only does not fire callback', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const event = mouseEvent(SECOND_CLIENT_POINT, SECOND_OFFSET_POINT);
 
   element.onmouseup(event);
@@ -72,7 +72,7 @@ test('InputListener on mouseup only does not fire callback', () => {
 test('InputListener on mouseup suppresses default', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
 
   expect(element.onmouseup(event)).toBe(false);
@@ -81,7 +81,7 @@ test('InputListener on mouseup suppresses default', () => {
 test('InputListener on click fires callback', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const downEvent = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
   downEvent.button = 1;
   const upEvent = mouseEvent(SECOND_CLIENT_POINT, SECOND_OFFSET_POINT);
@@ -100,8 +100,59 @@ test('InputListener on click fires callback', () => {
 test('InputListener on contextmenu suppresses default', () => {
   const element: any = {};
   const callback = new FakeCallback();
-  new InputListener(element, callback.dragCallback());
+  new InputListener(element, callback.dragCallback(), () => {});
   const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
 
   expect(element.oncontextmenu(event)).toBe(false);
+});
+
+describe('InputListener onMouseMove', () => {
+  it('notifies on far moves', () => {
+    const element: any = {};
+    const onMouseMove = jest.fn();
+    new InputListener(element, jest.fn(), onMouseMove);
+    const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
+    onMouseMove.mockClear();
+
+    element.onmousemove(event);
+
+    expect(onMouseMove).toHaveBeenCalledTimes(1);
+    expect(onMouseMove).toHaveBeenCalledWith(FIRST_CLIENT_POINT);
+  });
+
+  it('does not notify on close X moves', () => {
+    const element: any = {};
+    const onMouseMove = jest.fn();
+    new InputListener(element, jest.fn(), onMouseMove);
+    const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
+    const secondEvent = mouseEvent(
+      {x: FIRST_CLIENT_POINT.x + 1, y: FIRST_CLIENT_POINT.y},
+      FIRST_OFFSET_POINT
+    );
+    onMouseMove.mockClear();
+
+    element.onmousemove(event);
+    onMouseMove.mockClear();
+    element.onmousemove(secondEvent);
+
+    expect(onMouseMove).not.toHaveBeenCalled();
+  });
+
+  it('does not notify on close Y moves', () => {
+    const element: any = {};
+    const onMouseMove = jest.fn();
+    new InputListener(element, jest.fn(), onMouseMove);
+    const event = mouseEvent(FIRST_CLIENT_POINT, FIRST_OFFSET_POINT);
+    const secondEvent = mouseEvent(
+      {x: FIRST_CLIENT_POINT.x, y: FIRST_CLIENT_POINT.y + 1},
+      FIRST_OFFSET_POINT
+    );
+    onMouseMove.mockClear();
+
+    element.onmousemove(event);
+    onMouseMove.mockClear();
+    element.onmousemove(secondEvent);
+
+    expect(onMouseMove).not.toHaveBeenCalled();
+  });
 });

@@ -1,8 +1,8 @@
-import {Location, areLocationsEqual} from '_common/coordinates';
+import {Location, areLocationsEqual, Point} from '_common/coordinates';
 import {BoardDiff} from '_client/game_board/model/board_model';
 
 import {ModelHandler} from './model_handler';
-import {BaseClickData} from '_client/game_board/controller/input_listener';
+import {BaseClickData} from '_client/game_board/controller/click_listener';
 import {ContextMenuAction} from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {checkDefined} from '_common/preconditions';
@@ -53,6 +53,9 @@ abstract class InteractionState {
   protected abstract onLeftClick(clickData: ClickData): ClickResult;
 
   protected abstract onRightClick(clickData: ClickData): ClickResult;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onMouseMove(_hoverPoint: Point): void {}
 
   onDragEvent(
     fromPoint: BaseClickData,
@@ -169,6 +172,36 @@ class DefaultState extends InteractionState {
 class PickedUpTokenState extends InteractionState {
   constructor(params: InteractionParamaters) {
     super(params);
+  }
+
+  onMouseMove(hoverPoint: Point): void {
+    // TODO: Set cursor styles to custom cursors.
+    // TODO: Consolidate this logic with the logic in onLeftClick
+    // and onRightClick (or, maybe move some into entityController).
+    const activeTokenIndex = checkDefined(
+      this.params.entityController.activeTokenIndex()
+    );
+    const model = this.params.modelHandler.getModel();
+    const attackData = model.tokens[activeTokenIndex].inner.sheetData;
+    const attackList =
+      attackData?.attackBonuses && Object.keys(attackData?.attackBonuses);
+    if (!attackList || attackList.length === 0) {
+      document.body.style.cursor = 'default';
+      return;
+    }
+    const activeTokenSize = model.tokens[activeTokenIndex].inner.size;
+    const collisions = this.params.entityController.wouldCollide(
+      this.params.entityController.tileForPoint(hoverPoint),
+      activeTokenSize
+    );
+    if (
+      collisions.length > 1 ||
+      (collisions.length === 1 && activeTokenIndex !== collisions[0])
+    ) {
+      document.body.style.cursor = 'crosshair';
+      return;
+    }
+    document.body.style.cursor = 'default';
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -308,6 +341,10 @@ export class InteractionStateMachine {
     );
     this.currentState = result.newState;
     return result.updatePromise;
+  }
+
+  onMouseMove(hoverPoint: Point): void {
+    this.currentState.onMouseMove(hoverPoint);
   }
 
   onContextMenuClick(action: ContextMenuAction): Promise<void> {

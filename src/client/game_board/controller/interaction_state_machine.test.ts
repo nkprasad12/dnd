@@ -4,7 +4,7 @@ import {
 } from '_client/game_board/context_menu/context_menu_model';
 import {ContextActionHandler} from '_client/game_board/controller/context_action_handler';
 import {EntityController} from '_client/game_board/controller/entity_controller';
-import {BaseClickData} from '_client/game_board/controller/input_listener';
+import {BaseClickData} from '_client/game_board/controller/click_listener';
 import {InteractionStateMachine} from '_client/game_board/controller/interaction_state_machine';
 import {
   ModelHandler,
@@ -319,6 +319,27 @@ describe('InteractionStateMachine from picked up state', () => {
     expect(diff.contextMenuState?.isVisible).toBe(true);
     expect(diff.contextMenuState?.clickPoint).toStrictEqual(SECOND_TOKEN_POINT);
     expect(diff.contextMenuState?.attackerSheet).toBe(FIRST_TOKEN_SHEET);
+    done();
+  });
+
+  it('opens attack menu if token with sheet clicks another', async (done) => {
+    const objects = await pickUpToken();
+    document.body.style.cursor = 'none';
+
+    objects.machine.onMouseMove(SECOND_TOKEN_POINT);
+
+    expect(document.body.style.cursor).toBe('crosshair');
+    done();
+  });
+
+  it('opens attack menu if token with sheet clicks another', async (done) => {
+    const objects = await pickUpToken();
+    document.body.style.cursor = 'none';
+
+    objects.machine.onMouseMove(SECOND_TOKEN_POINT);
+    objects.machine.onMouseMove(FIRST_TOKEN_POINT);
+
+    expect(document.body.style.cursor).toBe('default');
     done();
   });
 

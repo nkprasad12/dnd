@@ -6,6 +6,8 @@ export type DragCallback = (
   mouseButton: number
 ) => any;
 
+const MOUSE_MOVE_DISTANCE = 5;
+
 /** Extracts click data from a mouse event */
 function clickData(event: MouseEvent): BaseClickData {
   return {
@@ -22,10 +24,12 @@ export interface BaseClickData {
 /** Handles inputs from the user. */
 export class InputListener {
   mouseDownPoint?: BaseClickData = undefined;
+  lastMouseMovePoint: Point = {x: 0, y: 0};
 
   constructor(
     private readonly element: HTMLElement,
-    private readonly dragCallback: DragCallback
+    private readonly dragCallback: DragCallback,
+    private readonly onMouseMove: (clientPoint: Point) => any
   ) {
     this.element.onmousedown = (event) => {
       this.handleMouseDown(event);
@@ -37,6 +41,19 @@ export class InputListener {
       this.handleMouseUp(event);
       event.preventDefault();
       return false;
+    };
+
+    this.element.onmousemove = (event) => {
+      const xChanged =
+        Math.abs(this.lastMouseMovePoint.x - event.clientX) >
+        MOUSE_MOVE_DISTANCE;
+      const yChanged =
+        Math.abs(this.lastMouseMovePoint.y - event.clientY) >
+        MOUSE_MOVE_DISTANCE;
+      if (xChanged || yChanged) {
+        this.lastMouseMovePoint = {x: event.clientX, y: event.clientY};
+        this.onMouseMove(this.lastMouseMovePoint);
+      }
     };
 
     this.element.oncontextmenu = (event) => {
