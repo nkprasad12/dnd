@@ -7,6 +7,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Server",
+      "program": "${workspaceFolder}/src/server/main.ts",
+      "runtimeArgs": [
+        "--require=dotenv/config"
+      ],
+      "outFiles": ["${workspaceFolder}/genfiles_server/**/*.js"],
+      "preLaunchTask": "npm: build",
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Jest All",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
       "args": ["--runInBand"],
