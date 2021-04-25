@@ -119,8 +119,9 @@ describe('requestBoard (full board)', () => {
     (await BoardClient.get()).requestBoard(BOARD_ID);
     const socket = checkDefined(FakeConnection.getFakeSocket('board'));
 
-    expect(socket.onMap.size).toBe(1);
+    expect(socket.onMap.size).toBe(2);
     expect(socket.onMap.get(Events.BOARD_GET_RESPONSE)).toBeDefined();
+    expect(socket.onMap.get(Events.BOARD_GET_ERROR)).toBeDefined();
     done();
   });
 

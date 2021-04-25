@@ -187,14 +187,18 @@ export class RemoteBoardModel {
     const expectedDimensions = gridDimensions(
       model.width,
       model.height,
-      prefer(diff.tileSize, model.tileSize),
-      prefer(diff.gridOffset, model.gridOffset)
+      diff.tileSize ?? model.tileSize,
+      diff.gridOffset ?? model.gridOffset
     );
     if (
-      expectedDimensions.cols !== prefer(diff.cols, model.cols) ||
-      expectedDimensions.rows !== prefer(diff.rows, model.rows)
+      expectedDimensions.cols !== (diff.cols ?? model.cols) ||
+      expectedDimensions.rows !== (diff.rows ?? model.rows)
     ) {
-      throw new Error('Invalid board dimensions');
+      throw new Error(
+        `Invalid board dimensions. Was ${expectedDimensions.rows}, 
+        ${expectedDimensions.cols} - Expected 
+        ${diff.rows ?? model.rows}, ${diff.cols ?? model.cols}`
+      );
     }
     let mergedTokens: RemoteTokenModel[] = [];
     mergedTokens = mergedTokens.concat(prefer(diff.newTokens, []));

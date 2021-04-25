@@ -44,19 +44,20 @@ class BoardSocketServerConnection {
     });
   }
 
-  private updateLocalBoard(
+  private async updateLocalBoard(
     id: string,
     diff: RemoteBoardDiff
   ): Promise<RemoteBoardModel> {
-    const updatedBoard = this.loader
-      .retrieveBoard(id)
-      .then((board) => RemoteBoardModel.mergedWith(board, diff))
-      .catch(() => {
-        console.log('TODO: If you see this, ask the client their board.');
-        throw new Error('Received update for non-existant board!');
-      });
-    updatedBoard.then((board) => this.loader.saveBoard(board));
-    return updatedBoard;
+    try {
+      let updatedBoard = await this.loader.retrieveBoard(id);
+      updatedBoard = RemoteBoardModel.mergedWith(updatedBoard, diff);
+      this.loader.saveBoard(updatedBoard);
+
+      return updatedBoard;
+    } catch (ex) {
+      console.log('TODO: If you see this, ask the client their board.');
+      throw new Error('Received update for non-existant board!');
+    }
   }
 
   private handleCreateRequests() {
@@ -74,10 +75,17 @@ class BoardSocketServerConnection {
 
   private handleGetRequests() {
     this.registerEventListener(Events.BOARD_GET_REQUEST, (message) => {
-      this.loader.retrieveBoard(message).then((board) => {
-        console.log(`[${Events.BOARD_GET_RESPONSE}] board ${board?.id}`);
-        this.socket.emit(Events.BOARD_GET_RESPONSE, board);
-      });
+      this.loader
+        .retrieveBoard(message)
+        .then((board) => {
+          console.log(`[${Events.BOARD_GET_RESPONSE}] board ${board?.id}`);
+          this.socket.emit(Events.BOARD_GET_RESPONSE, board);
+        })
+        .catch((ex) => {
+          console.log('NITIN');
+          console.log('Something broke.');
+          this.socket.emit(Events.BOARD_GET_ERROR, ex.message);
+        });
     });
   }
 

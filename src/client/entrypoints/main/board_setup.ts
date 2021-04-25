@@ -8,9 +8,14 @@ export async function loadBoard(
 ): Promise<BoardModel> {
   const server = await BoardClient.get();
   controller.setBoardMessage('Retrieving board data');
-  const remoteModel = await server.requestBoard(boardId);
-  controller.setBoardMessage('Loading images (may take a few moments)');
-  return BoardModel.createFromRemote(remoteModel);
+  try {
+    const remoteModel = await server.requestBoard(boardId);
+    controller.setBoardMessage('Loading images (may take a few moments)');
+    return BoardModel.createFromRemote(remoteModel);
+  } catch (ex) {
+    controller.setBoardMessage(`Error thrown by server: ${ex}`);
+    throw new Error(ex);
+  }
 }
 
 export async function setupActiveBoard(
