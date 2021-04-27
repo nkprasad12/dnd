@@ -134,6 +134,15 @@ describe('requestBoard (full board)', () => {
     return expect(board).rejects.toThrow('invalid board');
   });
 
+  it('rejects on socket error', async () => {
+    const board = (await BoardClient.get()).requestBoard(BOARD_ID);
+    const socket = checkDefined(FakeConnection.getFakeSocket('board'));
+
+    const callback = checkDefined(socket.onMap.get(Events.BOARD_GET_ERROR));
+    callback('NotAValidBoard');
+    return expect(board).rejects.toThrow('NotAValidBoard');
+  });
+
   it('rejects almost salvagable input', async () => {
     const input = remoteBoardModel();
     (input as any).name = undefined;

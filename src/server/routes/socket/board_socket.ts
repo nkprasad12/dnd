@@ -82,8 +82,6 @@ class BoardSocketServerConnection {
           this.socket.emit(Events.BOARD_GET_RESPONSE, board);
         })
         .catch((ex) => {
-          console.log('NITIN');
-          console.log('Something broke.');
           this.socket.emit(Events.BOARD_GET_ERROR, ex.message);
         });
     });

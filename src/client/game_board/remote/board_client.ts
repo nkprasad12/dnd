@@ -69,7 +69,7 @@ export class BoardClient {
       });
       this.socket.on(Events.BOARD_GET_ERROR, (ex) => {
         console.log(`Error thrown: ${ex}`);
-        reject(ex);
+        reject(new Error(ex));
       });
     });
   }
