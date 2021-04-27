@@ -67,6 +67,10 @@ export class BoardClient {
         }
         reject(new Error('Received invalid board model!'));
       });
+      this.socket.on(Events.BOARD_GET_ERROR, (ex) => {
+        console.log(`Error thrown: ${ex}`);
+        reject(new Error(ex));
+      });
     });
   }
 
