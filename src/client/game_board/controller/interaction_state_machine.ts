@@ -38,7 +38,9 @@ function tilesInDrag(fromData: ClickData, toData: ClickData): Grid.SimpleArea {
 }
 
 abstract class InteractionState {
-  constructor(protected readonly params: InteractionParamaters) {}
+  constructor(protected readonly params: InteractionParamaters) {
+    document.body.style.cursor = 'default';
+  }
 
   protected abstract onLeftDrag(
     fromData: ClickData,
