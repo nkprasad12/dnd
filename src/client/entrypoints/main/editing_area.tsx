@@ -43,9 +43,7 @@ export function EditingArea(props: EditingAreaProps): JSX.Element | null {
       <div style={boardEditRow}>
         <BoardSelector.View
           onEditBoard={(id) =>
-            loadBoard(id, props.controller).then((model) =>
-              props.controller.setBoard(model)
-            )
+            loadBoard(id).then((model) => props.controller.setBoard(model))
           }
           activeModel={activeModel}
           setActiveModel={setActiveModel}

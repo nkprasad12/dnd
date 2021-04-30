@@ -1,6 +1,7 @@
 import React from 'react';
 import {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
+import {Toaster} from 'react-hot-toast';
 import {NewTokenForm} from '_client/board_tools/new_token_form';
 import {ChatBoxView} from '_client/chat_box/chat_box_view';
 import {ChatClient} from '_client/chat_box/chat_client';
@@ -13,7 +14,6 @@ import {connectTo} from '_client/server/socket_connection';
 import {Location} from '_common/coordinates';
 import {TokenModel} from '_client/game_board/model/token_model';
 import {EditTokenForm} from '_client/board_tools/edit_token_form';
-import {TEXT_COLOR} from '_client/common/styles';
 import {EditingArea} from '_client/entrypoints/main/editing_area';
 import {ContextMenuView} from '_client/game_board/context_menu/context_menu_view';
 import {BoardModel} from '_client/game_board/model/board_model';
@@ -33,7 +33,6 @@ export function Panels(): JSX.Element {
   const [editTokenFormVisible, setEditTokenFormVisible] = useState(false);
   const [editTokenModel, setEditTokenModel] = useState<TokenModel | null>(null);
   const [board, setBoard] = useState<GameBoard | null>(null);
-  const [boardMessage, setBoardMessage] = useState<string | null>(null);
   const [boardView, setBoardView] = useState<BoardView | null>(null);
   const [boardModel, setBoardModel] = useState<BoardModel | null>(null);
 
@@ -46,7 +45,6 @@ export function Panels(): JSX.Element {
           setNewTokenFormVisible,
           setBoard,
           boardView,
-          setBoardMessage,
           setEditTokenFormVisible,
           setEditTokenModel
         )
@@ -63,16 +61,10 @@ export function Panels(): JSX.Element {
     ]);
   }, [board]);
 
-  const boardMessageView =
-    board === null && boardMessage !== null ? (
-      <label style={{color: TEXT_COLOR}}>{boardMessage}</label>
-    ) : null;
-
   return (
     <div>
       <div id="panel1" className="split left">
         <ReactBoardView onBoardView={setBoardView} />
-        {boardMessageView}
         {board && boardModel && (
           <ContextMenuView
             clickListener={(item) => board.onContextMenuClick(item)}
@@ -111,7 +103,6 @@ export function Panels(): JSX.Element {
                   setNewTokenFormVisible,
                   setBoard,
                   boardView,
-                  setBoardMessage,
                   setEditTokenFormVisible,
                   setEditTokenModel
                 )}
@@ -124,6 +115,11 @@ export function Panels(): JSX.Element {
           </div>
         </div>
       </div>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{success: {duration: 700}}}
+      />
     </div>
   );
 }
@@ -133,7 +129,6 @@ function uiController(
   setNewTokenFormVisible: (visible: boolean) => any,
   setBoard: (board: GameBoard) => any,
   boardView: BoardView,
-  setBoardMessage: (message: string) => any,
   setEditTokenVisibility: (visible: boolean) => any,
   setEditTokenFormModel: (token: TokenModel) => any
 ): UiController {
@@ -150,7 +145,6 @@ function uiController(
       );
       setBoard(board);
     },
-    setBoardMessage,
     setEditTokenVisibility,
     setEditTokenFormModel
   );

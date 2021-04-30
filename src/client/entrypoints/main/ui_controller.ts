@@ -6,7 +6,6 @@ export interface UiController {
   createNewTokenForm: (tile: Location) => any;
   editTokenForm: (token: TokenModel) => any;
   setBoard: (board: BoardModel) => any;
-  setBoardMessage: (message: string) => any;
 }
 
 export namespace UiController {
@@ -14,7 +13,6 @@ export namespace UiController {
     setNewTokenTile: (tile: Location) => any,
     setNewTokenVisibility: (visible: boolean) => any,
     setBoard: (model: BoardModel) => any,
-    setBoardMessage: (message: string) => any,
     setEditTokenVisibility: (visible: boolean) => any,
     setEditTokenFormModel: (token: TokenModel) => any
   ): UiController {
@@ -24,7 +22,6 @@ export namespace UiController {
         setNewTokenVisibility(true);
       },
       setBoard: setBoard,
-      setBoardMessage: setBoardMessage,
       editTokenForm: (token) => {
         setEditTokenFormModel(token);
         setEditTokenVisibility(true);
